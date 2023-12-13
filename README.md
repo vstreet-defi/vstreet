@@ -22,6 +22,8 @@ Please adhere to code style guidelines (Install Prettier to ensure this) and eve
 
 And please, never push directly into the main branch by skipping the PR and code review!
 
+Project Resources: https://robinhodl69.notion.site/Vara_street-ea8f58b3749f492ba3f4ca76964099bb
+
 ## Team Info
 
 * #### Iván Avila
