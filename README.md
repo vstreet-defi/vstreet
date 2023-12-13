@@ -1,4 +1,4 @@
-Vara Street - Defi Vara Protocol
+# Vara Street - Defi Vara Protocol
 Vara_street expands Vara Network's DeFi offerings with innovative services like synthetic asset-based lending, strategic Options trading, and pioneering on-chain Copy Trading using Vara's delayed message technology.
 
 Installation
@@ -22,25 +22,27 @@ Please adhere to code style guidelines (Install Prettier to ensure this) and eve
 
 And please, never push directly into the main branch by skipping the PR and code review!
 
-Team Info
+## Team Info
 
-Iván Avila
-Graduated in Multimedia Development, 
-tech entrepreneur and
-Full-stack developer.
+* #### Iván Avila
+  Graduated in Multimedia Development, 
+  tech entrepreneur and
+  Full-stack developer.
 
-Ivan specializes in interactive development and 
-has extensive audio-visuals and marketing 
-expertise. He has participated in several web3 
-hackathons as a result of being a blockchain
-enthusiast.
+  Ivan specializes in interactive development and 
+  has extensive audio-visuals and marketing 
+  expertise. He has participated in several web3 
+  hackathons as a result of being a blockchain
+  enthusiast.
 
 
-Luciano Garcia
-Graduated in Technical Electronics, student of Software Engineering. 
-Currently working on Telecom AR as a Full Stack Developer where I am an integral team member of an e-commerce platform. 
-He participated in a web3 hackathon with Mario where they worked focused on asset tokenization. His passion for blockchain technology dates back to 2016.
+* #### Luciano Garcia
+  Graduated in Technical Electronics, student of Software Engineering. 
+  Currently working on Telecom AR as a Full Stack Developer where I am an integral team member of an e-commerce platform. 
+  He has experience developing smart contracts in solidity, participating in the Chainlink Spring Hackathon 2023 collaborating to create https://auto-passport.vercel.app to give web 3.0     
+  solutions to the automotive world. His passion for blockchain technology dates back to 2016.
 
-Robin
-Graduated in international business.
-With four years in supply chain management and a transition into Web3 as a Product Owner, I combine deep logistical expertise with blockchain innovation. My role encompasses marketing and tokenomics, where I leverage my skills to drive user engagement and sustainable growth in decentralized platforms. This unique blend of experience positions me uniquely in the evolving Web3 landscape.
+* #### Robin
+  Graduated in international business.
+  With four years in supply chain management and a transition into Web3 as a Product Owner, I combine deep logistical expertise with blockchain innovation. My role encompasses marketing and       
+  tokenomics, where I leverage my skills to drive user engagement and sustainable growth in decentralized platforms. This unique blend of experience positions me uniquely in the evolving Web3       landscape.
