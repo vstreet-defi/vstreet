@@ -1,6 +1,10 @@
+##Vara Street Demo Frontend
 
-# Gear Template for Dapps 
 
+## This is a demo initial forntend to test the interaction with smart contracts deployed on testnet.
 
-## Description
+##Instructions:
+1.Use Yarn command in this frontend folder to install dependencies.
+2.Create a .env file inside this frontend folder.
+3.Run the front end with yarn start command.
 
