@@ -1,8 +1,8 @@
-# Vara_street
+# Vara_street Contracts Folder.
 
-Optimize your DeFi yield strategies with Vara_Street
 
-Use your synthetic assets to borrow $stablecoin
+# Description:
+This folder contains the smart contracts / programs deployed in vara testnet.
 
 # Run this command to compile this contract folder:
 Cargo build --release
