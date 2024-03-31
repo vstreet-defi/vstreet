@@ -1,50 +1,53 @@
-# Vara Street - Defi Vara Protocol
-Vara_street expands Vara Network's DeFi offerings with innovative services like synthetic asset-based lending, strategic Options trading, and pioneering on-chain Copy Trading using Vara's delayed message technology.
+# vStreet
 
-Installation
-To get started with Vara Street, follow these steps:
+## Reglas
 
-Clone the repository: git clone https://github.com/robinhodl69/vara_street_demo
-Navigate frontend or smart contracts directory: cd xxxxxxxx
-Ensure to use the 20.10.0v of npm.
-Install dependencies: npm install
-Follow the instructions of each readme included in each directory.
-Contributions
-Is important to follow a series of steps to be organized between ourselves:
+- Antes de comenzar a desarrollar, es necesario tener en cuenta los siguientes puntos:
 
-Clone the repository
-Create a new branch: git checkout -b feature/VST-xx-new-feature (Where xx is the ticket number in Jira)
-Make your changes and commit them: git commit -m 'Little description of the changes'
-Push to the branch: git push -u origin feature/VST-xx-new-feature
-Submit a pull request adding a clear description and screenshots if it's necessary.
-Share the link of the PR in the GitHub channel on the Discord server.
-Please adhere to code style guidelines (Install Prettier to ensure this) and ever run git pull origin main before the creation of the PR and later push the changes again to skip conflicts with other developers.
+1. No se debe desarrollar nada que no forme parte de un ticket/incidencia en Jira (Historia de usuario, Defecto, Tarea técnica), el cuál debe pasar por un refinamiento funcional + técnico en caso de tratarse de una Historia de usuario, o sólo un refinamiento técnico en caso de tratarse de una Tarea técnica. Además el mismo debe encontrarse dentro del sprint activo.
+2. Antes de comenzar un desarrollo, debemos asegurarnos que estamos sobre la rama Master `git branch` y luego asegurarnos de que nuestra rama Master local, esté actualizada con la rama Master remota `git pull`. Si nos encontramos sobre una rama distinta a Master, simplemente ejecutar `git switch master` y luego hacer el pull.
+3. Luego se debe crear una nueva rama para ese desarrollo, aquí unos ejemplos dependiendo el tipo de incidencia:
+   - `git checkout -b feature/vst-1-descripcion-breve`.
+   - `git checkout -b fix/vst-2-descripcion-breve`.
+   - `git checkout -b task/vst-3-descripcion-breve`.
+4. Realiza tus cambios y haz commits a tu nueva rama `git commit -m 'Descripción de los cambios correspondientes a ese commit'`.
+5. Sube la rama con tus cambios a al repositorio remoto `git push origin feature/vst-1-descripcion-breve`.
+6. Crea un nuevo Pull Request, a continuación unos puntos a tener en cuenta:
+   - Branch Base: `Master`.
+   - Branch to compare: mi rama -> `feature/vst-1-descripcion-breve`.
+   - En el título respeta el siguiente formato: `[Feature][VST-1]: Nombre del ticket`.
+   - La descripción debe contener un resumen de todos los cambios realizados.
+   - En Reviewers agrega al resto de desarrolladores.
+   - En Assignees debes asignarte a ti mismo.
+7. Comparte la URL de la Pull Request con el equipo por el chat de texto "github" del canal de Discord para notificarles también por ese medio de que hay un PR pendiente. Este último debe ser aprobado por al menos una persona antes de mergear. Para los reviewers, unos puntos a tener en cuenta:
+   - Baja la rama al tu repositorio local -> Estando sobre la rama Master actualizada, ejecutar `git checkout nombreDeLaRama`.
+   - Prueba la solución ofrecida por tu compañero, siendo critico para mantener la rama Master libre de errores inesperados.
+   - Revisa el código en busca de logs, comentarios, malas prácticas o porciones de código en donde se puedan realizar posibles mejoras.
+   - Al aprobar un PR defectuoso o con errores, ante cualquier repercusión grave en la rama Master y en entornos productivos, compartes la responsabilidad con el desarrollador que escribió el código.
+   - Una vez el PR pase las revisiones satisfactoriamente, esta en condiciones de ser aprobado y mergeado a Master.
 
-And please, never push directly into the main branch by skipping the PR and code review!
+## Rules
 
-Project Resources: https://robinhodl69.notion.site/Vara_street-ea8f58b3749f492ba3f4ca76964099bb
+- Before starting development, it is necessary to consider the following points:
 
-## Team Info
-
-* #### Iván Avila
-  Graduated in Multimedia Development, 
-  tech entrepreneur and
-  Full-stack developer.
-
-  Ivan specializes in interactive development and 
-  has extensive audio-visuals and marketing 
-  expertise. He has participated in several web3 
-  hackathons as a result of being a blockchain
-  enthusiast.
-
-
-* #### Luciano Garcia
-  Graduated in Technical Electronics, student of Software Engineering. 
-  Currently working on Telecom AR as a Full Stack Developer where I am an integral team member of an e-commerce platform. 
-  He has experience developing smart contracts in solidity, participating in the Chainlink Spring Hackathon 2023 collaborating to create https://auto-passport.vercel.app to give web 3.0     
-  solutions to the automotive world. His passion for blockchain technology dates back to 2016.
-
-* #### Robin
-  Graduated in international business.
-  With four years in supply chain management and a transition into Web3 as a Product Owner, I combine deep logistical expertise with blockchain innovation. My role encompasses marketing and       
-  tokenomics, where I leverage my skills to drive user engagement and sustainable growth in decentralized platforms. This unique blend of experience positions me uniquely in the evolving Web3       landscape.
+1. Do not develop anything that is not part of a ticket/issue in Jira (User Story, Defect, Technical Task), which must go through functional + technical refinement if it is a User Story, or only technical refinement if it is a Technical Task. Additionally, it must be within the active sprint.
+2. Before starting development, make sure you are on the Master branch `git branch` and then ensure that your local Master branch is updated with the remote Master branch `git pull`. If you are on a different branch than Master, simply execute `git switch master` and then pull.
+3. Then create a new branch for that development, here are some examples depending on the type of issue:
+   - `git checkout -b feature/vst-1-brief-description`.
+   - `git checkout -b fix/vst-2-brief-description`.
+   - `git checkout -b task/vst-3-brief-description`.
+4. Make your changes and commit to your new branch `git commit -m 'Description of changes corresponding to this commit'`.
+5. Push the branch with your changes to the remote repository `git push origin feature/vst-1-brief-description`.
+6. Create a new Pull Request, here are some points to consider:
+   - Branch Base: `Master`.
+   - Branch to compare: my branch -> `feature/vst-1-brief-description`.
+   - In the title, follow this format: `[Feature][VST-1]: Ticket Name`.
+   - The description should contain a summary of all the changes made.
+   - Add the rest of the developers as Reviewers.
+   - Assign yourself as Assignees.
+7. Share the URL of the Pull Request with the team through the "github" text chat on the Discord channel to notify them through that medium that there is a pending PR. This must be approved by at least one person before merging. For reviewers, some points to consider:
+   - Checkout the branch to your local repository -> Being on the updated Master branch, execute `git checkout branchName`.
+   - Test the solution provided by your teammate, being critical to keep the Master branch free of unexpected errors.
+   - Review the code for logs, comments, bad practices, or code portions where possible improvements can be made.
+   - Approving a defective or erroneous PR, in the event of any serious repercussions on the Master branch and in production environments, shares responsibility with the developer who wrote the code.
+   - Once the PR passes the reviews satisfactorily, it is ready to be approved and merged into Master.
