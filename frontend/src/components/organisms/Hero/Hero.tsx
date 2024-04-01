@@ -11,14 +11,35 @@ import { useNavigate } from "react-router-dom";
 
 import Gusano from "../../../assets/images/3d Swirl Shape.svg";
 import LogoWhite from "../../../assets/images/vara street logoHOMEWhite.svg";
-import Home1VideoBg from "../../../assets/images/backgrounds/Home Bg MP4.mp4";
+import Home1VideoBg from "../../../assets/videos/Home Bg MP4.mp4";
 
 function Hero() {
   const navigate = useNavigate();
 
   return (
-    <Container p="0" maxW="100vw" bgGradient="linear(to-l, #121215 ,#284736)">
-      <Box w="100vw" bgImg={Gusano} bgRepeat="no-repeat" bgPos="center">
+    <Container p="0" maxW="100vw">
+      <video
+        autoPlay
+        loop
+        muted
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "cover",
+        }}
+      >
+        <source src={Home1VideoBg} type="video/mp4" />
+      </video>
+      {/* bgGradient="linear(to-l, #121215 ,#284736)" */}
+      <Box
+        w="100vw"
+        bgRepeat="no-repeat"
+        bgPos="center"
+        style={{
+          position: "absolute",
+          top: "10rem",
+        }}
+      >
         <Stack
           pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
           pr={{ base: "1rem" }}
@@ -64,14 +85,7 @@ function Hero() {
             align="center"
             position="relative"
             w="full"
-          >
-            <video loop>
-              <source
-                src="../../../assets/images/backgrounds/home 1.webm"
-                type="video/webm"
-              />
-            </video>
-          </Flex>
+          ></Flex>
         </Stack>
       </Box>
     </Container>
