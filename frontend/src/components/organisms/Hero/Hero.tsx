@@ -11,7 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 import Gusano from "../../../assets/images/3d Swirl Shape.svg";
 import LogoWhite from "../../../assets/images/vara street logoHOMEWhite.svg";
-import Home1VideoBg from "../../../assets/images/backgrounds/Hero Home 1.gif";
+import Home1VideoBg from "../../../assets/images/backgrounds/Home Bg MP4.mp4";
 
 function Hero() {
   const navigate = useNavigate();
@@ -67,7 +67,7 @@ function Hero() {
           >
             <video loop>
               <source
-                src="../../..\assets\images\backgrounds\home 1.webm"
+                src="../../../assets/images/backgrounds/home 1.webm"
                 type="video/webm"
               />
             </video>
