@@ -11,6 +11,7 @@ import { useNavigate } from "react-router-dom";
 
 import Gusano from "../../../assets/images/3d Swirl Shape.svg";
 import LogoWhite from "../../../assets/images/vara street logoHOMEWhite.svg";
+import Home1VideoBg from "../../../assets/images/backgrounds/Hero Home 1.gif";
 
 function Hero() {
   const navigate = useNavigate();
@@ -63,7 +64,14 @@ function Hero() {
             align="center"
             position="relative"
             w="full"
-          ></Flex>
+          >
+            <video loop>
+              <source
+                src="../../..\assets\images\backgrounds\home 1.webm"
+                type="video/webm"
+              />
+            </video>
+          </Flex>
         </Stack>
       </Box>
     </Container>
