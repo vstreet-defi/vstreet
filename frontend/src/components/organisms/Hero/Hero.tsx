@@ -5,12 +5,10 @@ import {
   Box,
   Text,
   Button,
-  Image,
   Heading,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 
-import LogoWhite from "../../../assets/images/vara street logoHOMEWhite.svg";
 import Home1VideoBg from "../../../assets/images/backgrounds/Home-Gif-128colorsWebComp1728-12fps.gif";
 import Home1VideoBgSmall from "../../../assets/images/backgrounds/Home-Gif-WebComp1280x741-12fps.gif";
 function Hero() {
@@ -42,7 +40,7 @@ function Hero() {
               fontWeight="extrabold"
               fontFamily={"'Roboto Mono', monospace"}
             >
-              VARA <br></br> DEFI-HUB
+              VARA <br></br> DeFi-Hub
             </Heading>
 
             <Text
@@ -50,6 +48,7 @@ function Hero() {
               fontWeight="light"
               fontSize={{ base: "1rem", sm: "1rem", lg: "24px" }}
               fontFamily={"'Roboto Mono', monospace"}
+              mr={{ base: "0", md: "0rem", lg: "2rem", xl: "6rem" }}
             >
               Unlock the synthetic assets liquidity to optimize your DeFi
               strategies
@@ -59,18 +58,27 @@ function Hero() {
               direction={{ base: "column", sm: "row" }}
             >
               <Button
+                borderRadius="0"
                 size="lg"
-                fontWeight="normal"
+                fontWeight="bold"
                 px={6}
-                color="black"
+                color="#111111"
                 bgGradient="linear(to-l, #00FFC4 ,#4FFF4B)"
                 _hover={{ bg: "gray.200" }}
                 onClick={() => navigate("/Dapp")}
               >
-                Go to Dapp
+                Launch Dapp
               </Button>
-              <Button size="lg" fontWeight="normal" px={6}>
-                How It Works
+              <Button
+                variant="outline"
+                colorScheme="white"
+                color="white"
+                borderRadius="0"
+                size="lg"
+                fontWeight="bold"
+                px={6}
+              >
+                Whitte Paper
               </Button>
             </Stack>
           </Stack>
