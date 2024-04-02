@@ -11,42 +11,20 @@ import { useNavigate } from "react-router-dom";
 
 import Gusano from "../../../assets/images/3d Swirl Shape.svg";
 import LogoWhite from "../../../assets/images/vara street logoHOMEWhite.svg";
-import Home1VideoBg from "../../../assets/images/backgrounds/Hero Home 1.gif";
+import Home1VideoBg from "../../../assets/images/backgrounds/Home-Gif-128colorsWebComp1728-12fps.gif";
 
 function Hero() {
   const navigate = useNavigate();
 
   return (
-    // <Box h="35rem">
     <Container p="0" maxW="100vw">
-      {/* <video
-          autoPlay
-          loop
-          muted
-          style={{
-            position: "absolute",
-            width: "100%",
-            height: "100%",
-            objectFit: "fill",
-
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-          }}
-        >
-          <source src={Home1VideoBg} type="video/mp4" />
-        </video> */}
-      {/* bgGradient="linear(to-l, #121215 ,#284736)" */}
       <Box
         w="100vw"
+        h={{ base: "100vh", md: "80vh" }}
         bgRepeat="no-repeat"
-        bgPos="center"
+        bgPos="bottom"
         bgSize={{ base: "cover", md: "fill" }}
         bgImage={Home1VideoBg}
-        // style={{
-        //   position: "absolute",
-        //   top: "10rem",
-        // }}
       >
         <Stack
           pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
@@ -97,7 +75,6 @@ function Hero() {
         </Stack>
       </Box>
     </Container>
-    // </Box>
   );
 }
 
