@@ -1,56 +1,54 @@
-import { Container, Flex, Box, Heading, Text } from "@chakra-ui/react";
+import { Container, Flex, Box, Heading, Text, Stack } from "@chakra-ui/react";
 import { CardFeatures } from "components/molecules/cards/CardFeatures";
-import bg from "../../../assets/images/backgrounds/FeaturesBG.svg";
+import bg from "../../../assets/images/backgrounds/Services BG 2x.svg";
 
 function Features() {
   return (
-    <Container
-      minW="100vw"
-      bgImage={bg}
-      bgRepeat="no-repeat"
-      bgSize="cover"
-      pt="10rem"
-      pb="10rem"
-    >
-      <Box ml="2rem" textAlign="center" position="relative">
-        <Text
-          left={{ lg: "34rem", xl: "38rem", "2xl": "42rem" }}
-          position="absolute"
-          top="-5.5rem"
-          color="white"
-          fontWeight="200"
-          fontSize="5rem"
+    <Container p="0" maxW="100vw" bgGradient="linear(to-l, #121215 ,#284736)">
+      <Box w="100vw" bgImg={bg} bgRepeat="no-repeat" bgPos="center">
+        <Stack
+          pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
+          pr={{ base: "1rem" }}
+          align="center"
+          spacing={{ base: 8, md: 10 }}
+          py={{ base: 20, md: 28 }}
+          direction={{ base: "column", md: "row" }}
         >
-          DEFI
-        </Text>
-        <Heading
-          left={{ lg: "41rem", xl: "45rem", "2xl": "49rem" }}
-          position="absolute"
-          top="0rem"
-          color="white"
-          fontWeight="700"
-        >
-          Services
-        </Heading>
+          <Stack flex={1} spacing={{ base: 5, md: 10 }}>
+            <Text
+              color="gray.100"
+              fontWeight="light"
+              fontSize={{ base: "1xl", sm: "3xl", lg: "4xl" }}
+            >
+              Unlock the synthetic assets liquidity to optimize your DeFi
+              strategies
+            </Text>
+            <Stack
+              spacing={{ base: 4, sm: 6 }}
+              direction={{ base: "column", sm: "row" }}
+            >
+              <Text>Hola Mundo</Text>
+              Go to Dapp
+              <Text>Hola Mundo</Text>
+            </Stack>
+          </Stack>
+          <Flex
+            flex={1}
+            justify="center"
+            align="center"
+            position="relative"
+            w="full"
+          >
+            <Heading>VARA text</Heading>
+            <Text>
+              Leverage your staked $VARA as collateral for stablecoin borrowing.
+              Our streamlined platform offers secure, transparent lending,
+              giving you the flexibility to enhance your investment strategies
+              effectively.
+            </Text>
+          </Flex>
+        </Stack>
       </Box>
-      <Flex
-        mt="4rem"
-        justify="center"
-        flexDirection={{ base: "column", sm: "column", md: "row" }}
-      >
-        <CardFeatures
-          title="Lending"
-          description="Leverage your synthetic assets as collateral for stablecoin borrowing. Our streamlined platform offers secure, transparent lending, giving you the flexibility to enhance your investment strategies effectively."
-        />
-        <CardFeatures
-          title="Options Trading"
-          description="Limit Orders, Puts, and Calls Navigate the complexities of DeFi options trading with ease. Our platform simplifies limit orders, puts, and calls, making advanced trading strategies accessible to all levels of traders."
-        />
-        <CardFeatures
-          title="Copy Trading"
-          description="Replicate the strategies of top DeFi traders in real-time. Our on-chain copy trading service allows you to mirror successful trades, offering a straightforward way to potentially boost your portfolio's performance."
-        />
-      </Flex>
     </Container>
   );
 }
