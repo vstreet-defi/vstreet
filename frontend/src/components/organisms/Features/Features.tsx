@@ -39,7 +39,9 @@ function Features() {
             position="relative"
             w="full"
           >
-            <Heading>VARA text</Heading>
+            <Heading
+            
+            >Make your staked $VARA liquid</Heading>
             <Text>
               Leverage your staked $VARA as collateral for stablecoin borrowing.
               Our streamlined platform offers secure, transparent lending,
