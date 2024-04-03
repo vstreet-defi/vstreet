@@ -63,7 +63,7 @@ function Hero() {
                 fontWeight="bold"
                 px={6}
                 color="#111111"
-                bgGradient="linear(to-l, #00FFC4 ,#4FFF4B)"
+                bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
                 _hover={{ bg: "gray.200" }}
                 onClick={() => navigate("/Dapp")}
               >
