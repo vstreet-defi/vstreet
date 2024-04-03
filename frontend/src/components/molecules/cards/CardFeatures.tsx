@@ -1,23 +1,27 @@
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/prop-types */
-import { Box, Heading, Text } from "@chakra-ui/react";
+import { Box, Heading } from "@chakra-ui/react";
 import styles from "./Card.module.scss";
 
-function CardFeatures(props: { title: string; description: string }) {
+function CardFeatures(props: { title: string }) {
   return (
     <Box
       m={{ base: ".5rem", sm: "1rem", md: "2rem" }}
       borderWidth="1px"
-      h="15rem"
-      w={{ base: "20rem", sm: "20rem", md: "22rem" }}
+      pt="1rem"
+      pb="1rem"
+      pl={"2rem"}
+      pr={"2rem"}
       className={styles.CardFeature}
+      w="8rem"
+      style={{
+        boxShadow: "0px 14px 25.4px -3px rgba(59, 255, 106, 0.52)",
+        backdropFilter: "blur(5.449999809265137px)",
+      }}
     >
-      <Heading m="1rem" color="white">
+      <Heading fontSize="12px" color="white">
         {props.title}
       </Heading>
-      <Text fontSize={{ sm: "1rem", md: ".8rem" }} color="white" m="1rem">
-        {props.description}
-      </Text>
     </Box>
   );
 }

@@ -15,21 +15,11 @@ function Features() {
           direction={{ base: "column", md: "row" }}
         >
           <Stack flex={1} spacing={{ base: 5, md: 10 }}>
-            <Text
-              color="gray.100"
-              fontWeight="light"
-              fontSize={{ base: "1xl", sm: "3xl", lg: "4xl" }}
-            >
-              Unlock the synthetic assets liquidity to optimize your DeFi
-              strategies
-            </Text>
-            <Stack
-              spacing={{ base: 4, sm: 6 }}
-              direction={{ base: "column", sm: "row" }}
-            >
-              <Text>Hola Mundo</Text>
-              Go to Dapp
-              <Text>Hola Mundo</Text>
+            <Stack spacing={{ base: 4, sm: 6 }} direction="column">
+              <CardFeatures title="Stake Vara" />
+              <CardFeatures title="LST $Vara as Collateral" />
+              <CardFeatures title="Borrow Stable Coins" />
+              <CardFeatures title="Stake Vara" />
             </Stack>
           </Stack>
           <Flex
@@ -38,11 +28,18 @@ function Features() {
             align="center"
             position="relative"
             w="full"
+            flexDir="column"
           >
             <Heading
-            
-            >Make your staked $VARA liquid</Heading>
-            <Text>
+              bgGradient="linear(to-b, #00FFC4, #4FFF4B)"
+              bgClip="text"
+              fontSize={{ base: "4rem", sm: "5rem", lg: "48px" }}
+              fontWeight="extrabold"
+              fontFamily={"'Roboto Mono', monospace"}
+            >
+              Make your staked $VARA liquid
+            </Heading>
+            <Text color="#ffffff" mr="2rem" mt="2rem" fontSize="24px">
               Leverage your staked $VARA as collateral for stablecoin borrowing.
               Our streamlined platform offers secure, transparent lending,
               giving you the flexibility to enhance your investment strategies
