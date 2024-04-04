@@ -15,9 +15,9 @@ function Hero() {
   const navigate = useNavigate();
 
   return (
-    <Container p="0" maxW="100vw">
+    <Container p="0" maxW="100%">
       <Box
-        w="100vw"
+        w="100%"
         h={{ base: "100vh", md: "100vh" }}
         bgRepeat="no-repeat"
         bgPos="bottom"
@@ -66,6 +66,7 @@ function Hero() {
                 bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
                 _hover={{ bg: "gray.200" }}
                 onClick={() => navigate("/Dapp")}
+                isDisabled={true}
               >
                 Launch Dapp
               </Button>
@@ -78,8 +79,9 @@ function Hero() {
                 size="lg"
                 fontWeight="bold"
                 px={6}
+                isDisabled={true}
               >
-                Whitte Paper
+                Whitepaper
               </Button>
             </Stack>
           </Stack>
