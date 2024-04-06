@@ -1,30 +1,27 @@
-import { Box, Flex, Heading, Image, Link, Text } from "@chakra-ui/react";
-import BgFooter from "../../../assets/images/Liquid Footer.svg";
-import socialsImage from "../../../assets/images/social imgNOBG_WHite.svg";
-import logo from "../../../assets/images/vara street logoNAVCOLOR.svg";
-
+import vStreetLogoWhite from "../../../assets/images/icons/vStreetLogoWhite.svg";
 function Footer() {
-  function click() {
-    console.log("social media");
-  }
   return (
-    <Box bgImage={BgFooter} h="10rem" bgSize="cover" bgRepeat="no-repeat">
-      <Flex justify="space-between" p="1rem">
-        <Box>
-          <Image m="1rem" w="5rem" src={logo} />
-          <Text m="1rem">Guadalajara, México</Text>
-          <Image alignSelf="center" m="1rem" w="10rem" src={socialsImage} />
-        </Box>
-        <Flex flexDir="column" m="1rem">
-          <Link color="white" href="https://vara.network/">
-            Docs
-          </Link>
-          <Link color="white" href="https://vara.network/">
-            Jobs
-          </Link>
-        </Flex>
-      </Flex>
-    </Box>
+    <footer>
+      <div className="legal-disclaimer">
+        <h5>LEGAL DISCLAIMER</h5>
+        <p>
+          The information provided on this website does not constitute
+          investment advice, financial advice, trading advice, or any other sort
+          of advice and you should not treat any of the website's content as
+          such. The BENQI team provides the website as a service to the public,
+          and is not responsible for, and expressly disclaims all liability for,
+          damages of any kind arising out of use, reference to, or reliance on
+          any information contained within this website. While the information
+          contained within this website is periodically updated, no guarantee is
+          given that the information provided in this website is correct,
+          complete, and up-to-date. vStreet
+        </p>
+      </div>
+      <div className="rights">
+        <img src={vStreetLogoWhite} alt="vStreet" />
+        <p>2024 © All rights reserved by vStreet</p>
+      </div>
+    </footer>
   );
 }
 
