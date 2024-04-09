@@ -46,7 +46,6 @@ function Features() {
               fontFamily={"'Roboto Mono', monospace"}
               fontWeight="thin"
               textAlign="justify"
-              p={{ base: "1rem", sm: "1rem", md: "0" }}
             >
               Leverage your staked $VARA as collateral for stablecoin borrowing.
               <br /> <br></br>
