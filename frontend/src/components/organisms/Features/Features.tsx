@@ -7,7 +7,7 @@ function Features() {
   return (
     <Container p="0" maxW="100vw" bgGradient="linear(to-l, #121215 ,#284736)">
       <Box
-        w="100vw"
+        w="100%"
         bgImg={bg}
         bgRepeat="no-repeat"
         bgPos="center"
@@ -21,24 +21,12 @@ function Features() {
           py={{ base: 20, md: 28 }}
           direction={{ base: "column", md: "row" }}
         >
-          <Stack flex={1} spacing={{ base: 5, md: 10 }}>
-            <Flex flexDir="column" alignItems="center">
-              <CardFeatures title="Stake Vara" w="9rem" />
-              <Arrow />
-              <CardFeatures title="LST $Vara as Collateral" w="15rem" />
-              <Arrow />
-              <CardFeatures title="Borrow Stable Coins" w="13rem" />
-              <Arrow />
-              <CardFeatures title="DeFi Strategie Legos" w="12rem" />
-            </Flex>
-          </Stack>
-
           <Flex
             flex={1}
             justify="center"
             align="center"
             position="relative"
-            w="full"
+            w="100%"
             flexDir="column"
           >
             <Heading
@@ -52,12 +40,13 @@ function Features() {
             </Heading>
             <Text
               color="#ffffff"
-              mr={{ md: "2rem", lg: "4rem" }}
+              mr={{ md: "2rem", lg: "8rem" }}
               mt="2rem"
-              fontSize={{ md: "12px", lg: "24px" }}
+              fontSize={{ md: "12px", lg: "16px" }}
               fontFamily={"'Roboto Mono', monospace"}
               fontWeight="thin"
               textAlign="justify"
+              p={{ base: "1rem", sm: "1rem", md: "0" }}
             >
               Leverage your staked $VARA as collateral for stablecoin borrowing.
               <br /> <br></br>
@@ -66,6 +55,22 @@ function Features() {
               effectively.
             </Text>
           </Flex>
+
+          <Stack
+            flex={1}
+            spacing={{ base: 5, md: 10 }}
+            mr={{ md: "0", lg: "8rem" }}
+          >
+            <Flex flexDir="column" alignItems="center">
+              <CardFeatures title="Stake Vara" w="9rem" />
+              <Arrow />
+              <CardFeatures title="LST $Vara as Collateral" w="15rem" />
+              <Arrow />
+              <CardFeatures title="Borrow Stable Coins" w="13rem" />
+              <Arrow />
+              <CardFeatures title="DeFi Strategy Legos" w="12rem" />
+            </Flex>
+          </Stack>
         </Stack>
       </Box>
     </Container>
