@@ -1,5 +1,5 @@
 import { Account } from "@gear-js/react-hooks";
-import { AccountButton } from "../account-button";
+import { AccountButton } from "../../atoms/account-button";
 import styles from "./Wallet.module.scss";
 
 type Props = {
@@ -10,7 +10,6 @@ type Props = {
 };
 
 function Wallet({ balance, address, name, onClick }: Props) {
-  console.log(address);
   return (
     <div className={styles.wallet}>
       <p className={styles.balance}>
