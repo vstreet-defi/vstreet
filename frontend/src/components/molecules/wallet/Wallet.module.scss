@@ -1,0 +1,39 @@
+@use "@gear-js/ui/variables" as *;
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+
+.wallet {
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.balance {
+  margin-right: 25px;
+  font-size: $fontSizeMedium;
+  color: white;
+}
+
+.currency {
+  color: $textColorSecondary;
+}
+.connectWallet {
+  display: flex;
+  width: 193px;
+  height: 41px;
+  padding: 12px 16px;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+  border: 1px solid #000;
+  border-image: linear-gradient(to right, #00ffc4 -17.32%, #4fff4b 107.82%) 2;
+  p {
+    color: #fff;
+    font-family: "Roboto Mono", monospace;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+  }
+}

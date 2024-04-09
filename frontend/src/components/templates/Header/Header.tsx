@@ -1,22 +1,93 @@
-import { useNavigate } from "react-router-dom";
-import Account from "../../molecules/Account/Account";
-import Logo from "../../../assets/images/vara street logoNAVCOLOR.svg";
+import { useEffect, useState, useRef } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import Account from "../../organisms/Account/Account";
+import Flag from "../../atoms/Flag/Flag";
+import Logo from "../../../assets/images/icons/vStreet-navbar-icon.svg";
+import styles from "../../molecules/wallet/Wallet.module.scss";
+import BurgerMenu from "components/organisms/BurgerMenu";
 
 type Props = {
   isAccountVisible: boolean;
+  items: string[];
+  isMobile: boolean;
 };
 
-function Header({ isAccountVisible }: Props) {
+function Header({ isAccountVisible, items, isMobile }: Props) {
+  const [activeTab, setActiveTab] = useState<string | null>("borrow");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const isDapp = location.pathname !== "/";
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get("tab");
+    setActiveTab(tab || "borrow");
+  }, [location.search]);
+
+  const handleClick = (item: string): void => {
+    if (item === "Home") {
+      navigate("/");
+      setActiveTab(null);
+      return;
+    }
+
+    if (item === "GitHub") {
+      window.open("https://github.com/vstreet-defi/vstreet", "_blank");
+    }
+
+    if (isDapp && item !== "Markets") {
+      const lowerCaseItem = item.toLowerCase();
+      navigate(`/dapp?tab=${lowerCaseItem}`, { replace: true });
+      setActiveTab(lowerCaseItem);
+    }
+  };
+
+  const renderFlag = (item: string) => {
+    if (item !== "Home" && isDapp) {
+      return <Flag text={item === "Markets" ? "Coming Soon" : "New"} />;
+    }
+    return null;
+  };
+
+  const renderItems = () =>
+    items.map((item, index) => (
+      <div className="item-wrapper" key={index}>
+        {renderFlag(item)}
+        <button
+          className={`item${
+            item.toLowerCase() === activeTab && isDapp && item !== "Markets"
+              ? "-active"
+              : ""
+          }`}
+          onClick={() => handleClick(item)}
+        >
+          <p>{item}</p>
+        </button>
+      </div>
+    ));
+
   return (
-    <header className="header">
-      <img
-        className="image-container"
-        src={Logo}
-        alt="Logo"
-        onClick={() => navigate("/")}
-      />
-      {isAccountVisible && <Account />}
+    <header>
+      <img src={Logo} alt="Logo" onClick={() => navigate("/")} />
+      {isMobile ? (
+        <BurgerMenu items={items} />
+      ) : (
+        <>
+          <div className="items-container">{renderItems()}</div>
+          {isAccountVisible || location.pathname === "/dapp" ? (
+            <Account />
+          ) : (
+            <button
+              className={styles.connectWallet}
+              type="button"
+              onClick={() => navigate("/dapp?tab=borrow")}
+            >
+              <p>Launch App</p>
+            </button>
+          )}
+        </>
+      )}
     </header>
   );
 }
