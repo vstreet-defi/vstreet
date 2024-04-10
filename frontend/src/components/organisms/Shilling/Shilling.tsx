@@ -7,14 +7,17 @@ import {
   Flex,
   Heading,
 } from "@chakra-ui/react";
-import { useNavigate } from "react-router-dom";
-import bgShilling from "../../../assets/images/backgrounds/Vara shillingBG.svg";
+import { Link, useNavigate } from "react-router-dom";
+import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
+
 import LogoVaraWhite from "../../../assets/images/VaraStreetShilling.svg";
+import shillingBg from "../../../assets/images/backgrounds/3. Vara shilling.svg";
+import { link } from "fs";
 
 function Shilling() {
   const navigate = useNavigate();
   return (
-    <Box minW="100vw" bgImage={bgShilling}>
+    <Box minW="100%" bgImage={shillingBg}>
       <Stack
         pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
         pr={{ base: "1rem" }}
@@ -25,45 +28,11 @@ function Shilling() {
       >
         <Stack flex={1} spacing={{ base: 5, md: 10 }}>
           <Image w="30rem" src={LogoVaraWhite} />
-          {/* <Heading
-            lineHeight={1.1}
-            fontWeight={600}
-            fontSize={{ base: '3xl', sm: '4xl', lg: '6xl' }}>
-  
-  
-            <Text
-              as='span'
-              position='relative'
-              _after={{
-                content: "''",
-                width: 'full',
-                height: '30%',
-                position: 'absolute',
-                bottom: 1,
-                left: 0,
-                bg: 'red.400',
-                zIndex: -1,
-              }}>
-              Write once,
-            </Text>
-            <br />
-            <Text as='span' color='red.400'>
-              use everywhere!
-            </Text>
-          </Heading> */}
-          <Text
-            color="gray.100"
-            fontWeight="light"
-            fontSize={{ base: "1xl", sm: "3xl", lg: "4xl" }}
-          >
-            Unlock the synthetic assets liquidity to optimize your DeFi
-            strategies
-          </Text>
           <Stack
             spacing={{ base: 4, sm: 6 }}
             direction={{ base: "column", sm: "row" }}
           >
-            <Button
+            {/* <Button
               size="lg"
               fontWeight="normal"
               px={6}
@@ -73,9 +42,20 @@ function Shilling() {
               borderColor="#00FFC4"
               _hover={{ bg: "#00FFC4" }}
               onClick={() => navigate("/https://vara-network.io/")}
+              borderRadius="0"
+              ml={{ base: 0, md: "8rem" }}
             >
               Go to VARA
-            </Button>
+            </Button> */}
+            <Box ml={{ base: "0", md: "12rem" }} alignSelf="center">
+              <a
+                href="https://vara-network.io/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <ButtonGradientBorder text="Go to Vara" />
+              </a>
+            </Box>
           </Stack>
         </Stack>
         <Flex
@@ -84,10 +64,19 @@ function Shilling() {
           align="center"
           position="relative"
           w="full"
+          pr={{ sm: "0", md: "8rem" }}
         >
-          <Box>
+          <Box
+            fontFamily={"'Roboto Mono', monospace"}
+            mt={{ base: "4rem", md: "0" }}
+          >
             <Box color="white" mb="2rem">
-              <Heading fontWeight="medium" fontSize="1.5rem">
+              <Heading
+                fontFamily={"'Roboto Mono', monospace"}
+                fontWeight="medium"
+                fontSize="1.5rem"
+                color="#4FFF4B"
+              >
                 High-Speed Transactions and Scalability
               </Heading>
               <Text fontWeight="100">
@@ -99,7 +88,12 @@ function Shilling() {
             </Box>
 
             <Box color="white" mb="2rem">
-              <Heading fontWeight="medium" fontSize="1.5rem">
+              <Heading
+                fontFamily={"'Roboto Mono', monospace"}
+                fontWeight="medium"
+                fontSize="1.5rem"
+                color="#00FFC4"
+              >
                 Enhanced Security and Decentralization in DeFi
               </Heading>
               <Text fontWeight="100">
@@ -111,7 +105,7 @@ function Shilling() {
             </Box>
 
             <Box color="white" mb="2rem">
-              <Heading fontWeight="medium" fontSize="1.5rem">
+              <Heading color="#4FFF4B" fontWeight="medium" fontSize="1.5rem">
                 Innovative Technology for Optimized Performance
               </Heading>
               <Text fontWeight="100">
