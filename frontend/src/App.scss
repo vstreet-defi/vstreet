@@ -1,7 +1,12 @@
-@import "../src/components/templates/Header/Header.scss";
 @import "../src/components/templates/Dapp/Dapp.scss";
+@import "../src/components/templates/Header/Header.scss";
+@import "../src/components/organisms/BurgerMenu/BurgerMenu.scss";
+@import "../src/components/molecules/ModalBurgerMenu/ModalBurgerMenu.scss";
+@import "../src/components/atoms/Flag/Flag.scss";
 @import "../src/components/atoms/ApiLoader/ApiLoader.scss";
 @import "../src/components/atoms/Loader/Loader.scss";
+@import "../src/components//templates//Footer/Footer.scss";
+@import "../src/components/atoms/BurgerIcon/BurgerIcon.scss";
 
 #root {
   max-width: 100vw;

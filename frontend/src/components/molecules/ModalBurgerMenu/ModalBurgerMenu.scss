@@ -1,0 +1,32 @@
+.menu {
+  position: absolute;
+  top: 140%;
+  left: -188px;
+  width: 219px;
+  background-color: #1b1b1f;
+  padding: 20px;
+  display: none;
+  color: white;
+  border-radius: 5px;
+}
+
+.menu.open {
+  display: block;
+  border: 1px solid rgba(0, 0, 0, 0.107);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+}
+
+.menu ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.menu li {
+  margin: 10px;
+}
+
+.menu li a {
+  color: white;
+  text-decoration: none;
+  font-size: 18px;
+}
