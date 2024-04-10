@@ -65,6 +65,7 @@ function Shilling() {
           position="relative"
           w="full"
           pr={{ sm: "0", md: "8rem" }}
+          textAlign={{ base: "center", md: "right" }}
         >
           <Box
             fontFamily={"'Roboto Mono', monospace"}
