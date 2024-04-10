@@ -1,56 +1,77 @@
-import { Container, Flex, Box, Heading, Text } from "@chakra-ui/react";
+import { Container, Flex, Box, Heading, Text, Stack } from "@chakra-ui/react";
 import { CardFeatures } from "components/molecules/cards/CardFeatures";
-import bg from "../../../assets/images/backgrounds/FeaturesBG.svg";
+import { Arrow } from "components/atoms/Arrow";
+import bg from "../../../assets/images/backgrounds/Services BG 2x.svg";
 
 function Features() {
   return (
-    <Container
-      minW="100vw"
-      bgImage={bg}
-      bgRepeat="no-repeat"
-      bgSize="cover"
-      pt="10rem"
-      pb="10rem"
-    >
-      <Box ml="2rem" textAlign="center" position="relative">
-        <Text
-          left={{ lg: "34rem", xl: "38rem", "2xl": "42rem" }}
-          position="absolute"
-          top="-5.5rem"
-          color="white"
-          fontWeight="200"
-          fontSize="5rem"
-        >
-          DEFI
-        </Text>
-        <Heading
-          left={{ lg: "41rem", xl: "45rem", "2xl": "49rem" }}
-          position="absolute"
-          top="0rem"
-          color="white"
-          fontWeight="700"
-        >
-          Services
-        </Heading>
-      </Box>
-      <Flex
-        mt="4rem"
-        justify="center"
-        flexDirection={{ base: "column", sm: "column", md: "row" }}
+    <Container p="0" maxW="100vw" bgGradient="linear(to-l, #121215 ,#284736)">
+      <Box
+        w="100%"
+        bgImg={bg}
+        bgRepeat="no-repeat"
+        bgPos="center"
+        bgSize="cover"
       >
-        <CardFeatures
-          title="Lending"
-          description="Leverage your synthetic assets as collateral for stablecoin borrowing. Our streamlined platform offers secure, transparent lending, giving you the flexibility to enhance your investment strategies effectively."
-        />
-        <CardFeatures
-          title="Options Trading"
-          description="Limit Orders, Puts, and Calls Navigate the complexities of DeFi options trading with ease. Our platform simplifies limit orders, puts, and calls, making advanced trading strategies accessible to all levels of traders."
-        />
-        <CardFeatures
-          title="Copy Trading"
-          description="Replicate the strategies of top DeFi traders in real-time. Our on-chain copy trading service allows you to mirror successful trades, offering a straightforward way to potentially boost your portfolio's performance."
-        />
-      </Flex>
+        <Stack
+          pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
+          pr={{ base: "1rem" }}
+          align="center"
+          spacing={{ base: 8, md: 10 }}
+          py={{ base: 20, md: 28 }}
+          direction={{ base: "column", md: "row" }}
+        >
+          <Flex
+            flex={1}
+            justify="center"
+            align="center"
+            position="relative"
+            w="100%"
+            flexDir="column"
+          >
+            <Heading
+              bgGradient="linear(to-b, #00FFC4, #4FFF4B)"
+              bgClip="text"
+              fontSize={{ base: "3rem", sm: "5rem", lg: "48px" }}
+              fontWeight="extrabold"
+              fontFamily={"'Roboto Mono', monospace"}
+            >
+              Make your staked $VARA liquid
+            </Heading>
+            <Text
+              color="#ffffff"
+              mr={{ md: "2rem", lg: "8rem" }}
+              mt="2rem"
+              fontSize={{ md: "12px", lg: "16px" }}
+              fontFamily={"'Roboto Mono', monospace"}
+              fontWeight="thin"
+              textAlign="justify"
+            >
+              Leverage your staked $VARA as collateral for stablecoin borrowing.
+              <br /> <br></br>
+              Our streamlined platform offers secure, transparent lending,
+              giving you the flexibility to enhance your investment strategies
+              effectively.
+            </Text>
+          </Flex>
+
+          <Stack
+            flex={1}
+            spacing={{ base: 5, md: 10 }}
+            mr={{ md: "0", lg: "8rem" }}
+          >
+            <Flex flexDir="column" alignItems="center">
+              <CardFeatures title="Stake Vara" w="9rem" />
+              <Arrow />
+              <CardFeatures title="LST $Vara as Collateral" w="15rem" />
+              <Arrow />
+              <CardFeatures title="Borrow Stable Coins" w="13rem" />
+              <Arrow />
+              <CardFeatures title="DeFi Strategy Legos" w="12rem" />
+            </Flex>
+          </Stack>
+        </Stack>
+      </Box>
     </Container>
   );
 }
