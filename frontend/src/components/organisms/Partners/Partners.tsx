@@ -1,4 +1,6 @@
-import { Flex, Heading } from "@chakra-ui/react";
+import { Flex, Heading, Img } from "@chakra-ui/react";
+import varaLogo from "../../../assets/images/Vara Network Grey.png";
+import guardiansLogo from "../../../assets/images/Guardian-logo white-Grey.png";
 
 function Partners() {
   return (
@@ -7,28 +9,20 @@ function Partners() {
       border="1px"
       borderColor="#00FFC4"
       p="1rem"
-      bgColor="#1B1B1F"
-      h="4rem"
       justify="space-around"
+      bgColor="rgba(18, 18, 18, 0.74)"
+      style={{
+        backdropFilter: "blur(5.4px);",
+        // background:
+        //   "linear-gradient(27deg,rgba(18, 18, 18, 0.74) 0%,rgba(18, 18, 18, 0.742734593837535) 100%)",
+      }}
     >
-      <Heading
-        color="gray.500"
-        fontSize={{ base: ".8rem", sm: "1rem", md: "1.5rem" }}
-      >
-        Vara Network
-      </Heading>
-      <Heading
-        color="gray.500"
-        fontSize={{ base: ".8rem", sm: "1rem", md: "1.5rem" }}
-      >
-        Vara Network
-      </Heading>
-      <Heading
-        color="gray.500"
-        fontSize={{ base: ".8rem", sm: "1rem", md: "1.5rem" }}
-      >
-        Vara Network
-      </Heading>
+      <Img src={varaLogo}></Img>
+      <Img src={guardiansLogo}></Img>
+      <Img src={varaLogo}></Img>
+      <Img src={guardiansLogo}></Img>
+      <Img src={varaLogo}></Img>
+      <Img src={guardiansLogo}></Img>
     </Flex>
   );
 }
