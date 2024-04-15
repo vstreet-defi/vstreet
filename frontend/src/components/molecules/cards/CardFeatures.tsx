@@ -1,9 +1,9 @@
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/prop-types */
-import { Box, Container, Flex, Text } from "@chakra-ui/react";
+import { Box, Flex, Text } from "@chakra-ui/react";
 import styles from "./Card.module.scss";
 
-function CardFeatures(props: { title: string; w: string }) {
+function CardFeatures(props: { title: string }) {
   return (
     <Flex flexDir="column">
       <Box
@@ -14,7 +14,6 @@ function CardFeatures(props: { title: string; w: string }) {
         pl={"2rem"}
         pr={"2rem"}
         className={styles.CardFeature}
-        w={props.w}
         style={{
           boxShadow: "0px 14px 25.4px -3px rgba(59, 255, 106, 0.52)",
           backdropFilter: "blur(5.449999809265137px)",
@@ -22,7 +21,8 @@ function CardFeatures(props: { title: string; w: string }) {
         justifyItems="center"
       >
         <Text
-          fontSize="12px"
+          fontSize={{ lg: "24px" }}
+          fontWeight={"500"}
           color="#00FFC4"
           fontFamily={"'Roboto Mono', monospace"}
           alignSelf="center"

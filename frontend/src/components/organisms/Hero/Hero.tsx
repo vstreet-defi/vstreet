@@ -8,10 +8,15 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-
+import Flag from "components/atoms/Flag";
 import Home1VideoBg from "../../../assets/images/backgrounds/Home-Gif-128colorsWebComp1728-12fps.gif";
 import Home1VideoBgSmall from "../../../assets/images/backgrounds/Home-Gif-WebComp1280x741-12fps.gif";
-function Hero() {
+
+type Props = {
+  isMobile: boolean;
+};
+
+function Hero({ isMobile }: Props) {
   const navigate = useNavigate();
 
   return (
@@ -44,8 +49,8 @@ function Hero() {
             </Heading>
 
             <Text
-              color="gray.100"
-              fontWeight="light"
+              fontWeight="400px"
+              color="#FFF"
               fontSize={{ base: "1rem", sm: "1rem", lg: "24px" }}
               fontFamily={"'Roboto Mono', monospace"}
               mr={{ base: "0", md: "0rem", lg: "2rem", xl: "6rem" }}
@@ -53,37 +58,92 @@ function Hero() {
               Unlock the synthetic assets liquidity to optimize your DeFi
               strategies
             </Text>
-            <Stack
-              spacing={{ base: 4, sm: 6 }}
-              direction={{ base: "column", sm: "row" }}
-            >
-              <Button
-                borderRadius="0"
-                size="lg"
-                fontWeight="bold"
-                px={6}
-                color="#111111"
-                bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
-                _hover={{ bg: "gray.200" }}
-                onClick={() => navigate("/Dapp")}
-                isDisabled={true}
+            {!isMobile && (
+              <>
+                <Stack
+                  display={"flex"}
+                  flexDirection={{ lg: "row", sm: "column" }}
+                  gap={"172px"}
+                  paddingLeft={"36px"}
+                  marginBottom={"-30px"}
+                  marginTop={"36px"}
+                >
+                  <Flag text="Coming Soon" />
+                  <Flag text="Coming Soon" />
+                </Stack>
+                <Stack
+                  spacing={{ base: 4, sm: 6 }}
+                  direction={{ base: "column", sm: "row" }}
+                >
+                  <Button
+                    borderRadius="0"
+                    size="lg"
+                    fontWeight="bold"
+                    px={6}
+                    color="#111111"
+                    bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
+                    _hover={{ bg: "gray.200" }}
+                    onClick={() => navigate("/dapp")}
+                    isDisabled={true}
+                  >
+                    Launch App
+                  </Button>
+                  <Button
+                    variant="outline"
+                    colorScheme="white"
+                    color="white"
+                    borderRadius="0"
+                    size="lg"
+                    fontWeight="bold"
+                    px={6}
+                    isDisabled={true}
+                  >
+                    Whitepaper
+                  </Button>
+                </Stack>
+              </>
+            )}
+            {isMobile && (
+              <Stack
+                spacing={{ base: 4, sm: 6 }}
+                direction={{ base: "column", sm: "row" }}
+                marginTop={"20px"}
               >
-                Launch Dapp
-              </Button>
-
-              <Button
-                variant="outline"
-                colorScheme="white"
-                color="white"
-                borderRadius="0"
-                size="lg"
-                fontWeight="bold"
-                px={6}
-                isDisabled={true}
-              >
-                Whitepaper
-              </Button>
-            </Stack>
+                <Flex justifyContent={"center"}>
+                  <Flag text="Coming Soon" />
+                </Flex>
+                <Button
+                  borderRadius="0"
+                  size="lg"
+                  fontWeight="bold"
+                  px={6}
+                  color="#111111"
+                  bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
+                  _hover={{ bg: "gray.200" }}
+                  onClick={() => navigate("/dapp")}
+                  isDisabled={true}
+                  marginBottom={"10px"}
+                >
+                  Launch App
+                </Button>
+                <Flex justifyContent={"center"}>
+                  <Flag text="Coming Soon" />
+                </Flex>
+                <Button
+                  variant="outline"
+                  colorScheme="white"
+                  color="white"
+                  borderRadius="0"
+                  size="lg"
+                  fontWeight="bold"
+                  px={6}
+                  isDisabled={true}
+                  marginBottom={"10px"}
+                >
+                  Whitepaper
+                </Button>
+              </Stack>
+            )}
           </Stack>
           <Flex
             flex={1}
