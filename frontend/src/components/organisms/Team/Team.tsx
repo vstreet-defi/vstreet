@@ -18,8 +18,14 @@ import github from "../../../assets/images/socials/Github-Line-Icon.png";
 
 function Team() {
   return (
-    <Container bgImage={teamBg} minW="100%" p={"2rem"}>
-      <Flex justify="center" flexDir="column">
+    <Container
+      bgImage={teamBg}
+      bgRepeat="no-repeat"
+      bgSize="cover"
+      minW="100%"
+      p={"2rem"}
+    >
+      <Flex mb="8rem" justify="center" flexDir="column">
         <Heading
           color="#4FFF4B"
           fontSize="40px"
@@ -53,13 +59,14 @@ function Team() {
             bgImage={luchex}
             borderRadius={"100%"}
           ></Flex>
-          <Heading color="white" textAlign="center">
+          <Heading color="white" textAlign="center" fontFamily="Montserrat">
             Luckex
           </Heading>
           <Text
             bgGradient="linear(to-b, #00FFC4, #4FFF4B)"
             bgClip="text"
             textAlign="center"
+            fontFamily={"'Roboto Mono', monospace"}
           >
             Tech Lead
           </Text>
@@ -90,13 +97,14 @@ function Team() {
             bgImage={robin}
             borderRadius={"100%"}
           ></Flex>
-          <Heading color="white" textAlign="center">
-            Luckex
+          <Heading fontFamily="Montserrat" color="white" textAlign="center">
+            Robin
           </Heading>
           <Text
             bgGradient="linear(to-b, #00FFC4, #4FFF4B)"
             bgClip="text"
             textAlign="center"
+            fontFamily={"'Roboto Mono', monospace"}
           >
             Product Owner
           </Text>
@@ -126,18 +134,20 @@ function Team() {
             boxSize="10rem"
             bgImage={ivan}
             borderRadius={"100%"}
+            alignSelf="center"
           ></Flex>
-          <Heading color="white" textAlign="center">
-            Luckex
+          <Heading fontFamily="Montserrat" color="white" textAlign="center">
+            Terratek
           </Heading>
           <Text
             bgGradient="linear(to-b, #00FFC4, #4FFF4B)"
             bgClip="text"
             textAlign="center"
+            fontFamily={"'Roboto Mono', monospace"}
           >
             Design Lead & Developer
           </Text>
-          <Flex mt="1rem" justify="space-between">
+          <Flex mt="1rem" justify="space-evenly">
             <Link href="https://twitter.com/IvanTerratek" isExternal>
               <Img src={x} alt="link"></Img>
             </Link>
