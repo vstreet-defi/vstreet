@@ -2,6 +2,7 @@ import { Container, Flex, Box, Heading, Text, Stack } from "@chakra-ui/react";
 import { CardFeatures } from "components/molecules/cards/CardFeatures";
 import { Arrow } from "components/atoms/Arrow";
 import bg from "../../../assets/images/backgrounds/Services BG 2x.svg";
+import { Partners } from "../Partners/Partners";
 
 function Features() {
   return (
@@ -13,6 +14,7 @@ function Features() {
         bgPos="center"
         bgSize="cover"
       >
+        <Partners />
         <Stack
           pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
           pr={{ base: "1rem" }}
