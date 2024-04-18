@@ -1,6 +1,6 @@
 import { Container, Flex, Box, Heading, Text, Stack } from "@chakra-ui/react";
 import { CardFeatures } from "components/molecules/cards/CardFeatures";
-import { Arrow } from "components/atoms/Arrow";
+import Arrow from "../../../assets/images/icons/Arrow.svg";
 import bg from "../../../assets/images/backgrounds/Services BG 2x.svg";
 
 function Features() {
@@ -39,13 +39,11 @@ function Features() {
               Make your staked $VARA liquid
             </Heading>
             <Text
-              color="#ffffff"
-              mr={{ md: "2rem", lg: "8rem" }}
-              mt="2rem"
-              fontSize={{ md: "12px", lg: "16px" }}
+              mt="3rem"
+              fontSize={{ md: "12px", lg: "24px" }}
               fontFamily={"'Roboto Mono', monospace"}
-              fontWeight="thin"
-              textAlign="justify"
+              fontWeight="400px"
+              color="#FFF"
             >
               Leverage your staked $VARA as collateral for stablecoin borrowing.
               <br /> <br></br>
@@ -61,13 +59,13 @@ function Features() {
             mr={{ md: "0", lg: "8rem" }}
           >
             <Flex flexDir="column" alignItems="center">
-              <CardFeatures title="Stake Vara" w="9rem" />
-              <Arrow />
-              <CardFeatures title="LST $Vara as Collateral" w="15rem" />
-              <Arrow />
-              <CardFeatures title="Borrow Stable Coins" w="13rem" />
-              <Arrow />
-              <CardFeatures title="DeFi Strategy Legos" w="12rem" />
+              <CardFeatures title="Stake Vara" />
+              <img src={Arrow} alt="Arrow" />
+              <CardFeatures title="LST $Vara as Collateral" />
+              <img src={Arrow} alt="Arrow" />
+              <CardFeatures title="Borrow Stable Coins" />
+              <img src={Arrow} alt="Arrow" />
+              <CardFeatures title="DeFi Strategy Legos" />
             </Flex>
           </Stack>
         </Stack>

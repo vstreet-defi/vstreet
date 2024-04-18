@@ -1,5 +1,3 @@
-@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
-
 header {
   display: flex;
   width: 100%;
@@ -7,7 +5,7 @@ header {
   padding: 2.0625rem 2rem;
   justify-content: space-between;
   align-items: center;
-  gap: 11.875rem;
+  gap: 9rem;
   flex-shrink: 0;
   background-color: #1b1b1f;
   @media screen and (max-width: 480px) {
@@ -51,7 +49,7 @@ header {
         padding: 0.25rem 1rem;
         p {
           color: #fff;
-          font-family: Montserrat;
+          font-family: "Montserrat";
           font-size: 1rem;
           font-style: normal;
           font-weight: 400;

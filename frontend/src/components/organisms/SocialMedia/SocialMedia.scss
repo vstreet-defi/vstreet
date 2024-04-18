@@ -1,0 +1,67 @@
+.social-media {
+  background-size: cover;
+  background-image: url("../../../assets/images/backgrounds/SocialMediaBg.svg"),
+    linear-gradient(180deg, #0c0c0c 0%, #0d1b13 48.96%, #121215 100%),
+    linear-gradient(
+      180deg,
+      #111 0%,
+      rgba(0, 0, 0, 0.9) 51%,
+      rgba(17, 17, 17, 0) 100%
+    );
+  height: 760px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 52px;
+  @media screen and (max-width: 480px) {
+    height: fit-content;
+  }
+  h3 {
+    text-align: center;
+    color: #4fff4b;
+    font-family: "Inter";
+    font-size: 40px;
+    font-style: italic;
+    font-weight: 700;
+    line-height: 77px;
+    width: 25%;
+    padding-bottom: 17px;
+    background-image: linear-gradient(90deg, #00ffc4 -17.32%, #4fff4b 107.82%);
+    background-size: 100% 11px;
+    background-repeat: no-repeat;
+    background-position: bottom;
+    @media screen and (max-width: 480px) {
+      width: fit-content;
+      margin-top: 3rem;
+    }
+  }
+  p {
+    color: #fff;
+    text-align: center;
+    font-family: "Roboto Mono";
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    width: 45%;
+    @media screen and (max-width: 480px) {
+      width: fit-content;
+      font-size: 1rem;
+    }
+  }
+  .social-icons-container {
+    display: inline-flex;
+    padding: 38px 30px;
+    justify-content: center;
+    align-items: center;
+    gap: 78px;
+    @media screen and (max-width: 480px) {
+      flex-direction: column;
+    }
+    img {
+      width: 147px;
+      height: 147px;
+    }
+  }
+}
