@@ -1,23 +1,17 @@
-import {
-  Box,
-  Image,
-  Button,
-  Stack,
-  Text,
-  Flex,
-  Heading,
-} from "@chakra-ui/react";
-import { Link, useNavigate } from "react-router-dom";
+import { Box, Image, Stack, Text, Flex, Heading } from "@chakra-ui/react";
 import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
-
 import LogoVaraWhite from "../../../assets/images/VaraStreetShilling.svg";
 import shillingBg from "../../../assets/images/backgrounds/3. Vara shilling.svg";
-import { link } from "fs";
 
 function Shilling() {
-  const navigate = useNavigate();
   return (
-    <Box minW="100%" bgImage={shillingBg}>
+    <Box
+      display="flex"
+      height="fit-content"
+      minW="100%"
+      bgImage={shillingBg}
+      bgSize={"cover"}
+    >
       <Stack
         pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
         pr={{ base: "1rem" }}
@@ -32,21 +26,6 @@ function Shilling() {
             spacing={{ base: 4, sm: 6 }}
             direction={{ base: "column", sm: "row" }}
           >
-            {/* <Button
-              size="lg"
-              fontWeight="normal"
-              px={6}
-              color="white"
-              bgColor="transparent"
-              border="1px"
-              borderColor="#00FFC4"
-              _hover={{ bg: "#00FFC4" }}
-              onClick={() => navigate("/https://vara-network.io/")}
-              borderRadius="0"
-              ml={{ base: 0, md: "8rem" }}
-            >
-              Go to VARA
-            </Button> */}
             <Box ml={{ base: "0", md: "12rem" }} alignSelf="center">
               <a
                 href="https://vara-network.io/"
@@ -74,13 +53,18 @@ function Shilling() {
             <Box color="white" mb="2rem">
               <Heading
                 fontFamily={"'Roboto Mono', monospace"}
-                fontWeight="medium"
-                fontSize="1.5rem"
+                fontWeight="700px"
+                fontSize="24px"
                 color="#4FFF4B"
               >
                 High-Speed Transactions and Scalability
               </Heading>
-              <Text fontWeight="100">
+              <Text
+                fontFamily={"'Roboto Mono', monospace"}
+                fontWeight="400px"
+                fontSize={{ lg: "24px" }}
+                color="#FFF"
+              >
                 Vara Network enhances DeFi with high transaction throughput and
                 scalability. Its Gear Protocol&apos;s Actor model ensures rapid
                 transactions at lower fees, addressing issues like network
@@ -91,13 +75,18 @@ function Shilling() {
             <Box color="white" mb="2rem">
               <Heading
                 fontFamily={"'Roboto Mono', monospace"}
-                fontWeight="medium"
-                fontSize="1.5rem"
+                fontWeight="700px"
+                fontSize="24px"
                 color="#00FFC4"
               >
                 Enhanced Security and Decentralization in DeFi
               </Heading>
-              <Text fontWeight="100">
+              <Text
+                fontFamily={"'Roboto Mono', monospace"}
+                fontWeight="400px"
+                fontSize={{ lg: "24px" }}
+                color="#FFF"
+              >
                 Security and decentralization are key in Vara Network. The Actor
                 model supports secure, independent operation of smart contracts,
                 minimizing centralization risks and promoting complex
@@ -106,10 +95,20 @@ function Shilling() {
             </Box>
 
             <Box color="white" mb="2rem">
-              <Heading color="#4FFF4B" fontWeight="medium" fontSize="1.5rem">
+              <Heading
+                fontFamily={"'Roboto Mono', monospace"}
+                fontWeight="700px"
+                fontSize="24px"
+                color="#4FFF4B"
+              >
                 Innovative Technology for Optimized Performance
               </Heading>
-              <Text fontWeight="100">
+              <Text
+                fontFamily={"'Roboto Mono', monospace"}
+                fontWeight="400px"
+                fontSize={{ lg: "24px" }}
+                color="#FFF"
+              >
                 Vara Network&apos;s use of Persistent Memory and the WASM
                 Virtual Machine optimizes performance, offering faster
                 computations and efficient memory management, crucial for

@@ -1,12 +1,4 @@
-import {
-  Box,
-  Container,
-  Flex,
-  Heading,
-  Img,
-  Link,
-  Text,
-} from "@chakra-ui/react";
+import { Container, Flex, Heading, Img, Link, Text } from "@chakra-ui/react";
 import teamBg from "../../../assets/images/backgrounds/5. Team.png";
 
 import ivan from "../../../assets/images/team img/Ivan 1.png";
@@ -25,23 +17,32 @@ function Team() {
       minW="100%"
       p={"2rem"}
     >
-      <Flex mb="8rem" justify="center" flexDir="column">
+      <Flex mb="4rem" justify="center" flexDir="column">
         <Heading
-          color="#4FFF4B"
-          fontSize="40px"
-          fontStyle={"italic"}
-          fontWeight={"bold"}
-          fontFamily={"'Roboto Mono', monospace"}
           alignSelf="center"
+          sx={{
+            textAlign: "center",
+            color: "#4fff4b",
+            fontFamily: "Inter",
+            fontSize: "40px",
+            fontStyle: "italic",
+            fontWeight: "700",
+            lineHeight: "77px",
+            width: "25%",
+            paddingBottom: "17px",
+            backgroundImage:
+              "linear-gradient(90deg, #00ffc4 -17.32%, #4fff4b 107.82%)",
+            backgroundSize: "100% 11px",
+            backgroundRepeat: "no-repeat",
+            backgroundPosition: "bottom",
+            "@media screen and (max-width: 480px)": {
+              width: "fit-content",
+              marginTop: "3rem",
+            },
+          }}
         >
           Our Team
         </Heading>
-        <Box
-          alignSelf="center"
-          h="3px"
-          w="10rem"
-          bgGradient="linear(to-br, #00FFC4, #4FFF4B)"
-        ></Box>
       </Flex>
       <Flex
         justify="center"
@@ -60,7 +61,7 @@ function Team() {
             borderRadius={"100%"}
           ></Flex>
           <Heading color="white" textAlign="center" fontFamily="Montserrat">
-            Luckex
+            Luchex
           </Heading>
           <Text
             bgGradient="linear(to-b, #00FFC4, #4FFF4B)"
