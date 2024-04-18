@@ -2,7 +2,7 @@ import { Flex, Img } from "@chakra-ui/react";
 import varaLogo from "../../../assets/images/Vara Network Grey.png";
 import guardiansLogo from "../../../assets/images/Guardian-logo white-Grey.png";
 
-function Partners() {
+function PartnersMobile() {
   return (
     <Flex
       flexDirection="row"
@@ -17,12 +17,8 @@ function Partners() {
     >
       <Img src={varaLogo}></Img>
       <Img src={guardiansLogo}></Img>
-      <Img src={varaLogo}></Img>
-      <Img src={guardiansLogo}></Img>
-      <Img src={varaLogo}></Img>
-      <Img src={guardiansLogo}></Img>
     </Flex>
   );
 }
 
-export { Partners };
+export { PartnersMobile };

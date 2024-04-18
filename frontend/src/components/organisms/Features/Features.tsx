@@ -3,8 +3,12 @@ import { CardFeatures } from "components/molecules/cards/CardFeatures";
 import Arrow from "../../../assets/images/icons/Arrow.svg";
 import bg from "../../../assets/images/backgrounds/Services BG 2x.svg";
 import { Partners } from "../Partners/Partners";
+import { PartnersMobile } from "../Partners/PartnersMobile";
+type Props = {
+  isMobile: boolean;
+};
 
-function Features() {
+function Features({ isMobile }: Props) {
   return (
     <Container p="0" maxW="100vw" bgGradient="linear(to-l, #121215 ,#284736)">
       <Box
@@ -14,7 +18,8 @@ function Features() {
         bgPos="center"
         bgSize="cover"
       >
-        <Partners />
+        {isMobile ? <PartnersMobile /> : <Partners />}
+
         <Stack
           pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
           pr={{ base: "1rem" }}

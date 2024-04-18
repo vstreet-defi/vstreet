@@ -1,5 +1,4 @@
 import { Hero } from "../organisms/Hero/Hero";
-import { Partners } from "../organisms/Partners/Partners";
 import { Features } from "../organisms/Features/Features";
 import { Shilling } from "../organisms/Shilling/Shilling";
 import SocialMedia from "components/organisms/SocialMedia";
@@ -17,10 +16,8 @@ function Home() {
         items={navBarItems}
         isMobile={isMobileDevice()}
       />
-      <Hero />
       <Hero isMobile={isMobileDevice()} />
-      <Partners />
-      <Features />
+      <Features isMobile={isMobileDevice()} />
       <Shilling />
       <Team />
       <SocialMedia />
