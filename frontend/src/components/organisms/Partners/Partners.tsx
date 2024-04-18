@@ -1,4 +1,4 @@
-import { Flex, Heading, Img } from "@chakra-ui/react";
+import { Flex, Img } from "@chakra-ui/react";
 import varaLogo from "../../../assets/images/Vara Network Grey.png";
 import guardiansLogo from "../../../assets/images/Guardian-logo white-Grey.png";
 
@@ -13,8 +13,6 @@ function Partners() {
       bgColor="rgba(18, 18, 18, 0.74)"
       style={{
         backdropFilter: "blur(5.4px);",
-        // background:
-        //   "linear-gradient(27deg,rgba(18, 18, 18, 0.74) 0%,rgba(18, 18, 18, 0.742734593837535) 100%)",
       }}
     >
       <Img src={varaLogo}></Img>
