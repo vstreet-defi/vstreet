@@ -146,9 +146,9 @@ function Team() {
             textAlign="center"
             fontFamily={"'Roboto Mono', monospace"}
           >
-            Design Lead & Developer
+            UI/UX Developer
           </Text>
-          <Flex mt="1rem" justify="space-evenly">
+          <Flex mt="1rem" justify="space-between">
             <Link href="https://twitter.com/IvanTerratek" isExternal>
               <Img src={x} alt="link"></Img>
             </Link>

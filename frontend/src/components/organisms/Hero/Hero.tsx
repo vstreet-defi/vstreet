@@ -27,7 +27,8 @@ function Hero({ isMobile }: Props) {
         bgRepeat="no-repeat"
         bgPos="bottom"
         bgSize={{ base: "cover", md: "fill" }}
-        bgImage={{ base: Home1VideoBgSmall, md: Home1VideoBg }}
+        // bgImage={{ base: Home1VideoBgSmall, md: Home1VideoBg }}
+        bgImage={Home1VideoBgSmall}
       >
         <Stack
           pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}

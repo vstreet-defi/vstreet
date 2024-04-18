@@ -1,7 +1,7 @@
 import { Box, Image, Stack, Text, Flex, Heading } from "@chakra-ui/react";
 import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
 import LogoVaraWhite from "../../../assets/images/VaraStreetShilling.svg";
-import shillingBg from "../../../assets/images/backgrounds/3. Vara shilling.svg";
+import shillingBg from "../../../assets/images/backgrounds/ShillingBG.jpg";
 
 function Shilling() {
   return (

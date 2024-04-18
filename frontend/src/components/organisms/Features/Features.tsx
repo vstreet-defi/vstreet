@@ -1,7 +1,7 @@
 import { Container, Flex, Box, Heading, Text, Stack } from "@chakra-ui/react";
 import { CardFeatures } from "components/molecules/cards/CardFeatures";
 import Arrow from "../../../assets/images/icons/Arrow.svg";
-import bg from "../../../assets/images/backgrounds/Services BG 2x.svg";
+import bg from "../../../assets/images/backgrounds/ServicesBG.jpg";
 import { Partners } from "../Partners/Partners";
 import { PartnersMobile } from "../Partners/PartnersMobile";
 type Props = {
