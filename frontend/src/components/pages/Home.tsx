@@ -3,6 +3,7 @@ import { Partners } from "../organisms/Partners/Partners";
 import { Features } from "../organisms/Features/Features";
 import { Shilling } from "../organisms/Shilling/Shilling";
 import SocialMedia from "components/organisms/SocialMedia";
+import { Team } from "../organisms/Team/Team";
 import { Footer } from "../templates/Footer/Footer";
 import Header from "../templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
@@ -20,6 +21,7 @@ function Home() {
       <Partners />
       <Features />
       <Shilling />
+      <Team />
       <SocialMedia />
       <Footer />
     </>
