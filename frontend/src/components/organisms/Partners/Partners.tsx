@@ -7,7 +7,6 @@ function Partners() {
     <Flex
       flexDirection="row"
       border="1px"
-      // borderColor="#00FFC4"
       p="1rem"
       justify="space-around"
       bgColor="rgba(18, 18, 18, 0.74)"

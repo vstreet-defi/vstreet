@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Account from "../../organisms/Account/Account";
 import Flag from "../../atoms/Flag/Flag";
@@ -82,6 +82,8 @@ function Header({ isAccountVisible, items, isMobile }: Props) {
               className={styles.connectWallet}
               type="button"
               onClick={() => navigate("/dapp?tab=borrow")}
+              disabled={true}
+              style={{ opacity: 0.4, cursor: "not-allowed" }}
             >
               <p>Launch App</p>
             </button>
