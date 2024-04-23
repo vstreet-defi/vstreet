@@ -41,7 +41,13 @@ function Hero({ isMobile }: Props) {
             <Heading
               bgGradient="linear(to-b, #00FFC4, #4FFF4B)"
               bgClip="text"
-              fontSize={{ base: "4rem", sm: "5rem", lg: "128px" }}
+              fontSize={{
+                base: "4rem",
+                sm: "5rem",
+                lg: "78px",
+                xl: "100px",
+                "2xl": "128px",
+              }}
               fontWeight="extrabold"
               fontFamily={"'Roboto Mono', monospace"}
             >
@@ -62,7 +68,7 @@ function Hero({ isMobile }: Props) {
               <>
                 <Stack
                   display={"flex"}
-                  flexDirection={{ lg: "row", sm: "column" }}
+                  flexDirection={{ sm: "row", base: "column" }}
                   gap={"172px"}
                   paddingLeft={"36px"}
                   marginBottom={"-30px"}

@@ -17,7 +17,9 @@
 }
 .connectWallet {
   display: flex;
-  width: 193px;
+  max-width: 193px;
+  min-width: 130px;
+  width: 15%;
   height: 41px;
   padding: 12px 16px;
   flex-direction: column;
