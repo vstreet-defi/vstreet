@@ -1,5 +1,6 @@
 import { Container, Flex, Heading, Img, Link, Text } from "@chakra-ui/react";
 import teamBg from "../../../assets/images/backgrounds/5. Team.png";
+import { BoxTranslucidGradient } from "../../atoms/Box-Translucid-Gradient/Box-Translucid-Gradient";
 
 import ivan from "../../../assets/images/team img/Ivan 1.png";
 import luchex from "../../../assets/images/team img/Luchex 1.png";
@@ -15,9 +16,15 @@ function Team() {
       bgRepeat="no-repeat"
       bgSize="cover"
       minW="100%"
-      p={"2rem"}
+      p="0"
     >
-      <Flex mb="4rem" justify="center" flexDir="column">
+      <BoxTranslucidGradient />
+      <Flex
+        marginTop={{ base: "0", md: "2rem" }}
+        mb="4rem"
+        justify="center"
+        flexDir="column"
+      >
         <Heading
           alignSelf="center"
           sx={{
@@ -146,9 +153,9 @@ function Team() {
             textAlign="center"
             fontFamily={"'Roboto Mono', monospace"}
           >
-            Design Lead & Developer
+            UI/UX & Developer
           </Text>
-          <Flex mt="1rem" justify="space-evenly">
+          <Flex mt="1rem" justify="space-between">
             <Link href="https://twitter.com/IvanTerratek" isExternal>
               <Img src={x} alt="link"></Img>
             </Link>

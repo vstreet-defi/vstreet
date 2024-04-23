@@ -9,7 +9,6 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import Flag from "components/atoms/Flag";
-import Home1VideoBg from "../../../assets/images/backgrounds/Home-Gif-128colorsWebComp1728-12fps.gif";
 import Home1VideoBgSmall from "../../../assets/images/backgrounds/Home-Gif-WebComp1280x741-12fps.gif";
 
 type Props = {
@@ -27,7 +26,8 @@ function Hero({ isMobile }: Props) {
         bgRepeat="no-repeat"
         bgPos="bottom"
         bgSize={{ base: "cover", md: "fill" }}
-        bgImage={{ base: Home1VideoBgSmall, md: Home1VideoBg }}
+        // bgImage={{ base: Home1VideoBgSmall, md: Home1VideoBg }}
+        bgImage={Home1VideoBgSmall}
       >
         <Stack
           pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
