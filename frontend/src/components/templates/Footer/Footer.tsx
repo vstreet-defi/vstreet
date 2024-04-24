@@ -1,4 +1,4 @@
-import vStreetLogoWhite from "../../../assets/images/icons/vStreetLogoWhite.svg";
+import vStreetLogoWhite from "../../../assets/images/icons/vStreet-Logo-White-Big.png";
 function Footer() {
   return (
     <footer>

@@ -5,9 +5,9 @@ import { BoxTranslucidGradient } from "../../atoms/Box-Translucid-Gradient/Box-T
 import ivan from "../../../assets/images/team img/Ivan 1.png";
 import luchex from "../../../assets/images/team img/Luchex 1.png";
 import robin from "../../../assets/images/team img/Robin 1.png";
-import x from "../../../assets/images/socials/Twitter-X-Line-Icon.png";
-import linkedin from "../../../assets/images/socials/Linkedin-Line-Icon.png";
-import github from "../../../assets/images/socials/Github-Line-Icon.png";
+import x from "../../../assets/images/socials/icon _x_.png";
+import linkedin from "../../../assets/images/socials/icon _linkedin_.png";
+import github from "../../../assets/images/socials/icon _github_.png";
 
 function Team() {
   return (
@@ -80,16 +80,16 @@ function Team() {
           </Text>
           <Flex mt="1rem" justify="space-between">
             <Link href="https://x.com/_luchex" isExternal>
-              <Img src={x} alt="link"></Img>
+              <Img boxSize="1.8rem" src={x} alt="link"></Img>
             </Link>
             <Link
               href="https://www.linkedin.com/in/luciano-garcia-btc"
               isExternal
             >
-              <Img src={linkedin} alt="link"></Img>
+              <Img boxSize="1.8rem" src={linkedin} alt="link"></Img>
             </Link>
             <Link href="https://github.com/lucianog2000" isExternal>
-              <Img src={github} alt="link"></Img>
+              <Img boxSize="1.8rem" src={github} alt="link"></Img>
             </Link>
           </Flex>
         </Flex>
@@ -118,16 +118,16 @@ function Team() {
           </Text>
           <Flex mt="1rem" justify="space-between">
             <Link href="https://twitter.com/robinhodl69" isExternal>
-              <Img src={x} alt="link"></Img>
+              <Img boxSize="1.8rem" src={x} alt="link"></Img>
             </Link>
             <Link
               href="https://www.linkedin.com/in/jaramillojesuslini/"
               isExternal
             >
-              <Img src={linkedin} alt="link"></Img>
+              <Img boxSize="1.8rem" src={linkedin} alt="link"></Img>
             </Link>
             <Link href="https://github.com/robinhodl69" isExternal>
-              <Img src={github} alt="link"></Img>
+              <Img boxSize="1.8rem" src={github} alt="link"></Img>
             </Link>
           </Flex>
         </Flex>
@@ -157,16 +157,16 @@ function Team() {
           </Text>
           <Flex mt="1rem" justify="space-between">
             <Link href="https://twitter.com/IvanTerratek" isExternal>
-              <Img src={x} alt="link"></Img>
+              <Img boxSize="1.8rem" src={x} alt="link"></Img>
             </Link>
             <Link
               href="https://www.linkedin.com/in/ivan-avila-4b5689202/"
               isExternal
             >
-              <Img src={linkedin} alt="link"></Img>
+              <Img boxSize="1.8rem" src={linkedin} alt="link"></Img>
             </Link>
             <Link href="https://github.com/TerratekMusic" isExternal>
-              <Img src={github} alt="link"></Img>
+              <Img boxSize="1.8rem" src={github} alt="link"></Img>
             </Link>
           </Flex>
         </Flex>

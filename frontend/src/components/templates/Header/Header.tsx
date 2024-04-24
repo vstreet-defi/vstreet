@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Account from "../../organisms/Account/Account";
 import Flag from "../../atoms/Flag/Flag";
-import Logo from "../../../assets/images/icons/vStreet-navbar-icon.svg";
+import Logo from "../../../assets/images/icons//vStreet-Navbar-Color-White.png";
 import styles from "../../molecules/wallet/Wallet.module.scss";
 import BurgerMenu from "components/organisms/BurgerMenu";
 
