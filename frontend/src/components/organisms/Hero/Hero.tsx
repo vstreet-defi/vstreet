@@ -19,10 +19,10 @@ function Hero({ isMobile }: Props) {
   const navigate = useNavigate();
 
   return (
-    <Container p="0" maxW="100%">
+    <Container p="0" minW="100%">
       <Box
         w="100%"
-        h={{ base: "100vh", md: "100vh" }}
+        h={"100%"}
         bgRepeat="no-repeat"
         bgPos="bottom"
         bgSize={{ base: "cover", md: "fill" }}
@@ -30,7 +30,7 @@ function Hero({ isMobile }: Props) {
         bgImage={Home1VideoBgSmall}
       >
         <Stack
-          pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
+          pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "12rem" }}
           pr={{ base: "1rem" }}
           align="center"
           spacing={{ base: 8, md: 10 }}
@@ -151,13 +151,13 @@ function Hero({ isMobile }: Props) {
               </Stack>
             )}
           </Stack>
-          <Flex
+          {/* <Flex
             flex={1}
             justify="center"
             align="center"
             position="relative"
             w="full"
-          ></Flex>
+          ></Flex> */}
         </Stack>
       </Box>
     </Container>

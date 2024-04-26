@@ -1,6 +1,6 @@
 import { Box, Image, Stack, Text, Flex, Heading } from "@chakra-ui/react";
 import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
-import LogoVaraWhite from "../../../assets/images/VaraStreetShilling.svg";
+import LogoVaraWhite from "../../../assets/images/Powered-by-vara.png";
 import shillingBg from "../../../assets/images/backgrounds/ShillingBG.jpg";
 
 function Shilling() {
@@ -26,7 +26,16 @@ function Shilling() {
             spacing={{ base: 4, sm: 6 }}
             direction={{ base: "column", sm: "row" }}
           >
-            <Box ml={{ base: "0", md: "12rem" }} alignSelf="center">
+            <Box
+              ml={{ base: "0", md: "12rem" }}
+              alignSelf="center"
+              paddingLeft={"120px"}
+              sx={{
+                "@media screen and (max-width: 748px)": {
+                  paddingLeft: "0px",
+                },
+              }}
+            >
               <a
                 href="https://vara-network.io/"
                 target="_blank"
