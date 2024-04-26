@@ -1,4 +1,35 @@
 @use "@gear-js/ui/variables" as *;
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+
+.Container {
+  margin: 2rem;
+}
+
+.BasicCard {
+  border-width: 2px;
+  border-image: linear-gradient(141deg, rgb(0, 255, 196), rgba(86, 86, 86, 0)) 1;
+  background-image: linear-gradient(
+    90deg,
+    rgba(28, 28, 28, 0.79),
+    rgba(18, 18, 18, 0.79)
+  );
+  height: 20rem;
+  width: 25rem;
+  padding: 1.8rem;
+}
+
+.SelectDeposit {
+  border-width: 2px;
+  border-image: linear-gradient(141deg, rgb(0, 255, 196), rgba(86, 86, 86, 0)) 1;
+  width: 11.6rem;
+  height: 2.8rem;
+  text-align: center;
+  color: #00ffc4;
+  padding: 0.5rem;
+  font-size: 20px;
+  font-family: "Roboto Mono", monospace;
+  font-weight: 100;
+}
 
 .CardFeature {
   border-width: 1px;

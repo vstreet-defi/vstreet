@@ -1,0 +1,20 @@
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+p {
+  color: rgba(163, 163, 163, 1);
+  font-family: "Roboto Mono", monospace;
+}
+
+select {
+  background-color: transparent;
+  border: 1px solid #00ffc4;
+  width: 15rem;
+  height: 3rem;
+  padding-left: 0.75rem;
+
+  color: #00ffc4;
+  option {
+    background-color: black;
+    border: 1px solid #00ffc4;
+    font-family: "Roboto Mono", monospace;
+  }
+}
