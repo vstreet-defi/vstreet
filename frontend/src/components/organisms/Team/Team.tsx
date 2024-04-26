@@ -17,6 +17,7 @@ function Team() {
       bgSize="cover"
       minW="100%"
       p="0"
+      id="team"
     >
       <BoxTranslucidGradient />
       <Flex

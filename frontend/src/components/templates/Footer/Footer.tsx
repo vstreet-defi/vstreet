@@ -19,7 +19,10 @@ function Footer() {
       </div>
       <div className="rights">
         <img src={vStreetLogoWhite} alt="vStreet" />
+        <br />
         <p>2024 © All rights reserved by vStreet</p>
+        <br />
+        <a href="mailto:contact@vstreet.io">contact@vstreet.io</a>
       </div>
     </footer>
   );
