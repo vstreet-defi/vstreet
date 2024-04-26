@@ -36,6 +36,14 @@ function Header({ isAccountVisible, items, isMobile }: Props) {
       window.open("https://github.com/vstreet-defi/vstreet", "_blank");
     }
 
+    if (item === "Team") {
+      window.location.href = "#team";
+    }
+
+    if (item === "Contact us") {
+      window.location.href = "#social";
+    }
+
     if (isDapp && item !== "Markets") {
       const lowerCaseItem = item.toLowerCase();
       navigate(`/dapp?tab=${lowerCaseItem}`, { replace: true });

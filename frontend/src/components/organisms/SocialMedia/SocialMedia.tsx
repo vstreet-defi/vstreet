@@ -6,7 +6,7 @@ import githubIcon from "../../../assets/images/icons/github-icon.png";
 
 function SocialMedia() {
   return (
-    <div className="social-media">
+    <div className="social-media" id="social">
       <h3>Follow Us</h3>
       <p>
         Engage with a community of sophisticated web3 investors and create smart
