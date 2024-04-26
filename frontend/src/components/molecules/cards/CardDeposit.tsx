@@ -1,9 +1,9 @@
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/prop-types */
-import { Box, Heading, Text } from "@chakra-ui/react";
-import { DepositFunds } from "components/gear/DepositFunds";
+
 import styles from "./Card.module.scss";
 import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
+import BasicInput from "components/atoms/Basic-Input/BasicInput";
 
 function CardDeposit() {
   return (
@@ -14,6 +14,7 @@ function CardDeposit() {
         className={styles.BasicCard}
       >
         <TokenSelector />
+        <BasicInput />
       </div>
     </div>
   );

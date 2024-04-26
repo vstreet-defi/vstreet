@@ -3,7 +3,6 @@ import ApiLoader from "components/atoms/ApiLoader";
 import { useApi, useAccount } from "@gear-js/react-hooks";
 import Header from "components/templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
-import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 import { CardDeposit } from "components/molecules/cards/CardDeposit";
 
 function DappPage() {
