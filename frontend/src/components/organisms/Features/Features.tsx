@@ -18,7 +18,7 @@ function Features({ isMobile }: Props) {
         bgPos="center"
         bgSize="cover"
       >
-        {isMobile ? <PartnersMobile /> : <Partners />}
+        {window.innerWidth < 748 ? <PartnersMobile /> : <Partners />}
 
         <Stack
           pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}

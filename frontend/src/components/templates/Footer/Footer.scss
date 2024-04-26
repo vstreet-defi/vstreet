@@ -6,7 +6,7 @@ footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  @media screen and (max-width: 480px) {
+  @media screen and (max-width: 748px) {
     width: 100%;
     height: 100%;
     flex-direction: column;
@@ -15,7 +15,7 @@ footer {
   .legal-disclaimer {
     width: 496px;
     margin-left: 91px;
-    @media screen and (max-width: 480px) {
+    @media screen and (max-width: 748px) {
       width: fit-content;
       margin: 16px;
       text-align: center;
@@ -47,7 +47,7 @@ footer {
     flex-direction: column;
     justify-content: space-between;
     align-items: flex-end;
-    @media screen and (max-width: 480px) {
+    @media screen and (max-width: 748px) {
       width: fit-content;
       margin: 16px;
       align-items: center;

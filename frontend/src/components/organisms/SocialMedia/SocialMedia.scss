@@ -14,7 +14,7 @@
   justify-content: center;
   align-items: center;
   gap: 52px;
-  @media screen and (max-width: 480px) {
+  @media screen and (max-width: 748px) {
     height: fit-content;
   }
   h3 {
@@ -31,7 +31,7 @@
     background-size: 100% 11px;
     background-repeat: no-repeat;
     background-position: bottom;
-    @media screen and (max-width: 480px) {
+    @media screen and (max-width: 748px) {
       width: fit-content;
       margin-top: 3rem;
     }
@@ -45,7 +45,7 @@
     font-weight: 400;
     line-height: normal;
     width: 45%;
-    @media screen and (max-width: 480px) {
+    @media screen and (max-width: 748px) {
       width: fit-content;
       font-size: 1rem;
       padding: 1rem;
@@ -53,11 +53,12 @@
   }
   .social-icons-container {
     display: inline-flex;
+    flex-direction: row;
     padding: 38px 30px;
     justify-content: center;
     align-items: center;
-    gap: 78px;
-    @media screen and (max-width: 480px) {
+    gap: 48px;
+    @media screen and (max-width: 748px) {
       flex-direction: column;
     }
     img {

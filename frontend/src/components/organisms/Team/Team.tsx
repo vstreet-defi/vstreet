@@ -35,7 +35,6 @@ function Team() {
             fontStyle: "italic",
             fontWeight: "700",
             lineHeight: "77px",
-            width: "25%",
             paddingBottom: "17px",
             backgroundImage:
               "linear-gradient(90deg, #00ffc4 -17.32%, #4fff4b 107.82%)",

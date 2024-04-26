@@ -5,7 +5,7 @@ header {
   padding: 2.0625rem 2rem;
   justify-content: space-between;
   align-items: center;
-  gap: 9rem;
+  //gap: 9rem;
   flex-shrink: 0;
   background-color: #1b1b1f;
   @media screen and (max-width: 480px) {
@@ -24,11 +24,11 @@ header {
   .items-container {
     display: flex;
     height: 3.875rem;
-    min-width: 930px;
-    padding: 0rem 5.5rem;
+    // min-width: 930px;
+    //padding: 0rem 5.5rem;
     justify-content: center;
     align-items: center;
-    gap: 1.875rem;
+    //gap: 1.875rem;
 
     .item-wrapper {
       display: flex;

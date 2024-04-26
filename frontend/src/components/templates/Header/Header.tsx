@@ -16,7 +16,7 @@ function Header({ isAccountVisible, items, isMobile }: Props) {
   const [activeTab, setActiveTab] = useState<string | null>("borrow");
   const navigate = useNavigate();
   const location = useLocation();
-
+  const isTablet = window.innerWidth < 822;
   const isDapp = location.pathname !== "/";
 
   useEffect(() => {
@@ -70,7 +70,7 @@ function Header({ isAccountVisible, items, isMobile }: Props) {
   return (
     <header>
       <img src={Logo} alt="Logo" onClick={() => navigate("/")} />
-      {isMobile ? (
+      {isMobile || isTablet ? (
         <BurgerMenu items={items} />
       ) : (
         <>
