@@ -2,6 +2,7 @@
   position: relative;
   width: 100%;
   margin-top: 4rem;
+  margin-bottom: 3rem;
 }
 
 // .slider {
@@ -26,8 +27,8 @@
   height: 1px; // Define the height of the slider
   background: linear-gradient(
     90deg,
-    rgba(0, 255, 196, 1),
-    rgba(79, 255, 75, 1)
+    #00ffc4,
+    #4fff4b
   ); // Define the background color of the slider
   outline: none; // Remove the outline
   opacity: 0.7; // Set the opacity

@@ -5,6 +5,7 @@ import BasicInput from "components/molecules/Basic-Input/BasicInput";
 import styles from "./Card.module.scss";
 import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
+import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 
 function CardDeposit() {
   return (
@@ -17,6 +18,7 @@ function CardDeposit() {
         <TokenSelector />
         <BasicInput />
         <PercentageSelector />
+        <ButtonGradFill />
       </div>
     </div>
   );
