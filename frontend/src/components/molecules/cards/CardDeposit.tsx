@@ -1,9 +1,10 @@
 /* eslint-disable react/destructuring-assignment */
 /* eslint-disable react/prop-types */
 
+import BasicInput from "components/molecules/Basic-Input/BasicInput";
 import styles from "./Card.module.scss";
 import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
-import BasicInput from "components/atoms/Basic-Input/BasicInput";
+import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 
 function CardDeposit() {
   return (
@@ -15,6 +16,7 @@ function CardDeposit() {
       >
         <TokenSelector />
         <BasicInput />
+        <PercentageSelector />
       </div>
     </div>
   );

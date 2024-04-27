@@ -1,0 +1,98 @@
+.slider-container {
+  position: relative;
+  width: 100%;
+  margin-top: 4rem;
+}
+
+// .slider {
+//   width: 100%;
+//   -webkit-appearance: none;
+//   appearance: none;
+
+//   &::-webkit-slider-runnable-track {
+//     background: #a3a3a3;
+//   }
+
+//   &::-moz-range-track {
+//     background: #a3a3a3;
+//   }
+
+//   &::-moz-range-progress {
+//     background: #a3a3a3;
+//   }
+// }
+.slider {
+  width: 100%; // Define the width of the slider
+  height: 1px; // Define the height of the slider
+  background: linear-gradient(
+    90deg,
+    rgba(0, 255, 196, 1),
+    rgba(79, 255, 75, 1)
+  ); // Define the background color of the slider
+  outline: none; // Remove the outline
+  opacity: 0.7; // Set the opacity
+  -webkit-transition: 0.2s; // Add transition
+  transition: opacity 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+
+  &:hover {
+    opacity: 1; // Change the opacity when hovered over
+    &::-webkit-slider-thumb {
+      opacity: 1; // Change the opacity of the slider thumb when the slider is hovered over
+    }
+
+    &::-moz-range-thumb {
+      opacity: 1; // Change the opacity of the slider thumb when the slider is hovered over
+    }
+  }
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border-radius: 100%;
+    appearance: none;
+    width: 1rem; // Define the width of the slider handle
+    height: 1rem; // Define the height of the slider handle
+    background: #00ffc4; // Define the background color of the slider handle
+    cursor: pointer; // Change the cursor when hovering over the slider handle
+    opacity: 0;
+    &::before {
+      content: "✢";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      color: red;
+      font-size: 20px;
+      text-align: center;
+      line-height: 20px;
+    }
+  }
+
+  &::-moz-range-thumb {
+    border-radius: 100%;
+    width: 1rem; // Define the width of the slider handle
+    height: 1rem; // Define the height of the slider handle
+    background: #00ffc4; // Define the background color of the slider handle
+    cursor: pointer; // Change the cursor when hovering over the slider handle
+    opacity: 0;
+  }
+}
+
+.slider-labels {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+.slider-labels button {
+  position: relative;
+  bottom: 1.5rem; /* Adjust as needed */
+  background: none;
+  border: none;
+  color: #a3a3a3;
+  cursor: pointer;
+}

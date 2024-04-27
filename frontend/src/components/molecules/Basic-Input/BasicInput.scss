@@ -1,9 +1,14 @@
 .BasicInput {
   background-color: transparent;
   border: 1px solid #00ffc4;
-  width: 15rem;
-  height: 3rem;
+  width: 26rem;
+
   padding-left: 0.75rem;
 
   color: #00ffc4;
+}
+
+p {
+  color: rgba(163, 163, 163, 1);
+  font-family: "Roboto Mono", monospace;
 }
