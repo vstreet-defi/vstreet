@@ -1,8 +1,8 @@
 .slider-container {
   position: relative;
   width: 100%;
-  margin-top: 4rem;
-  margin-bottom: 3rem;
+  margin-top: 2rem;
+  margin-bottom: 5rem;
 }
 
 // .slider {
@@ -23,6 +23,8 @@
 //   }
 // }
 .slider {
+  -webkit-appearance: none;
+  appearance: none;
   width: 100%; // Define the width of the slider
   height: 1px; // Define the height of the slider
   background: linear-gradient(
@@ -34,8 +36,6 @@
   opacity: 0.7; // Set the opacity
   -webkit-transition: 0.2s; // Add transition
   transition: opacity 0.2s;
-  -webkit-appearance: none;
-  appearance: none;
 
   &:hover {
     opacity: 1; // Change the opacity when hovered over
