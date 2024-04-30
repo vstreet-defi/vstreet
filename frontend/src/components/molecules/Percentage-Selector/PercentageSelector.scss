@@ -8,12 +8,16 @@
 .slider {
   -webkit-appearance: none;
   appearance: none;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, #00ffc4, #4fff4b);
-  outline: none;
-  opacity: 0.7;
-  -webkit-transition: 0.2s;
+  width: 100%; // Define the width of the slider
+  height: 1px; // Define the height of the slider
+  background: linear-gradient(
+    90deg,
+    #00ffc4,
+    #4fff4b
+  ); // Define the background color of the slider
+  outline: none; // Remove the outline
+  opacity: 0.7; // Set the opacity
+  -webkit-transition: 0.2s; // Add transition
   transition: opacity 0.2s;
 
   &:hover {
