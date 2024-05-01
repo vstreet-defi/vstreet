@@ -1,0 +1,32 @@
+.Alert-Modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+.Alert-Modal-Box {
+  background: #1b1b1b;
+  text-align: center;
+  padding: 1rem 4rem;
+  p {
+    color: white;
+  }
+}
+.Alert-Modal-Warning {
+  color: #fff500;
+  border: 1px solid #fff500;
+}
+.Alert-Modal-Success {
+  color: #4fff4b;
+  border: 1px solid #4fff4b;
+}
+.Alert-Modal-Error {
+  color: #ff0f00;
+  border: 1px solid #ff0f00;
+}
