@@ -18,6 +18,8 @@ function CardDeposit() {
   );
 }
 
+//Esta la dejo comentada como referencia del demo para implementar logica
+
 // function CardDeposit() {
 //   return (
 //     <Box className={styles.Moduleborderwrap}>
