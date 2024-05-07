@@ -1,6 +1,6 @@
 #![no_std]
 
-use gmeta::{In, InOut, Metadata};
+use gmeta::{In, InOut, Out, Metadata};
 use gstd::{ActorId, prelude::*};
 
 #[derive(Decode, Encode, TypeInfo)]
@@ -109,7 +109,7 @@ impl Metadata for ContractMetadata {
     type Reply = ();
     type Others = ();
     type Signal = ();
-    type State = ();
+    type State = Out<IoGlobalState>;
 }
 
 #[derive(Default, Clone, Encode, Decode, TypeInfo)]
