@@ -6,13 +6,15 @@ import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill
 
 function CardDeposit() {
   return (
-    <div className={styles.Container}>
-      <div className={styles.SelectDeposit}>Deposit</div>
-      <div className={styles.BasicCard}>
-        <TokenSelector />
-        <BasicInput />
-        <PercentageSelector />
-        <ButtonGradFill />
+    <div className={styles.OutsideContainer}>
+      <div className={styles.Container}>
+        <div className={styles.SelectDeposit}>Deposit</div>
+        <div className={styles.BasicCard}>
+          <TokenSelector />
+          <BasicInput />
+          <PercentageSelector />
+          <ButtonGradFill />
+        </div>
       </div>
     </div>
   );

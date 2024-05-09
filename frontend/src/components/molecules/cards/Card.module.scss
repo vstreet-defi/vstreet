@@ -1,6 +1,12 @@
 @use "@gear-js/ui/variables" as *;
 @import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
 
+.OutsideContainer {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+  margin-top: 3.3rem;
+}
 .Container {
   margin: 2rem;
 }
@@ -21,6 +27,9 @@
 .SelectDeposit {
   border-width: 2px;
   border-image: linear-gradient(180deg, rgb(0, 255, 196), rgba(86, 86, 86, 0)) 1;
+  background-image: linear-gradient(
+    (106deg, rgba(28, 28, 28, 0) 13.06%, rgba(18, 18, 18, 0.79) 75.37%)
+  );
   width: 11.6rem;
   height: 2.8rem;
   text-align: center;

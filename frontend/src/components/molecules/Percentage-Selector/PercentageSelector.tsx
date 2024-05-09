@@ -20,6 +20,9 @@ function PercentageSelector() {
             style={{
               fontFamily: "roboto",
               fontSize: "1.1rem",
+              justifyContent: "center",
+              display: "flex",
+              flexDirection: "column",
             }}
             key={value}
             onClick={() => setPercentage(value)}
@@ -29,12 +32,13 @@ function PercentageSelector() {
               style={{
                 backgroundColor: percentage >= value ? "#00FFC4" : "#5D5D5D",
                 borderRadius: "100%",
-                width: "2rem",
-                height: "2rem",
-                marginBottom: "0.5rem",
+                width: "1.5rem",
+                height: "1.5rem",
+                marginTop: "6px",
+                alignSelf: "center",
               }}
             ></div>
-            {value}%
+            <div className="percentage-label">{value}%</div>
           </button>
         ))}
       </div>

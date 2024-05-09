@@ -5,23 +5,11 @@ function BasicInput() {
         marginTop: "1.5rem",
       }}
     >
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-        <p>Amount</p>
+      <div className="BI-label--container">
+        <p className="BI-label">Amount</p>
         <div style={{ display: "flex" }}>
-          <p
-            style={{
-              marginRight: "1rem",
-              fontSize: ".75rem",
-            }}
-          >
-            Your Wallet Balance:
-          </p>
-          <p>254651600</p>
+          <p className="BI-label tag">Your Wallet Balance:</p>
+          <p className="BI-label number">254651600</p>
         </div>
       </div>
 
@@ -34,6 +22,7 @@ function BasicInput() {
           border: "1px solid #00ffc4",
           fontSize: "16px",
           width: "100%",
+          outline: "none",
         }}
       />
     </div>

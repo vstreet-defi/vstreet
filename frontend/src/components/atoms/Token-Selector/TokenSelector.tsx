@@ -1,13 +1,22 @@
+import React, { useState } from "react";
+
 function TokenSelector() {
+  const [showMessage, setShowMessage] = useState(false);
+  const handleClick = () => {
+    setShowMessage((prevState) => !prevState);
+  };
   return (
-    <div className="Token-Selector">
-      <p>Token</p>
-      <select>
+    <div onClick={handleClick} className="Token-Selector">
+      <p className="TS-Label">Token</p>
+      <select disabled>
         <option value="">USDC</option>
-        <option value="token1">VARA</option>
-        <option value="token2">VSTR</option>
-        <option value="token3">gVARA</option>
       </select>
+      <span className="custom-arrow"></span>
+      {showMessage && (
+        <div className="custom-message">
+          At the moment we only allow USDC Liquidity Deposits.
+        </div>
+      )}
     </div>
   );
 }
