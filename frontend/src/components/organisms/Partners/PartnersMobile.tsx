@@ -1,6 +1,6 @@
 import { Flex, Img } from "@chakra-ui/react";
-import varaLogo from "../../../assets/images/Vara Network Grey.png";
-import guardiansLogo from "../../../assets/images/Guardian-logo white-Grey.png";
+import varaLogo from "../../../assets/images/Vara-Network-Logo.png";
+import guardiansLogo from "../../../assets/images/Guardianlogo-blanco.png";
 
 function PartnersMobile() {
   return (
@@ -15,8 +15,8 @@ function PartnersMobile() {
         backdropFilter: "blur(5.4px)",
       }}
     >
-      <Img src={varaLogo}></Img>
-      <Img src={guardiansLogo}></Img>
+      <Img opacity="50%" h="3.5rem" src={varaLogo}></Img>
+      <Img opacity="50%" h="3.5rem" src={guardiansLogo}></Img>
     </Flex>
   );
 }

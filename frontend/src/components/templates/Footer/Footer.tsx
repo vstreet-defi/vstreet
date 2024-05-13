@@ -1,4 +1,4 @@
-import vStreetLogoWhite from "../../../assets/images/icons/vStreetLogoWhite.svg";
+import vStreetLogoWhite from "../../../assets/images/icons/vStreet-Logo-White-Big.png";
 function Footer() {
   return (
     <footer>
@@ -19,7 +19,10 @@ function Footer() {
       </div>
       <div className="rights">
         <img src={vStreetLogoWhite} alt="vStreet" />
+        <br />
         <p>2024 © All rights reserved by vStreet</p>
+        <br />
+        <a href="mailto:contact@vstreet.io">contact@vstreet.io</a>
       </div>
     </footer>
   );

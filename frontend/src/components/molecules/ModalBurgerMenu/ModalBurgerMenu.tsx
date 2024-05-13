@@ -3,6 +3,12 @@ const ModalBurgerMenu = ({ isOpen, items }: any) => {
     if (item === "GitHub") {
       window.open("https://github.com/vstreet-defi/vstreet", "_blank");
     }
+    if (item === "Team") {
+      window.location.href = "#team";
+    }
+    if (item === "Contact us") {
+      window.location.href = "#social";
+    }
   };
   return (
     <div className={isOpen ? "menu open" : "menu"}>
