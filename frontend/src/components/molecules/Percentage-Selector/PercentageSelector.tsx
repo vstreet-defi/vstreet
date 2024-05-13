@@ -2,7 +2,7 @@ import { useState } from "react";
 
 function PercentageSelector() {
   const [percentage, setPercentage] = useState(0);
-  const percentages = [10, 25, 50, 75, 100];
+  const percentages = [0, 25, 50, 75, 100];
 
   return (
     <div className="slider-container">
@@ -19,10 +19,11 @@ function PercentageSelector() {
           <button
             style={{
               fontFamily: "roboto",
-              fontSize: "1.1rem",
-              justifyContent: "center",
+              fontSize: "1rem",
               display: "flex",
               flexDirection: "column",
+              marginLeft: value === 50 ? "1rem" : "0",
+              paddingLeft: value === 25 ? "1rem" : "0",
             }}
             key={value}
             onClick={() => setPercentage(value)}
@@ -35,10 +36,18 @@ function PercentageSelector() {
                 width: "1.5rem",
                 height: "1.5rem",
                 marginTop: "6px",
-                alignSelf: "center",
+                alignSelf: value === 100 ? "flex-end" : "center",
+                marginLeft: value === 75 ? "1rem" : "0",
               }}
             ></div>
-            <div className="percentage-label">{value}%</div>
+            <div
+              className="percentage-label"
+              style={{
+                marginLeft: value === 75 ? "1rem" : "0",
+              }}
+            >
+              {value}%
+            </div>
           </button>
         ))}
       </div>

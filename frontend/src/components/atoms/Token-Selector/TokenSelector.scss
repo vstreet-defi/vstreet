@@ -49,6 +49,9 @@ select:hover {
   pointer-events: none;
   width: 2rem;
   height: 3rem;
+  @media (max-width: 480px) {
+    right: 4rem;
+  }
 }
 
 .custom-arrow::before,

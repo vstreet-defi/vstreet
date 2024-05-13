@@ -9,6 +9,9 @@
 }
 .Container {
   margin: 2rem;
+  @media screen and (max-width: 480px) {
+    margin: 1rem;
+  }
 }
 
 .BasicCard {
@@ -22,6 +25,9 @@
 
   width: 30rem;
   padding: 1.8rem;
+  @media screen and (max-width: 480px) {
+    width: 22rem;
+  }
 }
 
 .SelectDeposit {
@@ -38,6 +44,9 @@
   font-size: 20px;
   font-family: "Roboto Mono", monospace;
   font-weight: 100;
+  @media (max-width: 480px) {
+    width: 8.6rem;
+  }
 }
 
 .CardFeature {
