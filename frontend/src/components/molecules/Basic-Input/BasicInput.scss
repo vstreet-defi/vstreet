@@ -1,0 +1,38 @@
+.BI-label--container {
+  display: flex;
+  flex-direction: row;
+  display: flex;
+  justify-content: space-between;
+}
+
+.BasicInput {
+  background-color: transparent;
+  border: 1px solid #00ffc4;
+  width: 26rem;
+  padding-left: 0.75rem;
+  color: #00ffc4;
+}
+
+.BI-label {
+  color: rgba(163, 163, 163, 1);
+  font-family: "Roboto Mono", monospace;
+  font-size: 16px;
+}
+
+.number {
+  font-size: 1rem;
+  //new color for the number to be voted and aproved
+  color: #00ffc4;
+}
+
+.tag {
+  margin-right: 0.5rem;
+  font-size: 12px;
+  display: flex;
+  flex-direction: column;
+  justify-content: end;
+  padding-bottom: 2px;
+  @media (max-width: 768px) {
+    font-size: 8px;
+  }
+}
