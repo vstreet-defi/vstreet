@@ -3,7 +3,7 @@ import ApiLoader from "components/atoms/ApiLoader";
 import { useApi, useAccount } from "@gear-js/react-hooks";
 import Header from "components/templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
-import { CardDeposit } from "components/molecules/cards/CardDeposit";
+import { LiquidityInjection } from "components/organisms/LiquidityInjection/LiquidityInjection";
 
 function DappPage() {
   const { isApiReady } = useApi();
@@ -23,7 +23,7 @@ function DappPage() {
             bannerComponent={<></>}
             leftSectionComponent={
               <>
-                <CardDeposit />
+                <LiquidityInjection />
               </>
             }
             rightSectionComponent={<></>}
