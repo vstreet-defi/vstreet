@@ -1,4 +1,13 @@
+import { useState } from "react";
+
 function BasicInput() {
+  const [inputValue, setInputValue] = useState("");
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    if (/^\d*\.?\d{0,2}$/.test(value)) {
+      setInputValue(value);
+    }
+  };
   return (
     <div
       style={{
@@ -16,6 +25,9 @@ function BasicInput() {
       <input
         className="BasicInput"
         type="number"
+        step="0.01"
+        value={inputValue}
+        onChange={handleInputChange}
         style={{
           backgroundColor: "transparent",
           padding: "10px",

@@ -4,34 +4,20 @@ import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 
-function CardDeposit() {
+function CardWithdraw() {
   return (
     // <div className={styles.OutsideContainer}>
     <div className={styles.Container}>
-      <div
-        className={styles.BasicCard}
-        onClick={() => console.log("Deposit Tab")}
-      >
+      {/* <div className={styles.SelectWithdraw}>Withdraw</div> */}
+      <div className={styles.BasicCard}>
         <TokenSelector />
         <BasicInput />
         <PercentageSelector />
-        <ButtonGradFill text="Deposit" />
+        <ButtonGradFill text="Withdraw" />
       </div>
     </div>
     // </div>
   );
 }
 
-//Esta la dejo comentada como referencia del demo para implementar logica
-
-// function CardDeposit() {
-//   return (
-//     <Box className={styles.Moduleborderwrap}>
-//       <Box className={styles.module}>
-//         <DepositFunds />
-//       </Box>
-//     </Box>
-//   );
-// }
-
-export { CardDeposit };
+export { CardWithdraw };
