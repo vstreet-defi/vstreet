@@ -4,6 +4,7 @@ import { useApi, useAccount } from "@gear-js/react-hooks";
 import Header from "components/templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
 import { LiquidityInjection } from "components/organisms/LiquidityInjection/LiquidityInjection";
+import { Box } from "@chakra-ui/react";
 
 function DappPage() {
   const { isApiReady } = useApi();
