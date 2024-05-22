@@ -4,6 +4,13 @@
   align-items: flex-end;
   margin-top: 3.3rem;
 }
+.liquidity-injection__inner {
+  position: relative;
+  width: 100%;
+  top: 4rem;
+  @media (max-width: 480px) {
+  }
+}
 
 .SelectDeposit,
 .SelectWithdraw {
@@ -35,15 +42,28 @@
 }
 
 .SelectWithdraw {
-  // margin-left: 18.4rem;
-  // @media (max-width: 480px) {
-  //   margin-left: 13.4rem;
-  // }
   right: 2.5rem;
   top: -0.8rem;
+
+  @media (max-width: 480px) {
+    top: -1.8rem;
+    right: 1.4rem;
+  }
+  @media (max-width: 400px) {
+    top: -1.8rem;
+    right: 0.5rem;
+  }
 }
 
 .SelectDeposit {
   right: 20.9rem;
   top: -0.8rem;
+  @media (max-width: 480px) {
+    top: -1.8rem;
+    right: 14.9rem;
+  }
+  @media (max-width: 400px) {
+    top: -1.8rem;
+    right: 13.9rem;
+  }
 }

@@ -18,13 +18,7 @@ function LiquidityInjection() {
   };
   return (
     <div className="liquidity-injection__content">
-      <div
-        style={{
-          position: "relative",
-          width: "100%",
-          top: "4rem",
-        }}
-      >
+      <div className="liquidity-injection__inner">
         {" "}
         <button
           onClick={handleSelectDepositClick}
