@@ -1,24 +1,55 @@
-import React, { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 
 function TokenSelector() {
   const [showMessage, setShowMessage] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
   const handleClick = () => {
     setShowMessage((prevState) => !prevState);
   };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      wrapperRef.current &&
+      !wrapperRef.current.contains(event.target as Node)
+    ) {
+      setShowMessage(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <div onClick={handleClick} className="Token-Selector">
+    <div className="Token-Selector">
       <p className="TS-Label">Token</p>
-      <select disabled>
-        <option value="">USDC</option>
-      </select>
-      <span className="custom-arrow"></span>
+      <div className="select-wrapper" onClick={handleClick} ref={wrapperRef}>
+        <select disabled>
+          <option value="">USDC</option>
+        </select>
+        <span className="custom-arrow"></span>
+      </div>
       {showMessage && (
-        <div className="custom-message">
-          At the moment we only allow USDC Liquidity Deposits.
-        </div>
+        <Tooltip message="At the moment we only allow USDC Liquidity Deposits." />
       )}
     </div>
   );
 }
+
+interface TooltipProps {
+  message: string;
+}
+
+const Tooltip: React.FC<TooltipProps> = ({ message }) => {
+  return (
+    <div className="custom-tooltip">
+      <p>{message}</p>
+    </div>
+  );
+};
 
 export default TokenSelector;

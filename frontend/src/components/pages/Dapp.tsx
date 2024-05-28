@@ -3,8 +3,7 @@ import ApiLoader from "components/atoms/ApiLoader";
 import { useApi, useAccount } from "@gear-js/react-hooks";
 import Header from "components/templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
-import { LiquidityInjection } from "components/organisms/LiquidityInjection/LiquidityInjection";
-import { Box } from "@chakra-ui/react";
+import { FundsManager } from "components/organisms/FundsManager/FundsManager";
 
 function DappPage() {
   const { isApiReady } = useApi();
@@ -22,11 +21,7 @@ function DappPage() {
           />
           <DappTemplate
             bannerComponent={<></>}
-            leftSectionComponent={
-              <>
-                <LiquidityInjection />
-              </>
-            }
+            leftSectionComponent={<FundsManager />}
             rightSectionComponent={<></>}
           />
         </>

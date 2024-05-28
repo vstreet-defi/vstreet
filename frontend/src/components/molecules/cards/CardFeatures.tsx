@@ -1,5 +1,3 @@
-/* eslint-disable react/destructuring-assignment */
-/* eslint-disable react/prop-types */
 import { Box, Flex, Text } from "@chakra-ui/react";
 import styles from "./Card.module.scss";
 

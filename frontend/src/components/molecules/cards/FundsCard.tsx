@@ -4,20 +4,21 @@ import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 
-function CardWithdraw() {
+type props = {
+  buttonLabel: string;
+};
+
+function FundsCard({ buttonLabel }: props) {
   return (
-    // <div className={styles.OutsideContainer}>
     <div className={styles.Container}>
-      {/* <div className={styles.SelectWithdraw}>Withdraw</div> */}
       <div className={styles.BasicCard}>
         <TokenSelector />
         <BasicInput />
         <PercentageSelector />
-        <ButtonGradFill text="Withdraw" />
+        <ButtonGradFill label={buttonLabel} />
       </div>
     </div>
-    // </div>
   );
 }
 
-export { CardWithdraw };
+export { FundsCard };
