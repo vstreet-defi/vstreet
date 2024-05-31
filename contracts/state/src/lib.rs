@@ -2,7 +2,7 @@
 #![no_std]
 
 use io::*;
-use gmeta::{ Metadata, metawasm};
+use gmeta::{ Metadata, metawasm, Out};
 use gstd::{ ActorId, prelude::*};
 
 
@@ -16,7 +16,7 @@ pub mod metafns {
 
     // Add your State functions
 
-    pub fn state(state: State) -> IoGlobalState {
+    pub fn state(state: State) -> Out<IoGlobalState> {
         state
     }
 
