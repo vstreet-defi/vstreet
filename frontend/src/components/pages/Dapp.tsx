@@ -23,7 +23,7 @@ function DappPage() {
             bannerComponent={<></>}
             leftSectionComponent={
               <>
-                <AlertModal type="success" />
+                <AlertModal type="warning" />
               </>
             }
             rightSectionComponent={<></>}
