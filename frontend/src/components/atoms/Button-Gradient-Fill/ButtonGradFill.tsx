@@ -1,9 +1,18 @@
 interface ButtonProps {
-  text: string;
+  label: string;
 }
 
-function ButtonGradFill({ text }: ButtonProps) {
-  return <button className="btn-grad-fill">{text}</button>;
+function ButtonGradFill({ label }: ButtonProps) {
+  const handleClick = () => {
+    if (label === "Deposit") console.log("Deposit action performed");
+    if (label === "Withdraw") console.log("Withdraw action performed");
+  };
+
+  return (
+    <button className="btn-grad-fill" onClick={handleClick}>
+      {label}
+    </button>
+  );
 }
 
 export default ButtonGradFill;

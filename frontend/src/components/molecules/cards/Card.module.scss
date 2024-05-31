@@ -7,23 +7,6 @@
   align-items: flex-end;
   margin-top: 3.3rem;
 }
-.Container {
-  position: absolute;
-
-  margin: 2rem;
-  right: 0.5rem;
-
-  @media (max-width: 480px) {
-    top: 1rem;
-    margin: 0rem;
-    right: 1.5rem;
-  }
-  @media (max-width: 400px) {
-    top: 1rem;
-    margin: 0rem;
-    right: 0.5rem;
-  }
-}
 
 .BasicCard {
   border-width: 2px;
@@ -52,35 +35,26 @@
   border-image: linear-gradient(141deg, rgb(0, 255, 196), #4fff4b) 1;
 }
 
-.CardDeposit {
+.FundsCard {
   display: flex;
   align-items: center;
-  //width: 50vw;
   width: 90%;
   margin: auto;
   max-width: 22em;
-
-  position: relative;
   padding: 30% 2em;
   box-sizing: border-box;
-
   $border: 1px;
   color: #fff;
   background: #000;
-  background-clip: padding-box; /* !importanté */
-  border: solid $border transparent; /* !importanté */
+  background-clip: padding-box;
+  border: solid $border transparent;
   border-radius: 1em;
 
   &:before {
     content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
     z-index: -1;
-    margin: -$border; /* !importanté */
-    border-radius: inherit; /* !importanté */
+    margin: -$border;
+    border-radius: inherit;
     background: linear-gradient(
       141deg,
       rgb(0, 255, 196),

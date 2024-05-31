@@ -17,34 +17,23 @@ function PercentageSelector() {
       <div className="slider-labels">
         {percentages.map((value) => (
           <button
-            style={{
-              fontFamily: "roboto",
-              fontSize: "1rem",
-              display: "flex",
-              flexDirection: "column",
-              marginLeft: value === 50 ? "1rem" : "0",
-              paddingLeft: value === 25 ? "1rem" : "0",
-            }}
+            className={`slider-button ${
+              value === 50 ? "slider-button--center" : ""
+            } ${value === 25 ? "slider-button--left" : ""}`}
             key={value}
             onClick={() => setPercentage(value)}
           >
             <div
-              className="circles"
-              style={{
-                backgroundColor: percentage >= value ? "#00FFC4" : "#5D5D5D",
-                borderRadius: "100%",
-                width: "1.5rem",
-                height: "1.5rem",
-                marginTop: "6px",
-                alignSelf: value === 100 ? "flex-end" : "center",
-                marginLeft: value === 75 ? "1rem" : "0",
-              }}
+              className={`circle ${
+                percentage >= value ? "circle--active" : ""
+              } ${value === 100 ? "circle--end" : ""} ${
+                value === 75 ? "circle--left" : ""
+              }`}
             ></div>
             <div
-              className="percentage-label"
-              style={{
-                marginLeft: value === 75 ? "1rem" : "0",
-              }}
+              className={`percentage-label ${
+                value === 75 ? "percentage-label--left" : ""
+              }`}
             >
               {value}%
             </div>
@@ -54,4 +43,5 @@ function PercentageSelector() {
     </div>
   );
 }
+
 export default PercentageSelector;
