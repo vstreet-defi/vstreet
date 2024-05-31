@@ -11,6 +11,12 @@
   padding: 0% !important;
   border-top: 1px solid #fff;
 
+  @media (max-width: 768px) {
+    flex-direction: column;
+    justify-content: center;
+    height: auto;
+  }
+
   .left-section {
     width: 100%;
     background: linear-gradient(90deg, #121215 0%, #000 47.3%, #003327 96.6%),
@@ -23,6 +29,14 @@
         rgba(93, 93, 93, 0) 86.05%
       )
       1 100%;
+    display: flex;
+    justify-content: right;
+    @media (max-width: 768px) {
+      height: 50rem;
+      width: 100%;
+      justify-content: center;
+      border-right-width: 0;
+    }
   }
 
   .right-section {

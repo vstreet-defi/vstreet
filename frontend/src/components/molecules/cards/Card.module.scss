@@ -1,4 +1,28 @@
 @use "@gear-js/ui/variables" as *;
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+
+.OutsideContainer {
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: flex-end;
+  margin-top: 3.3rem;
+}
+
+.BasicCard {
+  border-width: 2px;
+  border-image: linear-gradient(141deg, rgb(0, 255, 196), rgba(86, 86, 86, 0)) 1;
+  background-image: linear-gradient(
+    90deg,
+    rgba(28, 28, 28, 0.79),
+    rgba(18, 18, 18, 0.79)
+  );
+
+  width: 30rem;
+  padding: 1.8rem;
+  @media screen and (max-width: 480px) {
+    width: 22rem;
+  }
+}
 
 .CardFeature {
   border-width: 1px;
@@ -11,35 +35,26 @@
   border-image: linear-gradient(141deg, rgb(0, 255, 196), #4fff4b) 1;
 }
 
-.CardDeposit {
+.FundsCard {
   display: flex;
   align-items: center;
-  //width: 50vw;
   width: 90%;
   margin: auto;
   max-width: 22em;
-
-  position: relative;
   padding: 30% 2em;
   box-sizing: border-box;
-
   $border: 1px;
   color: #fff;
   background: #000;
-  background-clip: padding-box; /* !importanté */
-  border: solid $border transparent; /* !importanté */
+  background-clip: padding-box;
+  border: solid $border transparent;
   border-radius: 1em;
 
   &:before {
     content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
     z-index: -1;
-    margin: -$border; /* !importanté */
-    border-radius: inherit; /* !importanté */
+    margin: -$border;
+    border-radius: inherit;
     background: linear-gradient(
       141deg,
       rgb(0, 255, 196),

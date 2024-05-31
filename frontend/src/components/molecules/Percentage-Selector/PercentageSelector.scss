@@ -1,0 +1,100 @@
+.slider-container {
+  position: relative;
+  width: 100%;
+  margin-top: 2rem;
+  margin-bottom: 5rem;
+}
+
+.slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, #00ffc4, #4fff4b);
+  outline: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+  cursor: pointer; /* Asegúrate de que el cursor se muestre */
+}
+
+.slider:hover {
+  opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  border-radius: 100%;
+  width: 1rem;
+  height: 1rem;
+  background: #00ffc4;
+  cursor: pointer;
+  opacity: 1; /* Asegúrate de que el thumb sea visible */
+}
+
+.slider::-moz-range-thumb {
+  border-radius: 100%;
+  width: 1rem;
+  height: 1rem;
+  background: #00ffc4;
+  cursor: pointer;
+  opacity: 1; /* Asegúrate de que el thumb sea visible */
+}
+
+.slider-labels {
+  position: absolute;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.slider-button {
+  position: relative;
+  bottom: 1.5rem;
+  background: none;
+  border: none;
+  color: #a3a3a3;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: "roboto";
+  font-size: 1rem;
+}
+
+.slider-button--center {
+  margin-left: 1rem;
+}
+
+.slider-button--left {
+  padding-left: 1rem;
+}
+
+.circle {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 100%;
+  background-color: #5d5d5d;
+  margin-top: 6px;
+}
+
+.circle--active {
+  background-color: #00ffc4;
+}
+
+.circle--end {
+  align-self: flex-end;
+}
+
+.circle--left {
+  margin-left: 1rem;
+}
+
+.percentage-label {
+  padding-top: 1rem;
+  font-family: "Roboto", monospace;
+}
+
+.percentage-label--left {
+  margin-left: 1rem;
+}
