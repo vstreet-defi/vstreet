@@ -1,12 +1,20 @@
-import React from "react";
+import { useState, useEffect } from "react";
 
 type AlertModalProps = {
   type: "success" | "warning" | "error";
+  onTrigger: boolean;
 };
 
-function AlertModal({ type }: AlertModalProps) {
+function AlertModal({ type, onTrigger }: AlertModalProps) {
+  const [isVisible, setIsVisible] = useState(true);
   let modalText = "";
   let modalClass = "";
+
+  useEffect(() => {
+    if (onTrigger) {
+      setIsVisible(true);
+    }
+  }, [onTrigger]);
 
   switch (type) {
     case "success":
@@ -22,8 +30,12 @@ function AlertModal({ type }: AlertModalProps) {
       modalClass = "Alert-Modal-Error";
       break;
   }
+  if (!isVisible) {
+    return null;
+  }
+
   return (
-    <div className={`Alert-Modal`}>
+    <div onClick={() => setIsVisible(false)} className={`Alert-Modal`}>
       <div className={`Alert-Modal-Box ${modalClass}`}>
         <h1>{type.charAt(0).toUpperCase() + type.slice(1)}!</h1>
         <p>{modalText}</p>
@@ -32,4 +44,4 @@ function AlertModal({ type }: AlertModalProps) {
   );
 }
 
-export default AlertModal;
+export { AlertModal };
