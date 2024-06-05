@@ -1,20 +1,26 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
+import { AlertModalContext } from "contexts/alertContext";
 
 type AlertModalProps = {
   type: "success" | "warning" | "error";
-  onTrigger: boolean;
+  // onTrigger: boolean | undefined;
 };
 
-function AlertModal({ type, onTrigger }: AlertModalProps) {
-  const [isVisible, setIsVisible] = useState(true);
+function AlertModal({ type }: AlertModalProps) {
+  const alertContext = useContext(AlertModalContext);
+  const [isVisible, setIsVisible] = useState(false);
   let modalText = "";
   let modalClass = "";
 
   useEffect(() => {
-    if (onTrigger) {
+    if (alertContext?.isAlertModalVisible) {
       setIsVisible(true);
+    } else {
+      setIsVisible(false);
     }
-  }, [onTrigger]);
+
+    console.log("Alert modal triggered");
+  }, [alertContext?.isAlertModalVisible]);
 
   switch (type) {
     case "success":
@@ -35,7 +41,10 @@ function AlertModal({ type, onTrigger }: AlertModalProps) {
   }
 
   return (
-    <div onClick={() => setIsVisible(false)} className={`Alert-Modal`}>
+    <div
+      onClick={() => alertContext?.hideAlertModal()}
+      className={`Alert-Modal`}
+    >
       <div className={`Alert-Modal-Box ${modalClass}`}>
         <h1>{type.charAt(0).toUpperCase() + type.slice(1)}!</h1>
         <p>{modalText}</p>
