@@ -47,14 +47,17 @@ pub enum LiquidityAction {
     Deposit(u128),
     WithdrawLiquidity(u128),
     WithdrawRewards,
+    Borrow(u128),
+    Repay(u128),
 }
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
 pub enum LiquidityEvent {
-    Initialized,
     Deposited(u128),
     LiquidityWithdrawn(u128),
     RewardsWithdrawn(u128),
+    Borrowed(u128),
+    Repaid(u128),
 }
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
@@ -70,6 +73,7 @@ pub enum Error {
 pub struct UserInfo {
     pub balance: u128,
     pub rewards: u128,
+    pub loan: u128,
     pub last_updated: u128,
 }
 
@@ -90,6 +94,10 @@ pub struct IoGlobalState {
     pub stablecoin_address: ActorId,
     pub apr: u128,
     pub total_deposited: u128,
+    pub total_borrowed: u128,
+    pub base_lender_rate: u128,
+    pub lender_spread: u128,
+    pub base_borrower_rate: u128,
+    pub borrower_spread: u128,
     pub users: BTreeMap<ActorId, UserInfo>,
 }
-

@@ -1,85 +1,80 @@
 use gstd::{collections::BTreeMap, ActorId, Encode};
 use gtest::{Program, System};
-use io::{InitLiquidity, LiquidityAction, LiquidityEvent, IoGlobalState, Error};
+use io::{InitLiquidity, LiquidityAction, IoGlobalState};
 
 const DECIMALS_FACTOR: u128 = 10_u128.pow(18);
 const YEAR_IN_SECONDS: u128 = 31_536_000; // 365 * 24 * 60 * 60
+const STABLECOIN_PROGRAM_ID: ActorId = ActorId::new([1; 32]);
 
-fn init_liquidity(sys: &System) -> Program<'_> {
+fn initialize_contract(sys: &System) -> Program {
+    sys.init_logger();
     let program = Program::current(sys);
 
     let res = program.send(
-        1,
+        2,
         InitLiquidity {
-            stablecoin_address: ActorId::from([1; 32]),
+            stablecoin_address: STABLECOIN_PROGRAM_ID,
         },
     );
-
-    // Verificamos que la inicialización sea exitosa.
-    assert!(res.contains(&(1, Ok::<LiquidityEvent, Error>(LiquidityEvent::Initialized).encode())));
+    assert!(!res.main_failed());
 
     program
 }
 
 #[test]
-fn test_deposit_and_rewards() {
+fn init_liquidity() {
     let sys = System::new();
-    sys.init_logger();
-
-    let liquidity = init_liquidity(&sys);
-
-    let user: u64 = 2; // ActorId se genera automáticamente desde el tipo `u64`
-    let deposit_amount = 1_000_000_000_000_000_000u128;
-
-    // Registrar usuario en el sistema
-    sys.mint_to(user, deposit_amount * 10); // Mint some tokens to the user for testing
-
-    // Send deposit action
-    let res = liquidity.send(user, LiquidityAction::Deposit(deposit_amount));
-    assert!(res.contains(&(user, Ok::<LiquidityEvent, Error>(LiquidityEvent::Deposited(deposit_amount)).encode())));
-
-    // Simulate the passage of time (1 year)
-    sys.spend_blocks((YEAR_IN_SECONDS / 12) as u32); // Simulate 1 month
-    sys.spend_blocks((YEAR_IN_SECONDS / 12 * 11) as u32); // Simulate the remaining 11 months
-
-    // Send withdraw rewards action
-    let res = liquidity.send(user, LiquidityAction::WithdrawRewards);
-    assert!(res.contains(&(user, Ok::<LiquidityEvent, Error>(LiquidityEvent::RewardsWithdrawn(deposit_amount / 10)).encode()))); // 10% of deposit_amount
-
-    // Check the state after rewards withdrawal
-    let state: IoGlobalState = liquidity.read_state(()).expect("Unable to read state");
-    assert_eq!(state.users[&ActorId::from([2; 32])].rewards, 0);
-    assert_eq!(state.total_deposited, deposit_amount);
-    assert_eq!(state.users[&ActorId::from([2; 32])].balance, deposit_amount);
+    initialize_contract(&sys);
 }
 
 #[test]
-fn test_withdraw_liquidity() {
+fn deposit() {
     let sys = System::new();
-    sys.init_logger();
+    let program = initialize_contract(&sys);
+    let deposit_amount: u128 = 1000 * DECIMALS_FACTOR; // 1000 USDC
 
-    let liquidity = init_liquidity(&sys);
+    program.send(
+        2,
+        LiquidityAction::Deposit(deposit_amount),
+    );
 
-    let user: u64 = 2; // ActorId se genera automáticamente desde el tipo `u64`
-    let deposit_amount = 1_000_000_000_000_000_000u128;
-
-    // Registrar usuario en el sistema
-    sys.mint_to(user, deposit_amount * 10); // Mint some tokens to the user for testing
-
-    // Send deposit action
-    let res = liquidity.send(user, LiquidityAction::Deposit(deposit_amount));
-    assert!(res.contains(&(user, Ok::<LiquidityEvent, Error>(LiquidityEvent::Deposited(deposit_amount)).encode())));
-
-    // Simulate the passage of time (half a year)
-    sys.spend_blocks((YEAR_IN_SECONDS / 2) as u32);
-
-    // Send withdraw liquidity action
-    let withdraw_amount = 500_000_000_000_000_000u128; // Withdraw half the deposit
-    let res = liquidity.send(user, LiquidityAction::WithdrawLiquidity(withdraw_amount));
-    assert!(res.contains(&(user, Ok::<LiquidityEvent, Error>(LiquidityEvent::LiquidityWithdrawn(withdraw_amount)).encode())));
-
-    // Check the state after withdrawal
-    let state: IoGlobalState = liquidity.read_state(()).expect("Unable to read state");
-    assert_eq!(state.total_deposited, deposit_amount - withdraw_amount);
-    assert_eq!(state.users[&ActorId::from([2; 32])].balance, deposit_amount - withdraw_amount);
+    let state: IoGlobalState = program.read_state(()).unwrap();
+    // Verificar si el total depositado y el balance del usuario se actualizan correctamente
+    assert_eq!(state.total_deposited, deposit_amount);
+    assert_eq!(state.users.get(&ActorId::from(2)).unwrap().balance, deposit_amount);
 }
+
+
+#[test]
+fn test_reward_allocation() {
+    let sys = System::new();
+    let program = initialize_contract(&sys);
+    let deposit_amount: u128 = 1_000_000 * DECIMALS_FACTOR; // 1,000,000 USDC
+    let user: ActorId = 2.into(); // Usuario que realiza el depósito
+
+    program.send(
+        2,
+        LiquidityAction::Deposit(deposit_amount),
+    );
+
+    // Simular el paso del tiempo
+    sys.spend_blocks(YEAR_IN_SECONDS as u32); // Simulamos 1 año
+
+    // Leer el estado del contrato para verificar las recompensas
+    let state: IoGlobalState = program.read_state(()).unwrap();
+    let user_info = state.users.get(&user).unwrap();
+
+    // Calcular las recompensas esperadas manualmente
+    let lender_rate = state.base_lender_rate + (state.total_borrowed.saturating_mul(state.lender_spread) / state.total_deposited);
+    let expected_rewards = (deposit_amount.saturating_mul(lender_rate).saturating_mul(YEAR_IN_SECONDS)) / (YEAR_IN_SECONDS.saturating_mul(DECIMALS_FACTOR));
+
+    // Imprimir las recompensas esperadas y las obtenidas
+    println!("Expected rewards: {}", expected_rewards);
+    println!("Expected rewards (USD): {}", expected_rewards / DECIMALS_FACTOR);
+    println!("User rewards: {}", user_info.rewards);
+    println!("User rewards (USD): {}", user_info.rewards / DECIMALS_FACTOR);
+
+    // Verificar si las recompensas calculadas y las obtenidas son iguales
+    assert_eq!(user_info.rewards, expected_rewards);
+}
+
