@@ -1,11 +1,22 @@
+import React, { useContext } from "react";
+import { AlertModalContext } from "contexts/alertContext";
+
 interface ButtonProps {
   label: string;
 }
 
-function ButtonGradFill({ label }: ButtonProps) {
+const ButtonGradFill: React.FC<ButtonProps> = ({ label }) => {
+  const alertModalContext = useContext(AlertModalContext);
   const handleClick = () => {
-    if (label === "Deposit") console.log("Deposit action performed");
-    if (label === "Withdraw") console.log("Withdraw action performed");
+    alertModalContext?.showAlertModal("Button clicked");
+    if (alertModalContext) {
+      if (label === "Deposit") console.log("Deposit action performed");
+      if (label === "Withdraw") console.log("Withdraw action performed");
+      console.log(
+        "Alert modal context: ",
+        alertModalContext.isAlertModalVisible
+      );
+    }
   };
 
   return (
@@ -13,6 +24,6 @@ function ButtonGradFill({ label }: ButtonProps) {
       {label}
     </button>
   );
-}
+};
 
 export default ButtonGradFill;
