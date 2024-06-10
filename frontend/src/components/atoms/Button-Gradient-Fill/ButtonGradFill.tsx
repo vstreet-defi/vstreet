@@ -1,15 +1,22 @@
-import { useState } from "react";
+import React, { useContext } from "react";
+import { AlertModalContext } from "contexts/alertContext";
 
 interface ButtonProps {
   label: string;
 }
 
-function ButtonGradFill({ label }: ButtonProps) {
-  const [isLoading, setLoading] = useState(false);
+const ButtonGradFill: React.FC<ButtonProps> = ({ label }) => {
+  const alertModalContext = useContext(AlertModalContext);
   const handleClick = () => {
-    setLoading(true);
-    if (label === "Deposit") console.log("Deposit action performed");
-    if (label === "Withdraw") console.log("Withdraw action performed");
+    alertModalContext?.showAlertModal("Button clicked");
+    if (alertModalContext) {
+      if (label === "Deposit") console.log("Deposit action performed");
+      if (label === "Withdraw") console.log("Withdraw action performed");
+      console.log(
+        "Alert modal context: ",
+        alertModalContext.isAlertModalVisible
+      );
+    }
   };
 
   return (
@@ -28,6 +35,6 @@ function ButtonGradFill({ label }: ButtonProps) {
       )}
     </button>
   );
-}
+};
 
 export default ButtonGradFill;
