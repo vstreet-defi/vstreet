@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { AlertModalContext } from "contexts/alertContext";
 
 interface ButtonProps {
@@ -6,10 +6,12 @@ interface ButtonProps {
 }
 
 const ButtonGradFill: React.FC<ButtonProps> = ({ label }) => {
+  const [isLoading, setIsLoading] = useState(false);
   const alertModalContext = useContext(AlertModalContext);
   const handleClick = () => {
     alertModalContext?.showAlertModal("Button clicked");
     if (alertModalContext) {
+      setIsLoading(true);
       if (label === "Deposit") console.log("Deposit action performed");
       if (label === "Withdraw") console.log("Withdraw action performed");
       console.log(
@@ -20,8 +22,19 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ label }) => {
   };
 
   return (
-    <button className="btn-grad-fill" onClick={handleClick}>
-      {label}
+    <button
+      className={`btn-grad-fill ${isLoading ? "btn-grad-fill--loading" : ""}`}
+      onClick={handleClick}
+    >
+      {isLoading ? (
+        <div className="lds-facebook">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      ) : (
+        label
+      )}
     </button>
   );
 };
