@@ -2,8 +2,8 @@
 #![no_std]
 
 use io::*;
-use gmeta::{ Metadata, metawasm};
-use gstd::{ ActorId, prelude::*};
+use gmeta::{ Metadata, metawasm, Out};
+use gstd::{ prelude::*};
 
 
 #[cfg(feature = "binary-vendor")]
@@ -16,7 +16,7 @@ pub mod metafns {
 
     // Add your State functions
 
-    pub fn state(state: State) -> IoGlobalState {
+    pub fn state(state: State) -> Out<IoGlobalState> {
         state
     }
 
