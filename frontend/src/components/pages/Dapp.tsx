@@ -6,6 +6,7 @@ import { isMobileDevice } from "utils/isMobile";
 import { AlertModal } from "components/molecules/alert-modal/AlertModal";
 import { FundsManager } from "components/organisms/FundsManager/FundsManager";
 import { AlertModalProvider } from "contexts/alertContext";
+import { ReadState } from "components/gear/ReadState";
 
 function DappPage() {
   const { isApiReady } = useApi();
@@ -27,6 +28,7 @@ function DappPage() {
               bannerComponent={
                 <>
                   <AlertModal type="warning" />
+                  <ReadState />
                 </>
               }
               leftSectionComponent={
