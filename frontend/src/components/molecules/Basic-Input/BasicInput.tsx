@@ -4,12 +4,16 @@ import { web3FromSource } from "@polkadot/extension-dapp";
 import { ProgramMetadata, encodeAddress } from "@gear-js/api";
 import { useEffect } from "react";
 
-function BasicInput() {
-  const [inputValue, setInputValue] = useState("");
+type BasicInputProps = {
+  inputValue: string;
+  onInputChange: (value: string) => void;
+};
+
+function BasicInput({ inputValue, onInputChange }: BasicInputProps) {
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const value = event.target.value;
     if (/^\d*\.?\d{0,2}$/.test(value)) {
-      setInputValue(value);
+      onInputChange(value);
     }
   };
 
