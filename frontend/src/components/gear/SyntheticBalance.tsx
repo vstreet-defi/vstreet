@@ -16,6 +16,8 @@ function SyntheticBalanceToken() {
 
   const Localbalances = fullState.balances || [];
 
+
+  //USDCV
   // Add your programID
   const programIDFT =
     "0xd8d0206ab4a4d0f26f80a28594e767d62bf1d5ff436c8c79e819a97399b7eaa7";
