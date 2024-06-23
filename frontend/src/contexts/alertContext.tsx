@@ -1,4 +1,4 @@
-import React, { createContext, useState, FC, ReactNode } from "react";
+import { createContext, useState, FC, ReactNode } from "react";
 
 // Define the type of the context
 interface AlertModalContextType {
