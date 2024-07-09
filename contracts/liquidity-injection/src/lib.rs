@@ -2,7 +2,7 @@
 
 use gstd::{ActorId, collections::BTreeMap, debug, exec, msg, prelude::*};
 
-use io::{Error, FTAction, InitLiquidity, LiquidityAction, LiquidityEvent, UserInfo};
+use io::{Error, FTAction, FTEvent, InitLiquidity, LiquidityAction, LiquidityEvent, UserInfo};
 
 const DECIMALS_FACTOR: u128 = 10_u128.pow(6);
 const YEAR_IN_SECONDS: u128 = 31_536_000; // 365 * 24 * 60 * 60
@@ -79,8 +79,9 @@ impl LiquidityPool {
         }
     }
 
-    async fn deposit(&mut self, user: ActorId, amount: u128) -> Result<LiquidityEvent, Error> {
-        if amount == 0 {
+
+    async fn deposit(&mut self, user: ActorId, amount_in_stablecoin: u128) -> Result<LiquidityEvent, Error> {
+        if amount_in_stablecoin == 0 {
             return Err(Error::ZeroAmount);
         }
 
@@ -94,6 +95,9 @@ impl LiquidityPool {
             rewards_usdc: 0,
         });
 
+        // if !user_info.approved {
+        //     return Err(Error::UserNotApproved);
+        // }
         // Calcular recompensas acumuladas antes del depósito
         let time_diff_in_millis = current_timestamp_in_millis - user_info.last_updated;
         let time_diff_in_seconds = time_diff_in_millis / 1000; // Convert to seconds
@@ -109,14 +113,14 @@ impl LiquidityPool {
             user_info.rewards_usdc = user_info.rewards / DECIMALS_FACTOR;
         }
         user_info.last_updated = current_timestamp_in_millis;
-        user_info.balance = user_info.balance.saturating_add(amount * DECIMALS_FACTOR);
+        user_info.balance = user_info.balance.saturating_add(amount_in_stablecoin * DECIMALS_FACTOR);
         user_info.balance_usdc = user_info.balance / DECIMALS_FACTOR;
-        self.total_deposited = self.total_deposited.saturating_add(amount * DECIMALS_FACTOR);
+        self.total_deposited = self.total_deposited.saturating_add(amount_in_stablecoin * DECIMALS_FACTOR);
 
         let token_address = self.stablecoin_address;
-        self.transfer_tokens_to_contract(&token_address, &user, amount * DECIMALS_FACTOR).await?;
-
-        Ok(LiquidityEvent::Deposited(amount))
+        let result = self.transfer_tokens_to_contract(&token_address, amount_in_stablecoin).await?;
+        msg::send(user, result, 0).expect("Msg failed");
+        Ok(LiquidityEvent::Deposited(amount_in_stablecoin))
     }
 
     async fn withdraw_liquidity(&mut self, user: ActorId, amount: u128) -> Result<LiquidityEvent, Error> {
@@ -148,7 +152,7 @@ impl LiquidityPool {
         self.total_deposited = self.total_deposited.saturating_sub(amount * DECIMALS_FACTOR);
 
         let token_address = self.stablecoin_address;
-        self.transfer_tokens_from_contract(&token_address, &user, amount * DECIMALS_FACTOR).await?;
+        self.transfer_tokens_from_contract(&token_address, amount).await?;
 
         Ok(LiquidityEvent::LiquidityWithdrawn(amount))
     }
@@ -183,30 +187,50 @@ impl LiquidityPool {
         user_info.rewards_usdc = 0;
 
         let token_address = self.stablecoin_address;
-        self.transfer_tokens_from_contract(&token_address, &user, rewards_to_withdraw).await?;
+        self.transfer_tokens_from_contract(&token_address, rewards_to_withdraw).await?;
 
         Ok(LiquidityEvent::RewardsWithdrawn(rewards_to_withdraw))
     }
 
+    // async fn approve_transactions_between_contract_and_stablecoin(
+    //     &self,
+    //     token_address: &ActorId,
+    //     amount_in_stablecoin: u128) {
+    //     let payload = FTAction::Approve { to: exec::program_id(), amount: amount_in_stablecoin };
+    //     let _ = msg::send(*token_address, payload, 0);
+    // }
+
     async fn transfer_tokens_from_contract(
         &self,
         token_address: &ActorId,
-        to: &ActorId,
         amount: u128,
     ) -> Result<(), Error> {
-        let payload = FTAction::Transfer { from: exec::program_id(), to: *to, amount };
-        msg::send(*token_address, payload, 0).map_err(|_| Error::TransferFailed)?;
-        Ok(())
+        let payload = FTAction::Transfer { from: exec::program_id(), to: msg::source(), amount };
+        let future = msg::send_for_reply_as(*token_address, payload, 0, 0)
+            .map_err(|_| Error::TransferFailed)?;
+
+        let result = future.await.map_err(|_| Error::TransferFailed)?;
+
+        match result {
+            FTEvent::Err => Err(Error::TransferFailed),
+            _ => Ok(()),
+        }
     }
 
     async fn transfer_tokens_to_contract(
         &self,
         token_address: &ActorId,
-        from: &ActorId,
-        amount: u128,
+        amount_in_stablecoin: u128,
     ) -> Result<(), Error> {
-        let payload = FTAction::Transfer { from: *from, to: exec::program_id(), amount };
-        msg::send(*token_address, payload, 0).map_err(|_| Error::TransferFailed)?;
-        Ok(())
+        let payload = FTAction::Transfer { from: msg::source(), to: exec::program_id(), amount: amount_in_stablecoin };
+        let future = msg::send_for_reply_as(*token_address, payload, 0, 0)
+            .map_err(|_| Error::TransferFailed)?;
+
+        let result = future.await.map_err(|_| Error::TransferFailed)?;
+
+        match result {
+            FTEvent::Err => Err(Error::TransferFailed),
+            _ => Ok(()),
+        }
     }
 }
