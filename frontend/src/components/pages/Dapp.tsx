@@ -29,7 +29,7 @@ function DappPage() {
               bannerComponent={
                 <>
                   <AlertModal type="warning" />
-                  <ReadState />
+                  {/* <ReadState /> */}
                 </>
               }
               leftSectionComponent={
