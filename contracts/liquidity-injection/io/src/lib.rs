@@ -7,9 +7,9 @@ use gstd::{ActorId, collections::BTreeMap, Decode, Encode, prelude::*, TypeInfo}
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
 pub struct InitFT {
-    pub synthetic_asset: ActorId,
     pub stablecoin: ActorId,
 }
+
 
 #[derive(Debug, Decode, Encode, TypeInfo)]
 #[codec(crate = gstd::codec)]
@@ -39,48 +39,53 @@ pub enum FTEvent {
 }
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
-pub struct InitLiquidity {
+pub struct InitBond {
     pub stablecoin_address: ActorId,
+    pub price: u128,
 }
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
-pub enum LiquidityAction {
-    Deposit(u128),
-    WithdrawLiquidity(u128),
-    WithdrawRewards,
+pub enum BondAction {
+    BuyBond(u128),
+    // LiberatePtokens(u128),
+   
 }
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
-pub enum LiquidityEvent {
-    Initialized,
-    Deposited(u128),
-    LiquidityWithdrawn(u128),
-    RewardsWithdrawn(u128),
+pub enum BondEvent {
+    Ok,
+    Err,
+    BondBought(u128),
+    Ptokens(u128),
+    BondValue(u128),
+    BondBalance(u128),
+    PtokenBalance(u128),
 }
+
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
 pub enum Error {
     ZeroAmount,
     InvalidAmount,
-    ZeroRewards,
     UserNotFound,
     TransferFailed,
+    AlreadyEmmited,
 }
 
+
 #[derive(Debug, Clone, Encode, Decode, TypeInfo, Default)]
-pub struct UserInfo {
-    pub balance: u128,
-    pub rewards: u128,
-    pub last_updated: u128,
-    pub balance_usdc: u128,
-    pub rewards_usdc: u128,
+pub struct BondHolder {
+    pub p_balance: u128,
+    pub emmited: bool,
+       
 }
+
 
 pub struct ContractMetadata;
 
 impl Metadata for ContractMetadata {
-    type Init = In<InitLiquidity>;
-    type Handle = InOut<LiquidityAction, LiquidityEvent>;
+    type Init = In<InitBond>;
+    type Handle = InOut<BondAction, BondEvent>;
     type Reply = ();
     type Others = ();
     type Signal = ();
@@ -91,7 +96,10 @@ impl Metadata for ContractMetadata {
 pub struct IoGlobalState {
     pub owner: ActorId,
     pub stablecoin_address: ActorId,
-    pub apr: u128,
+    pub p_token_address: ActorId,
+    pub bonds_emmited: u128,
+    pub price: u128,
+    pub vesting_time: u64,
     pub total_deposited: u128,
-    pub users: BTreeMap<ActorId, UserInfo>,
+    pub bond_holders: BTreeMap<ActorId, BondHolder>,
 }
