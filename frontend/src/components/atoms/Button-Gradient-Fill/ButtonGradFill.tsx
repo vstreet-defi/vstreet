@@ -26,7 +26,6 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
     }
   }, [account]);
 
-  console.log("buton input value=", amount);
   const handleClick = () => {
     alertModalContext?.showAlertModal("Button clicked");
     if (alertModalContext) {
