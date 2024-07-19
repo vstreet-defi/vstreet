@@ -20,7 +20,7 @@ function FundsCard({ buttonLabel }: props) {
         <TokenSelector />
         <BasicInput inputValue={inputValue} onInputChange={handleInputChange} />
         <PercentageSelector />
-        <ButtonGradFill valueAmount={inputValue} label={buttonLabel} />
+        <ButtonGradFill amount={inputValue} label={buttonLabel} />
       </div>
     </div>
   );
