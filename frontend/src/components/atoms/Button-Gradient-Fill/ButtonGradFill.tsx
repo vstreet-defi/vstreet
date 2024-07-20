@@ -95,6 +95,8 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
               console.log("in process");
               if (status.type === "Finalized") {
                 alert.success(status.type);
+                console.log("Approve Finalized");
+                signer();
               }
             }
           }
@@ -130,6 +132,8 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
               console.log("in process");
               if (status.type === "Finalized") {
                 alert.success(status.type);
+                console.log("Transfer Finalized");
+                setIsLoading(false);
               }
             }
           }
@@ -156,11 +160,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
         try {
           //approve
           console.log("approve init");
-          await signerApprove();
-          console.log("approve done");
+          const aprrove = await signerApprove();
+          console.log("approve done", aprrove);
           //transfer
-          console.log("transfer init");
-          await signer();
+          // console.log("transfer init");
+          // await signer();
           console.log("transfer done");
         } catch (error) {
           console.log(error);
