@@ -8,6 +8,8 @@ import {
   metadataVST,
   programIDFTUSDC,
   metadataFTUSDC,
+  programIDSPBond,
+  metadataSPBond,
 } from "../../../utils/smartPrograms";
 import { MessageSendOptions } from "@gear-js/api";
 
@@ -29,16 +31,18 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
     destination: programIDFTUSDC, // programId
     payload: {
       Approve: {
-        to: programIDVST,
+        to: programIDSPBond,
         amount: Number(amount),
       },
     },
     gasLimit: 89981924500,
     value: 0,
   });
+
+  console.log(account?.decodedAddress);
   const [message, setMessage] = useState<MessageSendOptions>({
-    destination: programIDVST, // programId
-    payload: { Deposit: Number(amount) },
+    destination: programIDSPBond, // programId
+    payload: { BuyBond: Number(amount) },
     gasLimit: 89981924500,
     value: 0,
   });
@@ -47,7 +51,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
       destination: programIDFTUSDC, // programId
       payload: {
         Approve: {
-          to: programIDVST,
+          to: programIDSPBond,
           amount: Number(amount),
         },
       },
@@ -55,8 +59,8 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
       value: 0,
     });
     setMessage({
-      destination: programIDVST, // programId
-      payload: { Deposit: Number(amount) },
+      destination: programIDSPBond, // programId
+      payload: { BuyBond: Number(amount) },
       gasLimit: 89981924500,
       value: 0,
     });
@@ -111,7 +115,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
 
     if (isVisibleAccount) {
       // Create a message extrinsic for transfer
-      const transferExtrinsic = await api.message.send(message, metadataVST);
+      const transferExtrinsic = await api.message.send(message, metadataSPBond);
 
       const injector = await web3FromSource(accounts[0].meta.source);
 
@@ -156,7 +160,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
           console.log("approve done");
           //transfer
           console.log("transfer init");
-          signer();
+          await signer();
           console.log("transfer done");
         } catch (error) {
           console.log(error);
