@@ -5,13 +5,22 @@ import Header from "components/templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
 import { AlertModal } from "components/molecules/alert-modal/AlertModal";
 import { FundsManager } from "components/organisms/FundsManager/FundsManager";
-import { AlertModalProvider } from "contexts/alertContext";
+import { AlertModalContext, AlertModalProvider } from "contexts/alertContext";
+import { useContext, useEffect, useState } from "react";
+import { log } from "console";
 
 function DappPage() {
   const { isApiReady } = useApi();
   const { isAccountReady } = useAccount();
   const isAppReady = isApiReady && isAccountReady;
   const navBarItems = ["Home", "Supply", "Borrow", "Markets"];
+  const alertModalContext = useContext(AlertModalContext);
+
+  useEffect(() => {
+    if (alertModalContext) {
+      console.log(alertModalContext?.alertModalMessage);
+    }
+  }, [alertModalContext]);
 
   return (
     <>
@@ -26,7 +35,8 @@ function DappPage() {
             <DappTemplate
               bannerComponent={
                 <>
-                  <AlertModal type="warning" />
+                  <AlertModal type="info" />
+                  {/* <ReadState /> */}
                 </>
               }
               leftSectionComponent={
