@@ -68,7 +68,6 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
     console.log(message);
   }, [amount]);
 
-  // //Approve message commented until we figure out a way to put it together with the deposit message
   const signerApprove = async () => {
     const localaccount = account?.address;
     const isVisibleAccount = accounts.some(
@@ -166,10 +165,6 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
           console.log("approve init");
           const aprrove = await signerApprove();
           console.log("approve done", aprrove);
-          //transfer
-          // console.log("transfer init");
-          // await signer();
-          console.log("transfer done");
         } catch (error) {
           console.log(error);
         }
