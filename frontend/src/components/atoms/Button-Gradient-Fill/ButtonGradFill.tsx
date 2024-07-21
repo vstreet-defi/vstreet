@@ -134,6 +134,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
                 alert.success(status.type);
                 console.log("Transfer Finalized");
                 setIsLoading(false);
+                alertModalContext?.hideAlertModal();
               }
             }
           }
@@ -153,7 +154,10 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
   }, [account]);
 
   const handleClick = async () => {
-    alertModalContext?.showAlertModal("Button clicked");
+    alertModalContext?.showAlertModal(
+      "Deposit in progress, first approve the smart contract and then sign the transaction.",
+      "info"
+    );
     if (alertModalContext) {
       setIsLoading(true);
       if (label === "Deposit") {
@@ -179,6 +183,8 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
       );
     }
   };
+
+  console.log("Alert msg;", alertModalContext?.alertModalMessage);
 
   return (
     <button

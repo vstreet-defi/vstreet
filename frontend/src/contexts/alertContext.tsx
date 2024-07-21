@@ -4,7 +4,8 @@ import { createContext, useState, FC, ReactNode } from "react";
 interface AlertModalContextType {
   isAlertModalVisible: boolean;
   alertModalMessage: string;
-  showAlertModal: (message: string) => void;
+  alertType: string;
+  showAlertModal: (message: string, type: string) => void;
   hideAlertModal: () => void;
 }
 
@@ -18,9 +19,11 @@ export const AlertModalProvider: FC<{ children: ReactNode }> = ({
 }) => {
   const [isAlertModalVisible, setIsAlertModalVisible] = useState(false);
   const [alertModalMessage, setAlertModalMessage] = useState("");
+  const [alertType, setAlertType] = useState("");
 
-  const showAlertModal = (message: string) => {
+  const showAlertModal = (message: string, type: string) => {
     setAlertModalMessage(message);
+    setAlertType(type);
     setIsAlertModalVisible(true);
   };
 
@@ -33,6 +36,7 @@ export const AlertModalProvider: FC<{ children: ReactNode }> = ({
       value={{
         isAlertModalVisible,
         alertModalMessage,
+        alertType,
         showAlertModal,
         hideAlertModal,
       }}
