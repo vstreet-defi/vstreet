@@ -8,8 +8,6 @@ import {
   metadataVST,
   programIDFTUSDC,
   metadataFTUSDC,
-  programIDSPBond,
-  metadataSPBond,
 } from "../../../utils/smartPrograms";
 import { MessageSendOptions } from "@gear-js/api";
 
@@ -31,7 +29,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
     destination: programIDFTUSDC, // programId
     payload: {
       Approve: {
-        to: programIDSPBond,
+        to: programIDVST,
         amount: Number(amount),
       },
     },
@@ -41,8 +39,15 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
 
   console.log(account?.decodedAddress);
   const [message, setMessage] = useState<MessageSendOptions>({
-    destination: programIDSPBond, // programId
-    payload: { BuyBond: Number(amount) },
+    destination: programIDVST, // programId
+    payload: { Deposit: Number(amount) },
+    gasLimit: 89981924500,
+    value: 0,
+  });
+
+  const [messageWithdraw, setMessageWithdraw] = useState<MessageSendOptions>({
+    destination: programIDVST, // programId
+    payload: { withdrawliquidity: Number(amount) },
     gasLimit: 89981924500,
     value: 0,
   });
@@ -51,7 +56,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
       destination: programIDFTUSDC, // programId
       payload: {
         Approve: {
-          to: programIDSPBond,
+          to: programIDVST,
           amount: Number(amount),
         },
       },
@@ -59,11 +64,19 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
       value: 0,
     });
     setMessage({
-      destination: programIDSPBond, // programId
-      payload: { BuyBond: Number(amount) },
+      destination: programIDVST, // programId
+      payload: { Deposit: Number(amount) },
       gasLimit: 89981924500,
       value: 0,
     });
+
+    setMessageWithdraw({
+      destination: programIDVST, // programId
+      payload: { withdrawliquidity: Number(amount) },
+      gasLimit: 89981924500,
+      value: 0,
+    });
+
     console.log(messageApprove);
     console.log(message);
   }, [amount]);
@@ -108,6 +121,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
     }
   };
 
+  //Deposit Signer
   const signer = async () => {
     const localaccount = account?.address;
     const isVisibleAccount = accounts.some(
@@ -116,7 +130,49 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
 
     if (isVisibleAccount) {
       // Create a message extrinsic for transfer
-      const transferExtrinsic = await api.message.send(message, metadataSPBond);
+      const transferExtrinsic = await api.message.send(message, metadataVST);
+
+      const injector = await web3FromSource(accounts[0].meta.source);
+
+      transferExtrinsic
+        .signAndSend(
+          account?.address ?? alert.error("No account"),
+          { signer: injector.signer },
+          ({ status }) => {
+            if (status.isInBlock) {
+              alert.success(status.asInBlock.toString());
+            } else {
+              console.log("in process");
+              if (status.type === "Finalized") {
+                alert.success(status.type);
+                console.log("Transfer Finalized");
+                setIsLoading(false);
+                alertModalContext?.hideAlertModal();
+              }
+            }
+          }
+        )
+        .catch((error: any) => {
+          console.log(":( transaction failed", error);
+        });
+    } else {
+      alert.error("Account not available to sign");
+    }
+  };
+
+  //Withdraw Signer
+  const signerWithdraw = async () => {
+    const localaccount = account?.address;
+    const isVisibleAccount = accounts.some(
+      (visibleAccount) => visibleAccount.address === localaccount
+    );
+
+    if (isVisibleAccount) {
+      // Create a message extrinsic for transfer
+      const transferExtrinsic = await api.message.send(
+        messageWithdraw,
+        metadataVST
+      );
 
       const injector = await web3FromSource(accounts[0].meta.source);
 
@@ -171,11 +227,21 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
 
         console.log("Deposit action performed");
       }
-      if (label === "Withdraw") console.log("Withdraw action performed");
-      console.log(
-        "Alert modal context: ",
-        alertModalContext.isAlertModalVisible
-      );
+      if (label === "Withdraw") {
+        try {
+          //withdraw
+          console.log("withdraw init");
+          const withdraw = await signerWithdraw();
+          console.log("withdraw done", withdraw);
+        } catch (error) {
+          console.log(error);
+        }
+        console.log("Withdraw action performed");
+        console.log(
+          "Alert modal context: ",
+          alertModalContext.isAlertModalVisible
+        );
+      }
     }
   };
 
