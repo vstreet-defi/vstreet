@@ -8,6 +8,7 @@ import { FundsManager } from "components/organisms/FundsManager/FundsManager";
 import { AlertModalContext, AlertModalProvider } from "contexts/alertContext";
 import { useContext, useEffect, useState } from "react";
 import { log } from "console";
+import StakingInfoHeader from "components/atoms/Staking-Info-Header/StakingInfoHeader";
 
 function DappPage() {
   const { isApiReady } = useApi();
@@ -44,7 +45,11 @@ function DappPage() {
                   <FundsManager />
                 </>
               }
-              rightSectionComponent={<></>}
+              rightSectionComponent={
+                <>
+                  <StakingInfoHeader />
+                </>
+              }
             />
           </>
         ) : (
