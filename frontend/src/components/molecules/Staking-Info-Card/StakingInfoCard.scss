@@ -1,5 +1,5 @@
-.BasicCardHeader {
-  margin-top: 6rem;
+.BasicCard {
+  margin-top: 1rem;
   margin-left: 3rem;
   border-width: 2px;
   border-image: linear-gradient(141deg, rgb(0, 255, 196), rgba(86, 86, 86, 0)) 1;
@@ -10,15 +10,31 @@
   );
   align-self: center;
   font-family: "Roboto Mono", monospace;
-  color: #00ffc4;
+  color: #ffffff;
   font-size: 15px;
 
   width: 30rem;
-  padding: 0.5rem;
+  padding-right: 1.5rem;
   padding-left: 1rem;
+
   @media screen and (max-width: 480px) {
     width: 22rem;
     margin-left: 1rem;
-    margin-top: 4rem;
+    margin-top: 1rem;
   }
+}
+
+.Flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+}
+.ButtonFlex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1rem;
+  margin-left: 1rem;
+  margin-bottom: 1rem;
 }

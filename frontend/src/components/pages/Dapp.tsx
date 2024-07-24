@@ -9,6 +9,7 @@ import { AlertModalContext, AlertModalProvider } from "contexts/alertContext";
 import { useContext, useEffect, useState } from "react";
 import { log } from "console";
 import StakingInfoHeader from "components/atoms/Staking-Info-Header/StakingInfoHeader";
+import StakingInfoCard from "components/molecules/Staking-Info-Card/StakingInfoCard";
 
 function DappPage() {
   const { isApiReady } = useApi();
@@ -48,6 +49,7 @@ function DappPage() {
               rightSectionComponent={
                 <>
                   <StakingInfoHeader />
+                  <StakingInfoCard />
                 </>
               }
             />
