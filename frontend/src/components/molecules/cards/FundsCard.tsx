@@ -13,7 +13,6 @@ function FundsCard({ buttonLabel }: props) {
   const handleInputChange = (value: string) => {
     setInputValue(value);
   };
-  console.log("funds card input=", inputValue);
   return (
     <div className={styles.Container}>
       <div className={styles.BasicCard}>
