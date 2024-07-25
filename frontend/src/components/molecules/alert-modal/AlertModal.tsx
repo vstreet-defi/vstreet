@@ -18,12 +18,9 @@ function AlertModal({ type }: AlertModalProps) {
       setIsVisible(true);
       setAlertType(alertContext?.alertType);
       setAlertMsg(alertContext?.alertModalMessage);
-      console.log("AlertType: ", alertType);
     } else {
       setIsVisible(false);
     }
-
-    console.log("Alert modal triggered");
   }, [
     alertContext?.isAlertModalVisible,
     alertContext?.alertModalMessage,

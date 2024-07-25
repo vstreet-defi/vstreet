@@ -1,15 +1,14 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useState } from "react";
 import { AlertModalContext } from "contexts/alertContext";
-
 import { useAccount, useApi, useAlert } from "@gear-js/react-hooks";
-import { web3FromSource } from "@polkadot/extension-dapp";
 import {
-  programIDVST,
-  metadataVST,
-  programIDFTUSDC,
-  metadataFTUSDC,
-} from "../../../utils/smartPrograms";
-import { MessageSendOptions } from "@gear-js/api";
+  createApproveMessage,
+  createDepositMessage,
+  createWithdrawMessage,
+  approveTransaction,
+  depositTransaction,
+  withdrawTransaction,
+} from "smart-contracts-tools";
 
 interface ButtonProps {
   label: string;
@@ -20,232 +19,91 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
   const alert = useAlert();
   const { accounts, account } = useAccount();
   const { api } = useApi();
-
-  const [isLoading, setIsLoading] = useState(false);
   const alertModalContext = useContext(AlertModalContext);
 
-  const [userAccount, setUserAccount] = useState("");
-  const [messageApprove, setMessageApprove] = useState<MessageSendOptions>({
-    destination: programIDFTUSDC, // programId
-    payload: {
-      Approve: {
-        to: programIDVST,
-        amount: Number(amount),
-      },
-    },
-    gasLimit: 89981924500,
-    value: 0,
-  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  console.log(account?.decodedAddress);
-  const [message, setMessage] = useState<MessageSendOptions>({
-    destination: programIDVST, // programId
-    payload: { Deposit: Number(amount) },
-    gasLimit: 89981924500,
-    value: 0,
-  });
+  const handleApproveAndDeposit = async () => {
+    const approveMessage = createApproveMessage(amount);
+    const depositMessage = createDepositMessage(amount);
 
-  const [messageWithdraw, setMessageWithdraw] = useState<MessageSendOptions>({
-    destination: programIDVST, // programId
-    payload: { withdrawliquidity: Number(amount) },
-    gasLimit: 89981924500,
-    value: 0,
-  });
-  useEffect(() => {
-    setMessageApprove({
-      destination: programIDFTUSDC, // programId
-      payload: {
-        Approve: {
-          to: programIDVST,
-          amount: Number(amount),
-        },
-      },
-      gasLimit: 89981924500,
-      value: 0,
-    });
-    setMessage({
-      destination: programIDVST, // programId
-      payload: { Deposit: Number(amount) },
-      gasLimit: 89981924500,
-      value: 0,
-    });
-
-    setMessageWithdraw({
-      destination: programIDVST, // programId
-      payload: { withdrawliquidity: Number(amount) },
-      gasLimit: 89981924500,
-      value: 0,
-    });
-
-    console.log(messageApprove);
-    console.log(message);
-  }, [amount]);
-
-  const signerApprove = async () => {
-    const localaccount = account?.address;
-    const isVisibleAccount = accounts.some(
-      (visibleAccount) => visibleAccount.address === localaccount
-    );
-
-    if (isVisibleAccount) {
-      // Create a message extrinsic for transfer
-      const transferExtrinsic = await api.message.send(
-        messageApprove,
-        metadataFTUSDC
+    try {
+      console.log("approve init");
+      alertModalContext?.showAlertModal(
+        `Approval requested. Please check your wallet.`,
+        "info"
       );
+      await approveTransaction(api, approveMessage, account, accounts, alert);
+      console.log("approve done");
 
-      const injector = await web3FromSource(accounts[0].meta.source);
-
-      await transferExtrinsic
-        .signAndSend(
-          account?.address ?? alert.error("No account"),
-          { signer: injector.signer },
-          ({ status }) => {
-            if (status.isInBlock) {
-              alert.success(status.asInBlock.toString());
-            } else {
-              console.log("in process");
-              if (status.type === "Finalized") {
-                alert.success(status.type);
-                console.log("Approve Finalized");
-                signer();
-              }
-            }
-          }
-        )
-        .catch((error: any) => {
-          console.log(":( transaction failed", error);
-        });
-    } else {
-      alert.error("Account not available to sign");
-    }
-  };
-
-  //Deposit Signer
-  const signer = async () => {
-    const localaccount = account?.address;
-    const isVisibleAccount = accounts.some(
-      (visibleAccount) => visibleAccount.address === localaccount
-    );
-
-    if (isVisibleAccount) {
-      // Create a message extrinsic for transfer
-      const transferExtrinsic = await api.message.send(message, metadataVST);
-
-      const injector = await web3FromSource(accounts[0].meta.source);
-
-      transferExtrinsic
-        .signAndSend(
-          account?.address ?? alert.error("No account"),
-          { signer: injector.signer },
-          ({ status }) => {
-            if (status.isInBlock) {
-              alert.success(status.asInBlock.toString());
-            } else {
-              console.log("in process");
-              if (status.type === "Finalized") {
-                alert.success(status.type);
-                console.log("Transfer Finalized");
-                setIsLoading(false);
-                alertModalContext?.hideAlertModal();
-              }
-            }
-          }
-        )
-        .catch((error: any) => {
-          console.log(":( transaction failed", error);
-        });
-    } else {
-      alert.error("Account not available to sign");
-    }
-  };
-
-  //Withdraw Signer
-  const signerWithdraw = async () => {
-    const localaccount = account?.address;
-    const isVisibleAccount = accounts.some(
-      (visibleAccount) => visibleAccount.address === localaccount
-    );
-
-    if (isVisibleAccount) {
-      // Create a message extrinsic for transfer
-      const transferExtrinsic = await api.message.send(
-        messageWithdraw,
-        metadataVST
+      console.log("deposit init");
+      alertModalContext?.showAlertModal(
+        `Deposit in progress. Please check your wallet to sign the transaction.`,
+        "info"
       );
-
-      const injector = await web3FromSource(accounts[0].meta.source);
-
-      transferExtrinsic
-        .signAndSend(
-          account?.address ?? alert.error("No account"),
-          { signer: injector.signer },
-          ({ status }) => {
-            if (status.isInBlock) {
-              alert.success(status.asInBlock.toString());
-            } else {
-              console.log("in process");
-              if (status.type === "Finalized") {
-                alert.success(status.type);
-                console.log("Transfer Finalized");
-                setIsLoading(false);
-                alertModalContext?.hideAlertModal();
-              }
-            }
-          }
-        )
-        .catch((error: any) => {
-          console.log(":( transaction failed", error);
-        });
-    } else {
-      alert.error("Account not available to sign");
+      await depositTransaction(
+        api,
+        depositMessage,
+        account,
+        accounts,
+        alert,
+        setIsLoading,
+        alertModalContext
+      );
+      alertModalContext?.hideAlertModal?.();
+      console.log("deposit done");
+    } catch (error) {
+      console.log(error);
+      alertModalContext?.showAlertModal(`${error}`, "info");
     }
   };
 
-  useEffect(() => {
-    if (account) {
-      setUserAccount(account?.decodedAddress);
+  const handleWithdraw = async () => {
+    const withdrawMessage = createWithdrawMessage(amount);
+
+    try {
+      console.log("withdraw init");
+      alertModalContext?.showAlertModal(
+        `Withdrawal in progress. Please check your wallet to sign the transaction.`,
+        "info"
+      );
+      await withdrawTransaction(
+        api,
+        withdrawMessage,
+        account,
+        accounts,
+        alert,
+        setIsLoading,
+        alertModalContext
+      );
+      alertModalContext?.hideAlertModal?.();
+      console.log("withdraw done");
+    } catch (error) {
+      console.log(error);
     }
-  }, [account]);
+  };
+
+  const actions: { [key: string]: () => Promise<void> } = {
+    Deposit: handleApproveAndDeposit,
+    Withdraw: handleWithdraw,
+  };
 
   const handleClick = async () => {
-    alertModalContext?.showAlertModal(
-      "Deposit in progress, first approve the smart contract and then sign the transaction.",
-      "info"
-    );
-    if (alertModalContext) {
-      setIsLoading(true);
-      if (label === "Deposit") {
-        try {
-          //approve
-          console.log("approve init");
-          const aprrove = await signerApprove();
-          console.log("approve done", aprrove);
-        } catch (error) {
-          console.log(error);
-        }
+    setIsLoading(true);
 
-        console.log("Deposit action performed");
+    const action = actions[label];
+    if (action) {
+      try {
+        await action();
+      } catch (error) {
+        console.log(error);
       }
-      if (label === "Withdraw") {
-        try {
-          //withdraw
-          console.log("withdraw init");
-          const withdraw = await signerWithdraw();
-          console.log("withdraw done", withdraw);
-        } catch (error) {
-          console.log(error);
-        }
-        console.log("Withdraw action performed");
-        console.log(
-          "Alert modal context: ",
-          alertModalContext.isAlertModalVisible
-        );
-      }
+    } else {
+      alert.error("Invalid action");
     }
-  };
 
-  console.log("Alert msg;", alertModalContext?.alertModalMessage);
+    setIsLoading(false);
+  };
 
   return (
     <button
