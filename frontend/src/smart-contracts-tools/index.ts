@@ -43,6 +43,14 @@ export function createWithdrawMessage(amount: string): MessageSendOptions {
     value: 0,
   };
 }
+export function createWithdrawRewardsMessage(): MessageSendOptions {
+  return {
+    destination: programIDVST,
+    payload: { WithdrawRewards: null },
+    gasLimit: gasLimit,
+    value: 0,
+  };
+}
 
 function handleStatusUpdate(
   status: any,
@@ -202,6 +210,26 @@ export async function withdrawTransaction(
   return executeTransaction(
     api,
     withdrawMessage,
+    metadataVST,
+    account,
+    accounts,
+    alert,
+    setIsLoading,
+    alertModalContext
+  );
+}
+export async function withdrawRewardsTransaction(
+  api: GearApi,
+  withdrawRewardsMessage: MessageSendOptions,
+  account: any,
+  accounts: any[],
+  alert: any,
+  setIsLoading: (loading: boolean) => void,
+  alertModalContext: any
+): Promise<void> {
+  return executeTransaction(
+    api,
+    withdrawRewardsMessage,
     metadataVST,
     account,
     accounts,
