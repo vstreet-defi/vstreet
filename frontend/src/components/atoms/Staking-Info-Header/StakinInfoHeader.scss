@@ -16,9 +16,13 @@
   width: 30rem;
   padding: 0.5rem;
   padding-left: 1rem;
+  @media (max-width: 768px) {
+    margin-left: 0;
+    margin-top: 2rem;
+  }
   @media screen and (max-width: 480px) {
     width: 22rem;
-    margin-left: 1rem;
-    margin-top: 4rem;
+    margin-left: 0rem;
+    margin-top: 2rem;
   }
 }

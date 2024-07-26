@@ -11,6 +11,7 @@ import { useContext, useEffect } from "react";
 import StakingInfoHeader from "components/atoms/Staking-Info-Header/StakingInfoHeader";
 import StakingInfoCard from "components/molecules/Staking-Info-Card/StakingInfoCard";
 import { ReadState } from "components/gear/ReadState";
+import StakingInfo from "components/organisms/StakingInfo/StakingInfo";
 
 function DappPage() {
   const { isApiReady } = useApi();
@@ -42,8 +43,7 @@ function DappPage() {
               }
               rightSectionComponent={
                 <>
-                  <StakingInfoHeader />
-                  <StakingInfoCard />
+                  <StakingInfo />
                 </>
               }
             />

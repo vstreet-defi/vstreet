@@ -8,6 +8,7 @@ import {
   metadataVST,
   metadataFTUSDC,
 } from "../utils/smartPrograms";
+import { FullStateVST } from "components/molecules/Staking-Info-Card/StakingInfoCard";
 
 const gasLimit = 89981924500;
 
@@ -245,5 +246,41 @@ export const getBalance = async (
     }
   } catch (error: any) {
     alert.error(error.message);
+  }
+};
+
+export const getStakingInfo = async (
+  api: GearApi,
+  accountAddress: string,
+  setDepositedBalance: (balance: any) => void,
+  setRewardsUsdc: (rewards: any) => void,
+  setApr: (apr: any) => void,
+  setFullState: (state: FullStateVST) => void,
+  alert: any
+) => {
+  try {
+    const result = await api.programState.read(
+      { programId: programIDVST },
+      metadataVST
+    );
+    const rawState: unknown = result.toJSON();
+
+    const fullState = rawState as FullStateVST;
+    setFullState(fullState);
+    console.log(fullState);
+
+    const userAddress = accountAddress;
+    if (userAddress && fullState.users && fullState?.users[userAddress]) {
+      setDepositedBalance(fullState?.users[userAddress].balanceUsdc);
+      setRewardsUsdc(fullState?.users[userAddress].rewardsUsdc);
+      setApr(fullState?.apr);
+      return fullState?.users[userAddress].balanceUsdc;
+    } else {
+      console.log("User not found or no balanceUsdc available");
+      return null;
+    }
+  } catch (error: any) {
+    alert.error(error.message);
+    console.log(error);
   }
 };
