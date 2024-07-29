@@ -302,10 +302,8 @@ export const getStakingInfo = async (
       setDepositedBalance(fullState?.users[userAddress].balanceUsdc);
       setRewardsUsdc(fullState?.users[userAddress].rewardsUsdc);
       setApr(fullState?.apr);
-      return fullState?.users[userAddress].balanceUsdc;
     } else {
       console.log("User not found or no balanceUsdc available");
-      return null;
     }
   } catch (error: any) {
     alert.error(error.message);

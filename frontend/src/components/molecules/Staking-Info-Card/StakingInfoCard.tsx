@@ -25,7 +25,7 @@ function StakingInfoCard() {
   const [isLoading, setIsLoading] = useState(false);
 
   const [depositedBalance, setDepositedBalance] = useState<number | null>(null);
-  const [rewardsUsdc, setRewardsUsdc] = useState<number | null>(null);
+  const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
   const [apr, setApr] = useState<number | null>(null);
   const [displayApr, setDisplayApr] = useState<number | null>(null);
   const [showMessage, setShowMessage] = useState(false);
@@ -43,6 +43,10 @@ function StakingInfoCard() {
       return apr / 10000;
     }
     return null;
+  };
+
+  const formatWithCommas = (number: number) => {
+    return number.toLocaleString();
   };
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -82,6 +86,7 @@ function StakingInfoCard() {
   const handleClaim = async () => {
     const withdrawRewardsMessage = createWithdrawRewardsMessage();
     try {
+      if (rewardsUsdc <= 0) return;
       console.log("withdraw rewards init");
       alertModalContext?.showAlertModal(
         `Claim rewards in progress. Please check your wallet to sign the transaction.`,
@@ -107,10 +112,11 @@ function StakingInfoCard() {
     <div>
       <div className="BasicCard">
         {showMessage && (
-          <Tooltip message="We only allow 1 USDC Reward Withdraw per day." />
+          <Tooltip message="We allow 1 Reward Withdraw per day." />
         )}
         <div className="Flex">
-          <p>Total Deposited</p> <p>${depositedBalance} vUSDC</p>
+          <p>Total Deposited</p>{" "}
+          <p>${formatWithCommas(depositedBalance ?? 0)} vUSD</p>
         </div>
 
         <div className="Flex">
@@ -131,21 +137,19 @@ function StakingInfoCard() {
               alt="Info Icon"
             />
           </div>{" "}
-          <p>${rewardsUsdc} vUSDC</p>
+          <p>${formatWithCommas(rewardsUsdc ?? 0)} vUSD</p>
         </div>
         <div className="Flex">
           <p>APR</p>
-
           <p>{displayApr}%</p>
         </div>
-        <div className="ButtonFlex">
-          <div
-            onClick={() => {
-              handleClaim();
-            }}
-          >
-            <ButtonGradientBorder text="Claim" />
-          </div>
+        <div
+          className={`ButtonFlex ${rewardsUsdc > 0 ? "" : "disabled"}`}
+          onClick={() => {
+            handleClaim();
+          }}
+        >
+          <ButtonGradientBorder text="Claim" isDisabled={rewardsUsdc <= 0} />
         </div>
       </div>
     </div>

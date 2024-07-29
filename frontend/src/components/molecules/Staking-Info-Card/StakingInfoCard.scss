@@ -1,4 +1,5 @@
 .BasicCard {
+  position: relative;
   margin-top: 1rem;
   margin-left: 3rem;
   border-width: 2px;
@@ -41,10 +42,14 @@
   margin-left: 1rem;
   margin-bottom: 1rem;
 }
+.ButtonFlex.disabled {
+  pointer-events: none;
+  opacity: 0.5;
+}
 .custom-tooltip {
   position: absolute;
-  right: 14rem;
-  top: 30rem;
+  right: 6.5rem;
+  top: -4rem;
   color: #fff;
   text-align: center;
   font-family: Montserrat, sans-serif;
@@ -53,6 +58,8 @@
   font-weight: 400;
   line-height: normal;
   padding-top: 3rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
   letter-spacing: 0.5px;
   height: 9rem;
   width: 14rem;
