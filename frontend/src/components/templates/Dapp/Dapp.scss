@@ -1,6 +1,8 @@
 .dapp-banner {
   background: linear-gradient(270deg, #121215 -300%, #000 100%, #1b1b1f 100%);
   height: 292px;
+  display: flex;
+  justify-content: center;
 }
 
 .section-container {

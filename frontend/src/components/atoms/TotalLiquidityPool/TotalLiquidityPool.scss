@@ -1,0 +1,20 @@
+.Heading {
+  color: #4fff4b;
+  font-family: "Roboto Mono";
+  font-size: 2rem;
+}
+.Box {
+  display: flex;
+  justify-content: center;
+
+  align-self: center;
+  border-image: linear-gradient(141deg, rgb(0, 255, 196), #4eff4b20) 1;
+  border-width: 1px;
+  background-color: transparent !important;
+  padding: 1rem;
+}
+.Data {
+  margin-left: 1rem;
+  color: #00ffc4;
+  font-size: 2rem;
+}

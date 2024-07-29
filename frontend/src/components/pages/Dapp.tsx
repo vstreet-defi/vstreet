@@ -6,6 +6,7 @@ import { isMobileDevice } from "utils/isMobile";
 import { AlertModal } from "components/molecules/alert-modal/AlertModal";
 import { FundsManager } from "components/organisms/FundsManager/FundsManager";
 import { AlertModalProvider } from "contexts/alertContext";
+import TotalLiquidityPool from "components/atoms/TotalLiquidityPool/TotalLiquidityPool";
 
 function DappPage() {
   const { isApiReady } = useApi();
@@ -27,7 +28,7 @@ function DappPage() {
               bannerComponent={
                 <>
                   <AlertModal type="info" />
-                  {/* <ReadState /> */}
+                  <TotalLiquidityPool />
                 </>
               }
               leftSectionComponent={
