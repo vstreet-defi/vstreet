@@ -41,3 +41,23 @@
   margin-left: 1rem;
   margin-bottom: 1rem;
 }
+.custom-tooltip {
+  position: absolute;
+  right: 14rem;
+  top: 30rem;
+  color: #fff;
+  text-align: center;
+  font-family: Montserrat, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  padding-top: 3rem;
+  letter-spacing: 0.5px;
+  height: 9rem;
+  width: 14rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-image: url("../../../assets/images/icons/Tooltip.svg");
+}

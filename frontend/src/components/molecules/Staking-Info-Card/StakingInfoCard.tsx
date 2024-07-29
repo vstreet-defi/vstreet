@@ -1,9 +1,10 @@
-import { useContext } from "react";
+import { useContext, useRef } from "react";
 import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
 import { useAccount, useApi, useAlert } from "@gear-js/react-hooks";
 import { useState, useEffect } from "react";
 import { getStakingInfo } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
+import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
   withdrawRewardsTransaction,
@@ -27,9 +28,15 @@ function StakingInfoCard() {
   const [rewardsUsdc, setRewardsUsdc] = useState<number | null>(null);
   const [apr, setApr] = useState<number | null>(null);
   const [displayApr, setDisplayApr] = useState<number | null>(null);
+  const [showMessage, setShowMessage] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
   const alertModalContext = useContext(AlertModalContext);
 
   console.log(account?.decodedAddress);
+
+  const handleClick = () => {
+    setShowMessage((prevState) => !prevState);
+  };
 
   const calculateDisplayApr = (apr: number | null) => {
     if (apr !== null) {
@@ -37,6 +44,22 @@ function StakingInfoCard() {
     }
     return null;
   };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (
+      wrapperRef.current &&
+      !wrapperRef.current.contains(event.target as Node)
+    ) {
+      setShowMessage(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     if (account) {
@@ -83,12 +106,32 @@ function StakingInfoCard() {
   return (
     <div>
       <div className="BasicCard">
+        {showMessage && (
+          <Tooltip message="We only allow 1 USDC Reward Withdraw per day." />
+        )}
         <div className="Flex">
-          <p>Total Deposited</p> <p>{depositedBalance}</p>
+          <p>Total Deposited</p> <p>${depositedBalance} vUSDC</p>
         </div>
 
         <div className="Flex">
-          <p>Total Earned</p> <p>{rewardsUsdc}</p>
+          <div
+            ref={wrapperRef}
+            style={{
+              display: "flex",
+            }}
+          >
+            <p>Total Earned</p>
+            <img
+              onClick={() => {
+                console.log("info");
+                handleClick();
+              }}
+              style={{ width: "1rem", height: "1rem", marginLeft: "0.5rem" }}
+              src={InfoIcon}
+              alt="Info Icon"
+            />
+          </div>{" "}
+          <p>${rewardsUsdc} vUSDC</p>
         </div>
         <div className="Flex">
           <p>APR</p>
@@ -108,5 +151,17 @@ function StakingInfoCard() {
     </div>
   );
 }
+
+interface TooltipProps {
+  message: string;
+}
+
+const Tooltip: React.FC<TooltipProps> = ({ message }) => {
+  return (
+    <div className="custom-tooltip">
+      <p>{message}</p>
+    </div>
+  );
+};
 
 export default StakingInfoCard;
