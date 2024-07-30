@@ -32,7 +32,7 @@
     display: flex;
     justify-content: right;
     @media (max-width: 768px) {
-      height: 50rem;
+      height: 40rem;
       width: 100%;
       justify-content: center;
       border-right-width: 0;
@@ -41,7 +41,14 @@
 
   .right-section {
     width: 100%;
+    display: flex;
     background: linear-gradient(270deg, #121215 0%, #000 47.3%, #0c1c0b 96.6%),
       #d9d9d9;
+    @media (max-width: 768px) {
+      height: 50rem;
+      width: 100%;
+      justify-content: center;
+      border-right-width: 0;
+    }
   }
 }

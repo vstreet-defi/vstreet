@@ -8,6 +8,7 @@ import {
   metadataVST,
   metadataFTUSDC,
 } from "../utils/smartPrograms";
+import { FullStateVST } from "components/molecules/Staking-Info-Card/StakingInfoCard";
 
 const gasLimit = 89981924500;
 
@@ -38,6 +39,14 @@ export function createWithdrawMessage(amount: string): MessageSendOptions {
   return {
     destination: programIDVST,
     payload: { withdrawliquidity: Number(amount) },
+    gasLimit: gasLimit,
+    value: 0,
+  };
+}
+export function createWithdrawRewardsMessage(): MessageSendOptions {
+  return {
+    destination: programIDVST,
+    payload: { WithdrawRewards: null },
     gasLimit: gasLimit,
     value: 0,
   };
@@ -209,6 +218,26 @@ export async function withdrawTransaction(
     alertModalContext
   );
 }
+export async function withdrawRewardsTransaction(
+  api: GearApi,
+  withdrawRewardsMessage: MessageSendOptions,
+  account: any,
+  accounts: any[],
+  alert: any,
+  setIsLoading: (loading: boolean) => void,
+  alertModalContext: any
+): Promise<void> {
+  return executeTransaction(
+    api,
+    withdrawRewardsMessage,
+    metadataVST,
+    account,
+    accounts,
+    alert,
+    setIsLoading,
+    alertModalContext
+  );
+}
 
 export const getBalance = async (
   api: GearApi,
@@ -245,5 +274,39 @@ export const getBalance = async (
     }
   } catch (error: any) {
     alert.error(error.message);
+  }
+};
+
+export const getStakingInfo = async (
+  api: GearApi,
+  accountAddress: string,
+  setDepositedBalance: (balance: any) => void,
+  setRewardsUsdc: (rewards: any) => void,
+  setApr: (apr: any) => void,
+  setFullState: (state: FullStateVST) => void,
+  alert: any
+) => {
+  try {
+    const result = await api.programState.read(
+      { programId: programIDVST },
+      metadataVST
+    );
+    const rawState: unknown = result.toJSON();
+
+    const fullState = rawState as FullStateVST;
+    setFullState(fullState);
+    console.log(fullState);
+
+    const userAddress = accountAddress;
+    if (userAddress && fullState.users && fullState?.users[userAddress]) {
+      setDepositedBalance(fullState?.users[userAddress].balanceUsdc);
+      setRewardsUsdc(fullState?.users[userAddress].rewardsUsdc);
+      setApr(fullState?.apr);
+    } else {
+      console.log("User not found or no balanceUsdc available");
+    }
+  } catch (error: any) {
+    alert.error(error.message);
+    console.log(error);
   }
 };
