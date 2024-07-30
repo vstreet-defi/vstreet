@@ -1,15 +1,20 @@
 import { encodeAddress, MessageSendOptions } from "@gear-js/api";
 import { web3FromSource } from "@polkadot/extension-dapp";
 import { GearApi } from "@gear-js/api";
-import { FullState } from "components/molecules/Basic-Input/BasicInput";
 import {
   programIDVST,
   programIDFTUSDC,
   metadataVST,
   metadataFTUSDC,
 } from "../utils/smartPrograms";
-import { FullStateVST } from "components/molecules/Staking-Info-Card/StakingInfoCard";
 
+export interface FullState {
+  balances: [string, any][];
+}
+export interface FullStateVST {
+  apr?: number;
+  users: { [key: string]: any };
+}
 const gasLimit = 89981924500;
 
 export function createApproveMessage(amount: string): MessageSendOptions {
@@ -239,10 +244,10 @@ export async function withdrawRewardsTransaction(
   );
 }
 
-export const getBalance = async (
+export const getBalanceVUSD = async (
   api: GearApi,
   accountAddress: string,
-  setBalance: (balance: any) => void,
+  setBalance: (balance: number) => void,
   setFullState: (state: FullState) => void,
   alert: any
 ) => {
@@ -262,12 +267,10 @@ export const getBalance = async (
       setFullState(fullState);
 
       const localBalances = fullState.balances || [];
-      localBalances.some(([address, balances]: [string, any]) => {
+      localBalances.some(([address, balance]: [string, number]) => {
         if (encodeAddress(address) === accountAddress) {
-          setBalance(balances);
-          return true;
+          setBalance(balance || 0);
         }
-        return false;
       });
     } else {
       throw new Error("Unexpected fullState format");
@@ -281,10 +284,10 @@ export const getStakingInfo = async (
   api: GearApi,
   accountAddress: string,
   setDepositedBalance: (balance: any) => void,
-  setRewardsUsdc: (rewards: any) => void,
-  setApr: (apr: any) => void,
   setFullState: (state: FullStateVST) => void,
-  alert: any
+  alert: any,
+  setRewardsUsdc?: (rewards: any) => void,
+  setApr?: (apr: any) => void
 ) => {
   try {
     const result = await api.programState.read(
@@ -300,8 +303,10 @@ export const getStakingInfo = async (
     const userAddress = accountAddress;
     if (userAddress && fullState.users && fullState?.users[userAddress]) {
       setDepositedBalance(fullState?.users[userAddress].balanceUsdc);
-      setRewardsUsdc(fullState?.users[userAddress].rewardsUsdc);
-      setApr(fullState?.apr);
+      if (setRewardsUsdc)
+        setRewardsUsdc(fullState?.users[userAddress].rewardsUsdc);
+
+      if (setApr) setApr(fullState?.apr);
     } else {
       console.log("User not found or no balanceUsdc available");
     }
