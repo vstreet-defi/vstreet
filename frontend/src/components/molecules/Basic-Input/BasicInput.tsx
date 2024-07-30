@@ -1,43 +1,32 @@
 import React, { useState, useEffect } from "react";
-import { useAccount, useApi, useAlert } from "@gear-js/react-hooks";
-import { getBalance } from "smart-contracts-tools";
 
-interface BasicInputProps {
+type BasicInputProps = {
   inputValue: string;
   onInputChange: (value: string) => void;
-}
+  balance: number;
+};
 
-export interface FullState {
-  balances: [string, any][];
-}
-
-function BasicInput({ inputValue, onInputChange }: BasicInputProps) {
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value;
-    if (/^\d*\.?\d{0,2}$/.test(value)) {
-      onInputChange(value);
-    }
-  };
-
-  const { api } = useApi();
-  const { account } = useAccount();
-  const alert = useAlert();
-
-  const [balance, setBalance] = useState<any | undefined>(0);
-  const [fullState, setFullState] = useState<FullState | undefined>(undefined);
+function BasicInput({ inputValue, onInputChange, balance }: BasicInputProps) {
+  const [value, setValue] = useState(inputValue);
 
   useEffect(() => {
-    if (account) {
-      getBalance(api, account.address, setBalance, setFullState, alert);
+    setValue(inputValue);
+  }, [inputValue]);
+
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.value;
+    if (/^\d*\.?\d{0,2}$/.test(newValue)) {
+      setValue(newValue);
+      onInputChange(newValue);
     }
-  }, [account, api, alert]);
+  };
 
   return (
     <div style={{ marginTop: "1.5rem" }}>
       <div className="BI-label--container">
         <p className="BI-label">Amount</p>
         <div style={{ display: "flex" }}>
-          <p className="BI-label tag">Your Wallet Balance:</p>
+          <p className="BI-label tag">Your Balance:</p>
           <p className="BI-label number">{balance}</p>
         </div>
       </div>
@@ -45,8 +34,9 @@ function BasicInput({ inputValue, onInputChange }: BasicInputProps) {
       <input
         className="BasicInput"
         type="number"
-        step="0.01"
-        value={inputValue}
+        step="1"
+        max={balance}
+        value={value}
         onChange={handleInputChange}
         style={{
           backgroundColor: "transparent",

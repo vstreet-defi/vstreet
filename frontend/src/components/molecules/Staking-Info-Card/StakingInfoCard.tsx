@@ -10,11 +10,6 @@ import {
   withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 
-export interface FullStateVST {
-  apr: number;
-  users: { [key: string]: any };
-}
-
 function StakingInfoCard() {
   const [fullState, setFullState] = useState<any | undefined>({});
 
@@ -71,10 +66,10 @@ function StakingInfoCard() {
         api,
         account.decodedAddress,
         setDepositedBalance,
-        setRewardsUsdc,
-        setApr,
         setFullState,
-        alert
+        alert,
+        setRewardsUsdc,
+        setApr
       );
     }
   }, [account, api, alert]);
