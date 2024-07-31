@@ -2,6 +2,9 @@
   color: #4fff4b;
   font-family: "Roboto Mono";
   font-size: 2rem;
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
 }
 .Box {
   display: flex;
@@ -17,4 +20,33 @@
   margin-left: 1rem;
   color: #00ffc4;
   font-size: 2rem;
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+}
+
+.Heading-Deposit {
+  color: #4fff4b;
+  font-family: "Roboto Mono", monospace;
+  font-style: italic;
+  font-size: 2rem;
+  margin-top: 3rem;
+  font-weight: lighter;
+  margin-left: 2rem;
+  text-align: center;
+}
+.Container {
+}
+
+.DataAPY {
+  margin-left: 1rem;
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
+  margin-left: 2rem;
+  font-size: 2rem;
+  background: linear-gradient(to left, #00ffc4, #4fff4b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-align: center;
 }

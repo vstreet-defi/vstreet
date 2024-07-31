@@ -6,14 +6,12 @@ import { programIDVST, metadataVST } from "../../../utils/smartPrograms";
 function TotalLiquidityPool() {
   const [totalLiquidityPool, setTotalLiquidityPool] = useState(0);
   const [fullState, setFullState] = useState<any | undefined>({});
+  const [apr, setApr] = useState(0);
   const [tvl, setTvl] = useState(0);
 
-  const TLVdisplay = () => {
+  const TLVdisplay = async () => {
     if (fullState) {
       const tvl1 = fullState.totalDeposited / 1000000;
-
-      tvl1.toLocaleString();
-      console.log(tvl1);
       setTvl(tvl1);
     }
   };
@@ -30,22 +28,30 @@ function TotalLiquidityPool() {
         .read({ programId: programIDVST }, metadataVST)
         .then((result) => {
           setFullState(result.toJSON());
-          console.log(result.toJSON());
+          console.log("fullState", fullState);
           setTotalLiquidityPool(fullState.totalDeposited);
-          // TLVdisplay();
-
-          // alert.success("Successful state");
+          setApr(fullState.apr);
         })
         .catch(({ message }: Error) => console.log(message));
     };
-    fetchTotalLiquidityPool();
-  }, [fullState]);
+
+    try {
+      fetchTotalLiquidityPool();
+      TLVdisplay();
+    } catch (error) {}
+  }, [fullState.totalDeposited]);
 
   return (
-    <div className="Box">
-      <h2 className="Heading">Total Liquidity Pool </h2>
+    <div className="Container">
+      <div>
+        <h2 className="Heading-Deposit">Deposit your $vUSDC and earn</h2>
+        <p className="DataAPY">Up to {apr}% Annual Interest APY</p>
+      </div>
+      <div className="Box">
+        <h2 className="Heading">Total Liquidity Pool: </h2>
 
-      <p className="Data"> ${totalLiquidityPool} vUSDC</p>
+        <p className="Data"> ${formatWithCommas(tvl)} vUSDC</p>
+      </div>
     </div>
   );
 }
