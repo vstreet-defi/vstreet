@@ -30,7 +30,7 @@ function TotalLiquidityPool() {
           setFullState(result.toJSON());
           console.log("fullState", fullState);
           setTotalLiquidityPool(fullState.totalDeposited);
-          setApr(fullState.apr);
+          setApr(fullState.apr / 10000);
         })
         .catch(({ message }: Error) => console.log(message));
     };
@@ -45,7 +45,7 @@ function TotalLiquidityPool() {
     <div className="Container">
       <div>
         <h2 className="Heading-Deposit">Deposit your $vUSDC and earn</h2>
-        <p className="DataAPY">Up to {apr}% Annual Interest APY</p>
+        <p className="DataAPY">{apr}% Annual Interest APY</p>
       </div>
       <div className="Box">
         <h2 className="Heading">Total Liquidity Pool: </h2>

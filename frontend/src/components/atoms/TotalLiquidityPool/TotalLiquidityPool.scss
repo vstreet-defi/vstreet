@@ -2,8 +2,14 @@
   color: #4fff4b;
   font-family: "Roboto Mono";
   font-size: 2rem;
+  text-align: center;
+
   @media (max-width: 768px) {
     font-size: 1rem;
+    padding-top: 4px;
+  }
+  @media (max-width: 418px) {
+    font-size: 0.7rem;
   }
 }
 .Box {
@@ -20,8 +26,12 @@
   margin-left: 1rem;
   color: #00ffc4;
   font-size: 2rem;
+  text-align: center;
   @media (max-width: 768px) {
     font-size: 1rem;
+  }
+  @media (max-width: 418px) {
+    font-size: 0.9rem;
   }
 }
 
@@ -34,6 +44,13 @@
   font-weight: lighter;
   margin-left: 2rem;
   text-align: center;
+  @media (max-width: 768px) {
+    font-size: 1.2rem;
+    margin-left: 0rem;
+  }
+  @media (max-width: 418px) {
+    margin-left: 0rem;
+  }
 }
 .Container {
 }
@@ -49,4 +66,13 @@
   background-clip: text;
   color: transparent;
   text-align: center;
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-left: 0rem;
+    padding: 0.5rem;
+  }
+  @media (max-width: 418px) {
+    margin-left: 0rem;
+    padding: 0.5rem;
+  }
 }
