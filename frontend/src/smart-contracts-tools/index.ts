@@ -1,7 +1,6 @@
 import { encodeAddress, MessageSendOptions } from "@gear-js/api";
 import { web3FromSource } from "@polkadot/extension-dapp";
 import { GearApi } from "@gear-js/api";
-import { FullState } from "components/molecules/Basic-Input/BasicInput";
 import {
   programIDVST,
   programIDFTUSDC,
@@ -9,6 +8,13 @@ import {
   metadataFTUSDC,
 } from "../utils/smartPrograms";
 
+export interface FullState {
+  balances: [string, any][];
+}
+export interface FullStateVST {
+  apr?: number;
+  users: { [key: string]: any };
+}
 const gasLimit = 89981924500;
 
 export function createApproveMessage(amount: string): MessageSendOptions {
@@ -38,6 +44,14 @@ export function createWithdrawMessage(amount: string): MessageSendOptions {
   return {
     destination: programIDVST,
     payload: { withdrawliquidity: Number(amount) },
+    gasLimit: gasLimit,
+    value: 0,
+  };
+}
+export function createWithdrawRewardsMessage(): MessageSendOptions {
+  return {
+    destination: programIDVST,
+    payload: { WithdrawRewards: null },
     gasLimit: gasLimit,
     value: 0,
   };
@@ -209,11 +223,31 @@ export async function withdrawTransaction(
     alertModalContext
   );
 }
+export async function withdrawRewardsTransaction(
+  api: GearApi,
+  withdrawRewardsMessage: MessageSendOptions,
+  account: any,
+  accounts: any[],
+  alert: any,
+  setIsLoading: (loading: boolean) => void,
+  alertModalContext: any
+): Promise<void> {
+  return executeTransaction(
+    api,
+    withdrawRewardsMessage,
+    metadataVST,
+    account,
+    accounts,
+    alert,
+    setIsLoading,
+    alertModalContext
+  );
+}
 
-export const getBalance = async (
+export const getBalanceVUSD = async (
   api: GearApi,
   accountAddress: string,
-  setBalance: (balance: any) => void,
+  setBalance: (balance: number) => void,
   setFullState: (state: FullState) => void,
   alert: any
 ) => {
@@ -233,17 +267,51 @@ export const getBalance = async (
       setFullState(fullState);
 
       const localBalances = fullState.balances || [];
-      localBalances.some(([address, balances]: [string, any]) => {
+      localBalances.some(([address, balance]: [string, number]) => {
         if (encodeAddress(address) === accountAddress) {
-          setBalance(balances);
-          return true;
+          setBalance(balance || 0);
         }
-        return false;
       });
     } else {
       throw new Error("Unexpected fullState format");
     }
   } catch (error: any) {
     alert.error(error.message);
+  }
+};
+
+export const getStakingInfo = async (
+  api: GearApi,
+  accountAddress: string,
+  setDepositedBalance: (balance: any) => void,
+  setFullState: (state: FullStateVST) => void,
+  alert: any,
+  setRewardsUsdc?: (rewards: any) => void,
+  setApr?: (apr: any) => void
+) => {
+  try {
+    const result = await api.programState.read(
+      { programId: programIDVST },
+      metadataVST
+    );
+    const rawState: unknown = result.toJSON();
+
+    const fullState = rawState as FullStateVST;
+    setFullState(fullState);
+    console.log(fullState);
+
+    const userAddress = accountAddress;
+    if (userAddress && fullState.users && fullState?.users[userAddress]) {
+      setDepositedBalance(fullState?.users[userAddress].balanceUsdc);
+      if (setRewardsUsdc)
+        setRewardsUsdc(fullState?.users[userAddress].rewardsUsdc);
+
+      if (setApr) setApr(fullState?.apr);
+    } else {
+      console.log("User not found or no balanceUsdc available");
+    }
+  } catch (error: any) {
+    alert.error(error.message);
+    console.log(error);
   }
 };

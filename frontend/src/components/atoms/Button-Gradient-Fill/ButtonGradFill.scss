@@ -28,8 +28,8 @@
     outline: none;
   }
   &:disabled {
-    background: #d3d3d3;
-    cursor: not-allowed;
+    pointer-events: none;
+    opacity: 0.5;
   }
 }
 

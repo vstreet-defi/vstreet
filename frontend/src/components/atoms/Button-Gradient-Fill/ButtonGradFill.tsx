@@ -13,9 +13,10 @@ import {
 interface ButtonProps {
   label: string;
   amount: string;
+  balance: number;
 }
 
-const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
+const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   const alert = useAlert();
   const { accounts, account } = useAccount();
   const { api } = useApi();
@@ -109,6 +110,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label }) => {
     <button
       className={`btn-grad-fill ${isLoading ? "btn-grad-fill--loading" : ""}`}
       onClick={handleClick}
+      disabled={Number(amount) > balance || Number(amount) === 0}
     >
       {isLoading ? (
         <div className="lds-facebook">
