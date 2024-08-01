@@ -1,0 +1,78 @@
+.Heading {
+  color: #4fff4b;
+  font-family: "Roboto Mono";
+  font-size: 2rem;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 1rem;
+    padding-top: 4px;
+  }
+  @media (max-width: 418px) {
+    font-size: 0.7rem;
+  }
+}
+.Box {
+  display: flex;
+  justify-content: center;
+
+  align-self: center;
+  border-image: linear-gradient(141deg, rgb(0, 255, 196), #4eff4b20) 1;
+  border-width: 1px;
+  background-color: transparent !important;
+  padding: 1rem;
+}
+.Data {
+  margin-left: 1rem;
+  color: #00ffc4;
+  font-size: 2rem;
+  text-align: center;
+  @media (max-width: 768px) {
+    font-size: 1rem;
+  }
+  @media (max-width: 418px) {
+    font-size: 0.9rem;
+  }
+}
+
+.Heading-Deposit {
+  color: #4fff4b;
+  font-family: "Roboto Mono", monospace;
+  font-style: italic;
+  font-size: 2rem;
+  margin-top: 3rem;
+  font-weight: lighter;
+  margin-left: 2rem;
+  text-align: center;
+  @media (max-width: 768px) {
+    font-size: 1.2rem;
+    margin-left: 0rem;
+  }
+  @media (max-width: 418px) {
+    margin-left: 0rem;
+  }
+}
+.Container {
+}
+
+.DataAPY {
+  margin-left: 1rem;
+  font-family: "Montserrat", sans-serif;
+  font-weight: bold;
+  margin-left: 2rem;
+  font-size: 2rem;
+  background: linear-gradient(to left, #00ffc4, #4fff4b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-align: center;
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+    margin-left: 0rem;
+    padding: 0.5rem;
+  }
+  @media (max-width: 418px) {
+    margin-left: 0rem;
+    padding: 0.5rem;
+  }
+}

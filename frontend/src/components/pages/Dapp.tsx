@@ -5,7 +5,7 @@ import Header from "components/templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
 import { AlertModal } from "components/molecules/alert-modal/AlertModal";
 import { FundsManager } from "components/organisms/FundsManager/FundsManager";
-
+import TotalLiquidityPool from "components/atoms/TotalLiquidityPool/TotalLiquidityPool";
 import { AlertModalContext, AlertModalProvider } from "contexts/alertContext";
 import { useContext, useEffect } from "react";
 import StakingInfoHeader from "components/atoms/Staking-Info-Header/StakingInfoHeader";
@@ -33,7 +33,7 @@ function DappPage() {
               bannerComponent={
                 <>
                   <AlertModal type="info" />
-                  {/* <ReadState /> */}
+                  <TotalLiquidityPool />
                 </>
               }
               leftSectionComponent={
