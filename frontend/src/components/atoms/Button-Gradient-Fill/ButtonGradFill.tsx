@@ -110,7 +110,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     <button
       className={`btn-grad-fill ${isLoading ? "btn-grad-fill--loading" : ""}`}
       onClick={handleClick}
-      disabled={Number(amount) > balance || Number(amount) === 0}
+      disabled={Number(amount) > balance || Number(amount) === 0 || isLoading}
     >
       {isLoading ? (
         <div className="lds-facebook">

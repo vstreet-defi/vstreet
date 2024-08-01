@@ -50,10 +50,7 @@ function AlertModal({ type }: AlertModalProps) {
   }
 
   return (
-    <div
-      onClick={() => alertContext?.hideAlertModal()}
-      className={`Alert-Modal`}
-    >
+    <div className={`Alert-Modal`}>
       <div className={`Alert-Modal-Box ${modalClass}`}>
         <h1>{type.charAt(0).toUpperCase() + type.slice(1)}!</h1>
         <p>{modalText}</p>
