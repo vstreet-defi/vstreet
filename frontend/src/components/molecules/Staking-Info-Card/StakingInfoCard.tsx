@@ -22,7 +22,6 @@ function StakingInfoCard() {
   const [depositedBalance, setDepositedBalance] = useState<number | null>(null);
   const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
   const [apr, setApr] = useState<number | null>(null);
-  const [displayApr, setDisplayApr] = useState<number | null>(null);
   const [showMessage, setShowMessage] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const alertModalContext = useContext(AlertModalContext);
@@ -31,11 +30,8 @@ function StakingInfoCard() {
     setShowMessage((prevState) => !prevState);
   };
 
-  const calculateDisplayApr = (apr: number | null) => {
-    if (apr !== null) {
-      return apr / 10000;
-    }
-    return null;
+  const calculateDisplayApr = () => {
+    setApr(fullState.apr / 10000);
   };
 
   const formatWithCommas = (number: number) => {
@@ -72,8 +68,8 @@ function StakingInfoCard() {
   }, [account, api, alert]);
 
   useEffect(() => {
-    setDisplayApr(calculateDisplayApr(apr));
-  }, [apr]);
+    calculateDisplayApr();
+  }, [api, fullState.apr]);
 
   const handleClaim = async () => {
     const withdrawRewardsMessage = createWithdrawRewardsMessage();
@@ -131,7 +127,7 @@ function StakingInfoCard() {
         </div>
         <div className="Flex">
           <p>APR</p>
-          <p>{displayApr}%</p>
+          <p>{apr}%</p>
         </div>
         <div
           className={`ButtonFlex ${rewardsUsdc > 0 ? "" : "disabled"}`}
