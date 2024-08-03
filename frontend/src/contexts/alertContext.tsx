@@ -1,11 +1,20 @@
 import { createContext, useState, FC, ReactNode } from "react";
 
-// Define the type of the context
+export enum AlertType {
+  Success = "success",
+  Warning = "warning",
+  Error = "error",
+  Info = "info",
+}
+
 interface AlertModalContextType {
   isAlertModalVisible: boolean;
-  alertModalMessage: string;
-  alertType: string;
-  showAlertModal: (message: string, type: string) => void;
+  alertType: AlertType;
+  alertMessage: string;
+  showSuccessModal: () => void;
+  showWarningModal: (message: string) => void;
+  showErrorModal: (message: string) => void;
+  showInfoModal: (message: string) => void;
   hideAlertModal: () => void;
 }
 
@@ -18,12 +27,12 @@ export const AlertModalProvider: FC<{ children: ReactNode }> = ({
   children,
 }) => {
   const [isAlertModalVisible, setIsAlertModalVisible] = useState(false);
-  const [alertModalMessage, setAlertModalMessage] = useState("");
-  const [alertType, setAlertType] = useState("");
+  const [alertType, setAlertType] = useState<AlertType>(AlertType.Info);
+  const [alertMessage, setAlertMessage] = useState("");
 
-  const showAlertModal = (message: string, type: string) => {
-    setAlertModalMessage(message);
+  const showModal = (type: AlertType, message: string = "") => {
     setAlertType(type);
+    setAlertMessage(message);
     setIsAlertModalVisible(true);
   };
 
@@ -31,13 +40,23 @@ export const AlertModalProvider: FC<{ children: ReactNode }> = ({
     setIsAlertModalVisible(false);
   };
 
+  const showSuccessModal = () => showModal(AlertType.Success);
+  const showWarningModal = (message: string) =>
+    showModal(AlertType.Warning, message);
+  const showErrorModal = (message: string) =>
+    showModal(AlertType.Error, message);
+  const showInfoModal = (message: string) => showModal(AlertType.Info, message);
+
   return (
     <AlertModalContext.Provider
       value={{
         isAlertModalVisible,
-        alertModalMessage,
         alertType,
-        showAlertModal,
+        alertMessage,
+        showSuccessModal,
+        showWarningModal,
+        showErrorModal,
+        showInfoModal,
         hideAlertModal,
       }}
     >

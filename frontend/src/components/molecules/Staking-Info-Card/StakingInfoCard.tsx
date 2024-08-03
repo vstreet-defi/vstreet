@@ -27,8 +27,6 @@ function StakingInfoCard() {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const alertModalContext = useContext(AlertModalContext);
 
-  console.log(account?.decodedAddress);
-
   const handleClick = () => {
     setShowMessage((prevState) => !prevState);
   };
@@ -67,7 +65,6 @@ function StakingInfoCard() {
         account.decodedAddress,
         setDepositedBalance,
         setFullState,
-        alert,
         setRewardsUsdc,
         setApr
       );
@@ -82,24 +79,23 @@ function StakingInfoCard() {
     const withdrawRewardsMessage = createWithdrawRewardsMessage();
     try {
       if (rewardsUsdc <= 0) return;
-      console.log("withdraw rewards init");
-      alertModalContext?.showAlertModal(
-        `Claim rewards in progress. Please check your wallet to sign the transaction.`,
-        "info"
+      alertModalContext?.showInfoModal(
+        "Claim rewards in progress. Please check your wallet to sign the transaction."
       );
       await withdrawRewardsTransaction(
         api,
         withdrawRewardsMessage,
         account,
-        accounts,
-        alert,
-        setIsLoading,
-        alertModalContext
+        accounts
       );
       alertModalContext?.hideAlertModal?.();
-      console.log("withdraw done");
     } catch (error) {
-      console.log(error);
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred.";
+      alertModalContext?.showErrorModal(errorMessage);
+      setTimeout(() => {
+        alertModalContext?.hideAlertModal();
+      }, 5000);
     }
   };
 
@@ -124,7 +120,6 @@ function StakingInfoCard() {
             <p>Total Earned</p>
             <img
               onClick={() => {
-                console.log("info");
                 handleClick();
               }}
               style={{ width: "1rem", height: "1rem", marginLeft: "0.5rem" }}

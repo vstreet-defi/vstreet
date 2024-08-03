@@ -4,7 +4,7 @@ import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 import { useEffect, useState } from "react";
-import { useAccount, useAlert, useApi } from "@gear-js/react-hooks";
+import { useAccount, useApi } from "@gear-js/react-hooks";
 import {
   FullState,
   FullStateVST,
@@ -23,7 +23,6 @@ function FundsCard({ buttonLabel }: props) {
   const [fullState, setFullState] = useState<FullStateVST | FullState>();
   const { api } = useApi();
   const { account } = useAccount();
-  const alert = useAlert();
   const isDepositCard = () => {
     return buttonLabel === "Deposit";
   };
@@ -33,16 +32,15 @@ function FundsCard({ buttonLabel }: props) {
 
   useEffect(() => {
     if (account) {
-      getBalanceVUSD(api, account.address, setBalance, setFullState, alert);
+      getBalanceVUSD(api, account.address, setBalance, setFullState);
       getStakingInfo(
         api,
         account.decodedAddress,
         setDepositedBalance,
-        setFullState,
-        alert
+        setFullState
       );
     }
-  }, [account, api, alert]);
+  }, [account, api]);
   return (
     <div className={styles.Container}>
       <div className={styles.BasicCard}>
