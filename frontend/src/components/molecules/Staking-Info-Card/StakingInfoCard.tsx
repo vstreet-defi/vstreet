@@ -71,8 +71,10 @@ function StakingInfoCard() {
         setRewardsUsdc,
         setApr
       );
+
+      console.log(depositedBalance);
     }
-  }, [account, api, alert]);
+  }, [account, api, alert, depositedBalance]);
 
   useEffect(() => {
     setDisplayApr(calculateDisplayApr(apr));
