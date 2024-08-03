@@ -33,7 +33,7 @@ function DappPage() {
             <DappTemplate
               bannerComponent={
                 <>
-                  <AlertModal type="info" />
+                  <AlertModal />
                   <TotalLiquidityPool />
                 </>
               }

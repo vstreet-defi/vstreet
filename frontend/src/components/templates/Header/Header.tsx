@@ -35,10 +35,6 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   const isDapp = location.pathname !== "/";
 
   useEffect(() => {
-    navigate("/dapp?tab=supply", { replace: true });
-  }, []);
-
-  useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab") as DappTab | null;
     setActiveTab(tab || DappTab.Supply.toLowerCase());
@@ -51,7 +47,6 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
     },
     [DappTab.Borrow]: () => {},
     [DappTab.Supply]: () => {
-      navigate("/dapp?tab=supply", { replace: true });
       setActiveTab(DappTab.Supply.toLowerCase());
     },
     [DappTab.Markets]: () => {},

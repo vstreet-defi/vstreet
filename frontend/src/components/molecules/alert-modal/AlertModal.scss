@@ -19,15 +19,46 @@
     color: white;
   }
 }
-.Alert-Modal-Warning {
-  color: #fff500;
-  border: 1px solid #fff500;
-}
 .Alert-Modal-Success {
+  border-width: 2px;
+  border-image: linear-gradient(141deg, #4fff4b, rgba(86, 86, 86, 0)) 1;
+  background-image: linear-gradient(
+    90deg,
+    rgba(28, 28, 28, 0.79),
+    rgba(18, 18, 18, 0.79)
+  );
   color: #4fff4b;
-  border: 1px solid #4fff4b;
 }
+
+.Alert-Modal-Warning {
+  border-width: 2px;
+  border-image: linear-gradient(141deg, #fff500, rgba(86, 86, 86, 0)) 1;
+  background-image: linear-gradient(
+    90deg,
+    rgba(28, 28, 28, 0.79),
+    rgba(18, 18, 18, 0.79)
+  );
+  color: #fff500;
+}
+
 .Alert-Modal-Error {
+  border-width: 2px;
+  border-image: linear-gradient(141deg, #ff0f00, rgba(86, 86, 86, 0)) 1;
+  background-image: linear-gradient(
+    90deg,
+    rgba(28, 28, 28, 0.79),
+    rgba(18, 18, 18, 0.79)
+  );
   color: #ff0f00;
-  border: 1px solid #ff0f00;
+}
+
+.Alert-Modal-Info {
+  border-width: 2px;
+  border-image: linear-gradient(141deg, #00ffc4, rgba(86, 86, 86, 0)) 1;
+  background-image: linear-gradient(
+    90deg,
+    rgba(28, 28, 28, 0.79),
+    rgba(18, 18, 18, 0.79)
+  );
+  color: #00ffc4;
 }
