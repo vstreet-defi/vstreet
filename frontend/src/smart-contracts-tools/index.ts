@@ -57,17 +57,11 @@ export function createWithdrawRewardsMessage(): MessageSendOptions {
   };
 }
 
-function handleStatusUpdate(
-  status: any,
-  alert: any,
-  actionType: string
-): Promise<void> {
+function handleStatusUpdate(status: any, actionType: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const checkStatus = () => {
       if (status.isInBlock) {
-        alert.success(status.asInBlock.toString());
       } else if (status.type === "Finalized") {
-        alert.success(status.type);
         resolve();
       } else {
         console.log("in process");
@@ -85,34 +79,12 @@ function handleStatusUpdate(
   });
 }
 
-function handleTransactionSuccess(
-  actionType: string,
-  setIsLoading?: (loading: boolean) => void,
-  alertModalContext?: any
-) {
-  setIsLoading && setIsLoading(false);
-  alertModalContext?.hideAlertModal?.();
-}
-
-function handleTransactionError(
-  error: any,
-  alert: any,
-  setIsLoading?: (loading: boolean) => void
-) {
-  console.log(":( transaction failed", error);
-  alert.error(error.message);
-  setIsLoading && setIsLoading(false);
-}
-
 async function executeTransaction(
   api: GearApi,
   message: MessageSendOptions,
   metadata: any,
   account: any,
-  accounts: any[],
-  alert: any,
-  setIsLoading?: (loading: boolean) => void,
-  alertModalContext?: any
+  accounts: any[]
 ): Promise<void> {
   const localAccountAddress = account?.address;
   const isVisibleAccount = accounts.some(
@@ -120,7 +92,6 @@ async function executeTransaction(
   );
 
   if (!isVisibleAccount) {
-    alert.error("Account not available to sign");
     throw new Error("Account not available to sign");
   }
 
@@ -135,31 +106,23 @@ async function executeTransaction(
   };
 
   return new Promise<void>((resolve, reject) => {
+    if (!localAccountAddress) {
+      throw new Error("No account");
+    }
     transferExtrinsic
       .signAndSend(
-        localAccountAddress ?? alert.error("No account"),
+        localAccountAddress,
         { signer: injector.signer },
         async ({ status }) => {
           try {
-            await handleStatusUpdate(
-              status,
-              alert,
-              actionType(message.payload)
-            );
-            handleTransactionSuccess(
-              actionType(message.payload),
-              setIsLoading,
-              alertModalContext
-            );
+            await handleStatusUpdate(status, actionType(message.payload));
             resolve();
-          } catch (error) {
-            handleTransactionError(error, alert, setIsLoading);
+          } catch (error: any) {
             reject(error);
           }
         }
       )
       .catch((error: any) => {
-        handleTransactionError(error, alert, setIsLoading);
         reject(error);
       });
   });
@@ -169,16 +132,14 @@ export async function approveTransaction(
   api: GearApi,
   approveMessage: MessageSendOptions,
   account: any,
-  accounts: any[],
-  alert: any
+  accounts: any[]
 ): Promise<void> {
   return executeTransaction(
     api,
     approveMessage,
     metadataFTUSDC,
     account,
-    accounts,
-    alert
+    accounts
   );
 }
 
@@ -186,20 +147,14 @@ export async function depositTransaction(
   api: GearApi,
   depositMessage: MessageSendOptions,
   account: any,
-  accounts: any[],
-  alert: any,
-  setIsLoading: (loading: boolean) => void,
-  alertModalContext: any
+  accounts: any[]
 ): Promise<void> {
   return executeTransaction(
     api,
     depositMessage,
     metadataVST,
     account,
-    accounts,
-    alert,
-    setIsLoading,
-    alertModalContext
+    accounts
   );
 }
 
@@ -208,39 +163,28 @@ export async function withdrawTransaction(
   withdrawMessage: MessageSendOptions,
   account: any,
   accounts: any[],
-  alert: any,
-  setIsLoading: (loading: boolean) => void,
-  alertModalContext: any
+  setIsLoading: (loading: boolean) => void
 ): Promise<void> {
   return executeTransaction(
     api,
     withdrawMessage,
     metadataVST,
     account,
-    accounts,
-    alert,
-    setIsLoading,
-    alertModalContext
+    accounts
   );
 }
 export async function withdrawRewardsTransaction(
   api: GearApi,
   withdrawRewardsMessage: MessageSendOptions,
   account: any,
-  accounts: any[],
-  alert: any,
-  setIsLoading: (loading: boolean) => void,
-  alertModalContext: any
+  accounts: any[]
 ): Promise<void> {
   return executeTransaction(
     api,
     withdrawRewardsMessage,
     metadataVST,
     account,
-    accounts,
-    alert,
-    setIsLoading,
-    alertModalContext
+    accounts
   );
 }
 
@@ -248,8 +192,7 @@ export const getBalanceVUSD = async (
   api: GearApi,
   accountAddress: string,
   setBalance: (balance: number) => void,
-  setFullState: (state: FullState) => void,
-  alert: any
+  setFullState: (state: FullState) => void
 ) => {
   try {
     const result = await api.programState.read(
@@ -276,7 +219,7 @@ export const getBalanceVUSD = async (
       throw new Error("Unexpected fullState format");
     }
   } catch (error: any) {
-    alert.error(error.message);
+    throw new Error(error.message);
   }
 };
 
@@ -285,7 +228,6 @@ export const getStakingInfo = async (
   accountAddress: string,
   setDepositedBalance: (balance: any) => void,
   setFullState: (state: FullStateVST) => void,
-  alert: any,
   setRewardsUsdc?: (rewards: any) => void,
   setApr?: (apr: any) => void
 ) => {
@@ -311,7 +253,6 @@ export const getStakingInfo = async (
       console.log("User not found or no balanceUsdc available");
     }
   } catch (error: any) {
-    alert.error(error.message);
-    console.log(error);
+    throw new Error(error.message);
   }
 };

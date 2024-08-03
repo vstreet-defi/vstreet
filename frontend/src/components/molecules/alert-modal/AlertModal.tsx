@@ -1,64 +1,78 @@
 import { useState, useEffect, useContext } from "react";
-import { AlertModalContext } from "contexts/alertContext";
+import { AlertModalContext, AlertType } from "contexts/alertContext";
 
-type AlertModalProps = {
-  type: "success" | "warning" | "error" | "info";
-};
+export function Loader() {
+  return (
+    <div className="lds-facebook">
+      <div></div>
+      <div></div>
+      <div></div>
+    </div>
+  );
+}
 
-function AlertModal({ type }: AlertModalProps) {
+function AlertModal() {
   const alertContext = useContext(AlertModalContext);
   const [isVisible, setIsVisible] = useState(false);
-  const [alertMsg, setAlertMsg] = useState<string | undefined>();
-  const [alertType, setAlertType] = useState<string | undefined>();
-  let modalText = "";
-  let modalClass = "";
+  const [alertType, setAlertType] = useState<AlertType>(AlertType.Info);
+  const [alertMessage, setAlertMessage] = useState<string>("");
 
   useEffect(() => {
     if (alertContext?.isAlertModalVisible) {
       setIsVisible(true);
-      setAlertType(alertContext?.alertType);
-      setAlertMsg(alertContext?.alertModalMessage);
+      setAlertType(alertContext?.alertType ?? AlertType.Info);
+      setAlertMessage(alertContext?.alertMessage ?? "");
     } else {
       setIsVisible(false);
     }
   }, [
     alertContext?.isAlertModalVisible,
-    alertContext?.alertModalMessage,
     alertContext?.alertType,
+    alertContext?.alertMessage,
   ]);
 
-  switch (alertType) {
-    case "success":
-      modalText = "Your funds have been deposited.";
-      modalClass = "Alert-Modal-Success";
-      break;
-    case "warning":
-      modalText = "Please check your input.";
-      modalClass = "Alert-Modal-Warning";
-      break;
-    case "error":
-      modalText = "An error occurred.";
-      modalClass = "Alert-Modal-Error";
-      break;
-    case "info":
-      modalText = `${alertMsg}`;
-      modalClass = "Alert-Modal-Success";
-      break;
-  }
   if (!isVisible) {
     return null;
   }
 
+  const getModalText = () => {
+    switch (alertType) {
+      case AlertType.Success:
+        return "Transaction completed successfully!";
+      case AlertType.Warning:
+        return alertMessage || "Please check the information provided.";
+      case AlertType.Error:
+        return alertMessage || "An error occurred during the transaction.";
+      case AlertType.Info:
+        return (
+          alertMessage || "Please check your wallet to sign the transaction."
+        );
+      default:
+        return "";
+    }
+  };
+
+  const getModalClass = () => {
+    switch (alertType) {
+      case AlertType.Success:
+        return "Alert-Modal-Success";
+      case AlertType.Warning:
+        return "Alert-Modal-Warning";
+      case AlertType.Error:
+        return "Alert-Modal-Error";
+      case AlertType.Info:
+        return "Alert-Modal-Info";
+      default:
+        return "";
+    }
+  };
+
   return (
-    <div className={`Alert-Modal`}>
-      <div className={`Alert-Modal-Box ${modalClass}`}>
-        <h1>{type.charAt(0).toUpperCase() + type.slice(1)}!</h1>
-        <p>{modalText}</p>
-        <div className="lds-facebook">
-          <div></div>
-          <div></div>
-          <div></div>
-        </div>
+    <div className="Alert-Modal">
+      <div className={`Alert-Modal-Box ${getModalClass()}`}>
+        <h1>{alertType.charAt(0).toUpperCase() + alertType.slice(1)}!</h1>
+        <p>{getModalText()}</p>
+        {alertType === AlertType.Info && <Loader />}
       </div>
     </div>
   );

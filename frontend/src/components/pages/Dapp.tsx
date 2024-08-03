@@ -6,11 +6,7 @@ import { isMobileDevice } from "utils/isMobile";
 import { AlertModal } from "components/molecules/alert-modal/AlertModal";
 import { FundsManager } from "components/organisms/FundsManager/FundsManager";
 import TotalLiquidityPool from "components/atoms/TotalLiquidityPool/TotalLiquidityPool";
-import { AlertModalContext, AlertModalProvider } from "contexts/alertContext";
-import { useContext, useEffect } from "react";
-import StakingInfoHeader from "components/atoms/Staking-Info-Header/StakingInfoHeader";
-import StakingInfoCard from "components/molecules/Staking-Info-Card/StakingInfoCard";
-import { ReadState } from "components/gear/ReadState";
+import { AlertModalProvider } from "contexts/alertContext";
 import StakingInfo from "components/organisms/StakingInfo/StakingInfo";
 
 function DappPage() {
@@ -32,7 +28,7 @@ function DappPage() {
             <DappTemplate
               bannerComponent={
                 <>
-                  <AlertModal type="info" />
+                  <AlertModal />
                   <TotalLiquidityPool />
                 </>
               }
