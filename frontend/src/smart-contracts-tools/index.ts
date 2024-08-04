@@ -251,6 +251,8 @@ export const getStakingInfo = async (
       if (setApr) setApr(fullState?.apr);
     } else {
       console.log("User not found or no balanceUsdc available");
+      setDepositedBalance(0);
+      if (setRewardsUsdc) setRewardsUsdc(0);
     }
   } catch (error: any) {
     throw new Error(error.message);
