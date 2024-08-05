@@ -228,8 +228,7 @@ export const getStakingInfo = async (
   accountAddress: string,
   setDepositedBalance: (balance: any) => void,
   setFullState: (state: FullStateVST) => void,
-  setRewardsUsdc?: (rewards: any) => void,
-  setApr?: (apr: any) => void
+  setRewardsUsdc?: (rewards: any) => void
 ) => {
   try {
     const result = await api.programState.read(
@@ -247,8 +246,6 @@ export const getStakingInfo = async (
       setDepositedBalance(fullState?.users[userAddress].balanceUsdc);
       if (setRewardsUsdc)
         setRewardsUsdc(fullState?.users[userAddress].rewardsUsdc);
-
-      if (setApr) setApr(fullState?.apr);
     } else {
       console.log("User not found or no balanceUsdc available");
       setDepositedBalance(0);

@@ -4,6 +4,8 @@ import { useAccount, useApi, useAlert } from "@gear-js/react-hooks";
 import { useState, useEffect } from "react";
 import { getStakingInfo } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
+import { GearApi } from "@gear-js/api";
+import { programIDVST, metadataVST } from "../../../utils/smartPrograms";
 import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
@@ -19,7 +21,8 @@ function StakingInfoCard() {
 
   const [depositedBalance, setDepositedBalance] = useState<number | null>(null);
   const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
-  const [apr, setApr] = useState<number | null>(null);
+  const [apr, setApr] = useState(0);
+  const [totalLiquidityPool, setTotalLiquidityPool] = useState(0);
   const [showMessage, setShowMessage] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const alertModalContext = useContext(AlertModalContext);
@@ -59,17 +62,40 @@ function StakingInfoCard() {
         account.decodedAddress,
         setDepositedBalance,
         setFullState,
-        setRewardsUsdc,
-        setApr
+        setRewardsUsdc
       );
 
       console.log(depositedBalance);
     }
-  }, [account, api, alert, depositedBalance]);
+  }, [account, alert, depositedBalance]);
 
   useEffect(() => {
-    calculateDisplayApr();
-  }, [api, fullState.apr]);
+    const fetchTotalLiquidityPool = async () => {
+      const api = await GearApi.create({
+        providerAddress: "wss://testnet.vara.network",
+      });
+      await api.programState
+        .read({ programId: programIDVST }, metadataVST)
+        .then((result) => {
+          setFullState(result.toJSON());
+          console.log("fullState", fullState);
+          setTotalLiquidityPool(fullState.totalDeposited);
+          setApr(fullState.apr / 10000);
+        })
+        .catch(({ message }: Error) => console.log(message));
+    };
+
+    try {
+      fetchTotalLiquidityPool();
+    } catch (error) {}
+  }, [fullState.totalDeposited]);
+
+  // useEffect(() => {
+  //   const aprDisplay = fullState.apr / 10000;
+  //   console.log("aprDisplay", aprDisplay);
+  //   setApr(aprDisplay);
+  // }, [account]);
+  console.log("fullState.apr", apr);
 
   const handleClaim = async () => {
     const withdrawRewardsMessage = createWithdrawRewardsMessage();
