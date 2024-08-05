@@ -1,10 +1,23 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Account from "../../organisms/Account/Account";
 import Flag from "../../atoms/Flag/Flag";
-import Logo from "../../../assets/images/icons//vStreet-Navbar-Color-White.png";
+import Logo from "../../../assets/images/icons/vStreet-Navbar-Color-White.png";
 import styles from "../../molecules/wallet/Wallet.module.scss";
 import BurgerMenu from "components/organisms/BurgerMenu";
+
+export enum DappTab {
+  Home = "Home",
+  Supply = "Supply",
+  Borrow = "Borrow",
+  Markets = "Markets",
+}
+
+export enum HomeTab {
+  GitHub = "GitHub",
+  Team = "Team",
+  ContactUs = "Contact us",
+}
 
 type Props = {
   isAccountVisible: boolean;
@@ -12,8 +25,10 @@ type Props = {
   isMobile: boolean;
 };
 
-function Header({ isAccountVisible, items, isMobile }: Props) {
-  const [activeTab, setActiveTab] = useState<string | null>("borrow");
+const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
+  const [activeTab, setActiveTab] = useState<string | null>(
+    DappTab.Supply.toLowerCase()
+  );
   const navigate = useNavigate();
   const location = useLocation();
   const isTablet = window.innerWidth < 822;
@@ -21,39 +36,52 @@ function Header({ isAccountVisible, items, isMobile }: Props) {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const tab = searchParams.get("tab");
-    setActiveTab(tab || "borrow");
+    const tab = searchParams.get("tab") as DappTab | null;
+    setActiveTab(tab || DappTab.Supply.toLowerCase());
   }, [location.search]);
 
-  const handleClick = (item: string): void => {
-    if (item === "Home") {
+  const dappTabActions: Record<DappTab, () => void> = {
+    [DappTab.Home]: () => {
       navigate("/");
       setActiveTab(null);
-      return;
-    }
+    },
+    [DappTab.Borrow]: () => {},
+    [DappTab.Supply]: () => {
+      setActiveTab(DappTab.Supply.toLowerCase());
+    },
+    [DappTab.Markets]: () => {},
+  };
 
-    if (item === "GitHub") {
-      window.open("https://github.com/vstreet-defi/vstreet", "_blank");
-    }
-
-    if (item === "Team") {
+  const homeTabActions: Record<HomeTab, () => void> = {
+    [HomeTab.GitHub]: () =>
+      window.open("https://github.com/vstreet-defi/vstreet", "_blank"),
+    [HomeTab.Team]: () => {
       window.location.href = "#team";
-    }
-
-    if (item === "Contact us") {
+    },
+    [HomeTab.ContactUs]: () => {
       window.location.href = "#social";
-    }
+    },
+  };
 
-    if (isDapp && item !== "Markets") {
-      const lowerCaseItem = item.toLowerCase();
-      navigate(`/dapp?tab=${lowerCaseItem}`, { replace: true });
-      setActiveTab(lowerCaseItem);
+  const handleClick = (item: string): void => {
+    if (Object.values(DappTab).includes(item as DappTab)) {
+      dappTabActions[item as DappTab]();
+    } else if (Object.values(HomeTab).includes(item as HomeTab)) {
+      homeTabActions[item as HomeTab]();
     }
   };
 
   const renderFlag = (item: string) => {
-    if (item !== "Home" && isDapp) {
-      return <Flag text={item === "Markets" ? "Coming Soon" : "New"} />;
+    if (item !== DappTab.Home && isDapp) {
+      return (
+        <Flag
+          text={
+            item === DappTab.Markets || item === DappTab.Borrow
+              ? "Coming Soon"
+              : "New"
+          }
+        />
+      );
     }
     return null;
   };
@@ -64,9 +92,7 @@ function Header({ isAccountVisible, items, isMobile }: Props) {
         {renderFlag(item)}
         <button
           className={`item${
-            item.toLowerCase() === activeTab && isDapp && item !== "Markets"
-              ? "-active"
-              : ""
+            item.toLowerCase() === activeTab && isDapp ? "-active" : ""
           }`}
           onClick={() => handleClick(item)}
         >
@@ -75,31 +101,37 @@ function Header({ isAccountVisible, items, isMobile }: Props) {
       </div>
     ));
 
+  const renderContent = () => {
+    if (isMobile || isTablet) {
+      return <BurgerMenu items={items} selectedTab={activeTab} />;
+    }
+
+    return (
+      <>
+        <div className="items-container">{renderItems()}</div>
+        {isAccountVisible || location.pathname === "/dapp" ? (
+          <Account />
+        ) : (
+          <button
+            className={styles.connectWallet}
+            type="button"
+            onClick={() => navigate("/dapp?tab=borrow")}
+            disabled={true}
+            style={{ opacity: 0.4, cursor: "not-allowed" }}
+          >
+            <p>Launch App</p>
+          </button>
+        )}
+      </>
+    );
+  };
+
   return (
     <header>
       <img src={Logo} alt="Logo" onClick={() => navigate("/")} />
-      {isMobile || isTablet ? (
-        <BurgerMenu items={items} />
-      ) : (
-        <>
-          <div className="items-container">{renderItems()}</div>
-          {isAccountVisible || location.pathname === "/dapp" ? (
-            <Account />
-          ) : (
-            <button
-              className={styles.connectWallet}
-              type="button"
-              onClick={() => navigate("/dapp?tab=borrow")}
-              disabled={true}
-              style={{ opacity: 0.4, cursor: "not-allowed" }}
-            >
-              <p>Launch App</p>
-            </button>
-          )}
-        </>
-      )}
+      {renderContent()}
     </header>
   );
-}
+};
 
 export default Header;
