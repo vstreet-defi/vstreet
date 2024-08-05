@@ -22,11 +22,16 @@
 }
 
 .menu li {
-  margin: 10px;
+  margin: 0 10px 10px 10px;
+  padding-bottom: 20px;
 }
 
 .menu li a {
   color: white;
   text-decoration: none;
   font-size: 18px;
+}
+
+.active {
+  border-bottom: 1px solid #4fff4b;
 }

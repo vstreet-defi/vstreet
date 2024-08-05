@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import BurgerIcon from "components/atoms/BurgerIcon";
 import ModalBurgerMenu from "components/molecules/ModalBurgerMenu";
 
-const BurgerMenu = ({ items }: any) => {
+const BurgerMenu = ({ items, selectedTab }: any) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const toggleMenu = () => {
@@ -25,7 +25,11 @@ const BurgerMenu = ({ items }: any) => {
   return (
     <div className="burger-menu" ref={menuRef}>
       <BurgerIcon isOpen={isOpen} toggleMenu={toggleMenu}></BurgerIcon>
-      <ModalBurgerMenu isOpen={isOpen} items={items}></ModalBurgerMenu>
+      <ModalBurgerMenu
+        isOpen={isOpen}
+        items={items}
+        selectedTab={selectedTab}
+      ></ModalBurgerMenu>
     </div>
   );
 };

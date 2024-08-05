@@ -6,9 +6,10 @@ import { Team } from "../organisms/Team/Team";
 import { Footer } from "../templates/Footer/Footer";
 import Header from "../templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
+import { HomeTab } from "../templates/Header/Header";
 
 function Home() {
-  const navBarItems = ["GitHub", "Team", "Contact us"];
+  const navBarItems = [HomeTab.GitHub, HomeTab.Team, HomeTab.ContactUs];
   return (
     <>
       <Header

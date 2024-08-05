@@ -17,8 +17,6 @@ function StakingInfoCard() {
   const { account, accounts } = useAccount();
   const alert = useAlert();
 
-  const [isLoading, setIsLoading] = useState(false);
-
   const [depositedBalance, setDepositedBalance] = useState<number | null>(null);
   const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
   const [apr, setApr] = useState<number | null>(null);
