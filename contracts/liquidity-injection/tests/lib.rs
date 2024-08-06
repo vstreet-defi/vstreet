@@ -126,7 +126,49 @@ fn test_reward_allocation() {
     assert_eq!(user_info.rewards, expected_rewards);
 }
 
-// TODO TEST WITHDRAW REWARDS
+#[test]
+fn withdraw_rewards() {
+    let sys = System::new();
+    let program = initialize_contract(&sys);
+    let deposit_amount: u128 = 1_000_000; // 1,000,000 USDC
+    let borrowed_amount: u128 = 500_000; // 500,000 USDC
+    let user: ActorId = 2.into();
+
+    // Simular depósito y préstamo
+    program.send(
+        2,
+        LiquidityAction::ModifyTotalBorrowed(borrowed_amount),
+    );
+    program.send(
+        2,
+        LiquidityAction::Deposit(deposit_amount),
+    );
+
+    // Simular el paso del tiempo
+    sys.spend_blocks(BLOCKS_IN_A_YEAR);
+
+    // Verificar que se han acumulado recompensas
+    let state: LiquidityPool = program.read_state(()).unwrap();
+    let user_info = state.users.get(&user).unwrap();
+    assert!(user_info.rewards > 0);
+
+    // Retirar las recompensas
+    let res = program.send(2, LiquidityAction::WithdrawRewards);
+    assert!(!res.main_failed());
+
+    // Verificar que las recompensas se han retirado
+    let state: LiquidityPool = program.read_state(()).unwrap();
+    let user_info = state.users.get(&user).unwrap();
+
+    assert_eq!(user_info.rewards, 0);
+    assert_eq!(user_info.rewards_usdc, 0);
+    assert!(state.available_rewards_pool < state.total_rewards_distributed);
+    assert_eq!(
+        state.total_rewards_distributed,
+        state.total_rewards_distributed.saturating_add(user_info.rewards)
+    );
+}
+
 
 // Interest rate
 fn calculate_expected_interest_rate(deposit_amount: u128, borrowed_amount: u128) -> u128 {

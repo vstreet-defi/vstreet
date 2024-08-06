@@ -46,6 +46,7 @@ pub enum LiquidityAction {
     WithdrawLiquidity(u128),
     WithdrawRewards,
     ModifyTotalBorrowed(u128),
+    ModifyAvailableRewardsPool(u128),
 }
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
@@ -55,6 +56,7 @@ pub enum LiquidityEvent {
     LiquidityWithdrawn(u128),
     RewardsWithdrawn(u128),
     TotalBorrowedModified(u128),
+    AvailableRewardsPoolModified(u128),
 }
 
 #[derive(Debug, Clone, Encode, Decode, TypeInfo)]
@@ -92,6 +94,7 @@ pub struct LiquidityPool {
     pub stablecoin_address: ActorId,
     pub total_deposited: u128,
     pub total_borrowed: u128,
+    pub available_rewards_pool: u128,
     pub total_rewards_distributed: u128,
     pub users: BTreeMap<ActorId, UserInfo>,
     pub base_rate: u128,
@@ -109,6 +112,7 @@ impl LiquidityPool {
             LiquidityAction::WithdrawLiquidity(amount) => self.withdraw_liquidity(user, amount).await,
             LiquidityAction::WithdrawRewards => self.withdraw_rewards(user).await,
             LiquidityAction::ModifyTotalBorrowed(amount) => self.modify_total_borrowed(amount),
+            LiquidityAction::ModifyAvailableRewardsPool(amount) => self.modify_available_rewards_pool(amount),
         }
     }
 
@@ -211,12 +215,12 @@ impl LiquidityPool {
             return Err(Error::ZeroRewards);
         }
 
+        Self::transfer_tokens(&self.stablecoin_address, exec::program_id(), msg::source(), rewards_to_withdraw / DECIMALS_FACTOR).await?;
         user_info.rewards = 0;
         user_info.rewards_usdc = 0;
-
-        Self::transfer_tokens(&self.stablecoin_address, exec::program_id(), msg::source(), rewards_to_withdraw).await?;
-        Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
+        self.available_rewards_pool = self.available_rewards_pool.saturating_sub(rewards_to_withdraw);
         self.total_rewards_distributed = self.total_rewards_distributed.saturating_add(rewards_to_withdraw);
+        Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
         Ok(LiquidityEvent::RewardsWithdrawn(rewards_to_withdraw))
     }
 
@@ -226,6 +230,11 @@ impl LiquidityPool {
         self.apr = self.calculate_apr();
         debug!("Total borrowed modified to: {}. New APR: {}", amount, self.apr);
         Ok(LiquidityEvent::TotalBorrowedModified(amount))
+    }
+
+    fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<LiquidityEvent, Error> {
+        self.available_rewards_pool = amount * DECIMALS_FACTOR;
+        Ok(LiquidityEvent::AvailableRewardsPoolModified(amount))
     }
 
     fn create_new_user(timestamp: u128) -> UserInfo {
