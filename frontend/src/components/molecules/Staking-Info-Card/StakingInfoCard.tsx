@@ -2,7 +2,7 @@ import { useContext, useRef } from "react";
 import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
 import { useAccount, useApi, useAlert } from "@gear-js/react-hooks";
 import { useState, useEffect } from "react";
-import { getStakingInfo } from "smart-contracts-tools";
+import { getAPR, getStakingInfo } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
 import { GearApi } from "@gear-js/api";
 import { programIDVST, metadataVST } from "../../../utils/smartPrograms";
@@ -29,10 +29,6 @@ function StakingInfoCard() {
 
   const handleClick = () => {
     setShowMessage((prevState) => !prevState);
-  };
-
-  const calculateDisplayApr = () => {
-    setApr(fullState.apr / 10000);
   };
 
   const formatWithCommas = (number: number) => {
@@ -67,35 +63,11 @@ function StakingInfoCard() {
 
       console.log(depositedBalance);
     }
-  }, [account, alert, depositedBalance]);
+  }, [api, account, alert, depositedBalance]);
 
   useEffect(() => {
-    const fetchTotalLiquidityPool = async () => {
-      const api = await GearApi.create({
-        providerAddress: "wss://testnet.vara.network",
-      });
-      await api.programState
-        .read({ programId: programIDVST }, metadataVST)
-        .then((result) => {
-          setFullState(result.toJSON());
-          console.log("fullState", fullState);
-          setTotalLiquidityPool(fullState.totalDeposited);
-          setApr(fullState.apr / 10000);
-        })
-        .catch(({ message }: Error) => console.log(message));
-    };
-
-    try {
-      fetchTotalLiquidityPool();
-    } catch (error) {}
-  }, [fullState.totalDeposited]);
-
-  // useEffect(() => {
-  //   const aprDisplay = fullState.apr / 10000;
-  //   console.log("aprDisplay", aprDisplay);
-  //   setApr(aprDisplay);
-  // }, [account]);
-  console.log("fullState.apr", apr);
+    getAPR(api, setTotalLiquidityPool, setApr, setFullState);
+  }, [api, fullState]);
 
   const handleClaim = async () => {
     const withdrawRewardsMessage = createWithdrawRewardsMessage();

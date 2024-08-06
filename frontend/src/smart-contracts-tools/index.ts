@@ -255,3 +255,24 @@ export const getStakingInfo = async (
     throw new Error(error.message);
   }
 };
+
+export const getAPR = async (
+  api: GearApi,
+  setTotalLiquidityPool: (liquidityPool: number) => void,
+  setApr: (apr: number) => void,
+  setFullState: (state: FullStateVST) => void
+) => {
+  try {
+    const result = await api.programState.read(
+      { programId: programIDVST },
+      metadataVST
+    );
+    const rawState: unknown = result.toJSON();
+
+    const fullState = rawState as FullStateVST;
+    setFullState(fullState);
+    if (fullState.apr) setApr(fullState.apr / 10000);
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
