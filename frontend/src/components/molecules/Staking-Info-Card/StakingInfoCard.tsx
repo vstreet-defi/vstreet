@@ -2,8 +2,10 @@ import { useContext, useRef } from "react";
 import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
 import { useAccount, useApi, useAlert } from "@gear-js/react-hooks";
 import { useState, useEffect } from "react";
-import { getStakingInfo } from "smart-contracts-tools";
+import { getAPR, getStakingInfo } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
+import { GearApi } from "@gear-js/api";
+import { programIDVST, metadataVST } from "../../../utils/smartPrograms";
 import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
@@ -19,17 +21,14 @@ function StakingInfoCard() {
 
   const [depositedBalance, setDepositedBalance] = useState<number | null>(null);
   const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
-  const [apr, setApr] = useState<number | null>(null);
+  const [apr, setApr] = useState(0);
+  const [totalLiquidityPool, setTotalLiquidityPool] = useState(0);
   const [showMessage, setShowMessage] = useState(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const alertModalContext = useContext(AlertModalContext);
 
   const handleClick = () => {
     setShowMessage((prevState) => !prevState);
-  };
-
-  const calculateDisplayApr = () => {
-    setApr(fullState.apr / 10000);
   };
 
   const formatWithCommas = (number: number) => {
@@ -59,15 +58,16 @@ function StakingInfoCard() {
         account.decodedAddress,
         setDepositedBalance,
         setFullState,
-        setRewardsUsdc,
-        setApr
+        setRewardsUsdc
       );
+
+      console.log(depositedBalance);
     }
-  }, [account, api, alert]);
+  }, [api, account, alert, depositedBalance]);
 
   useEffect(() => {
-    calculateDisplayApr();
-  }, [api, fullState.apr]);
+    getAPR(api, setTotalLiquidityPool, setApr, setFullState);
+  }, [api, fullState]);
 
   const handleClaim = async () => {
     const withdrawRewardsMessage = createWithdrawRewardsMessage();

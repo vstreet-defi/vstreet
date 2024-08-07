@@ -210,11 +210,17 @@ export const getBalanceVUSD = async (
       setFullState(fullState);
 
       const localBalances = fullState.balances || [];
+      let accountFound = false;
       localBalances.some(([address, balance]: [string, number]) => {
         if (encodeAddress(address) === accountAddress) {
           setBalance(balance || 0);
+          accountFound = true;
+          return true; // Exit the loop early
         }
       });
+      if (!accountFound) {
+        setBalance(0);
+      }
     } else {
       throw new Error("Unexpected fullState format");
     }
@@ -228,8 +234,7 @@ export const getStakingInfo = async (
   accountAddress: string,
   setDepositedBalance: (balance: any) => void,
   setFullState: (state: FullStateVST) => void,
-  setRewardsUsdc?: (rewards: any) => void,
-  setApr?: (apr: any) => void
+  setRewardsUsdc?: (rewards: any) => void
 ) => {
   try {
     const result = await api.programState.read(
@@ -247,11 +252,32 @@ export const getStakingInfo = async (
       setDepositedBalance(fullState?.users[userAddress].balanceUsdc);
       if (setRewardsUsdc)
         setRewardsUsdc(fullState?.users[userAddress].rewardsUsdc);
-
-      if (setApr) setApr(fullState?.apr);
     } else {
       console.log("User not found or no balanceUsdc available");
+      setDepositedBalance(0);
+      if (setRewardsUsdc) setRewardsUsdc(0);
     }
+  } catch (error: any) {
+    throw new Error(error.message);
+  }
+};
+
+export const getAPR = async (
+  api: GearApi,
+  setTotalLiquidityPool: (liquidityPool: number) => void,
+  setApr: (apr: number) => void,
+  setFullState: (state: FullStateVST) => void
+) => {
+  try {
+    const result = await api.programState.read(
+      { programId: programIDVST },
+      metadataVST
+    );
+    const rawState: unknown = result.toJSON();
+
+    const fullState = rawState as FullStateVST;
+    setFullState(fullState);
+    if (fullState.apr) setApr(fullState.apr / 10000);
   } catch (error: any) {
     throw new Error(error.message);
   }

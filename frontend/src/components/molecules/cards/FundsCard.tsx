@@ -39,6 +39,8 @@ function FundsCard({ buttonLabel }: props) {
         setDepositedBalance,
         setFullState
       );
+
+      console.log(account.decodedAddress);
     }
   }, [account, api]);
   return (
