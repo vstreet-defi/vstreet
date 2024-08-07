@@ -210,11 +210,17 @@ export const getBalanceVUSD = async (
       setFullState(fullState);
 
       const localBalances = fullState.balances || [];
+      let accountFound = false;
       localBalances.some(([address, balance]: [string, number]) => {
         if (encodeAddress(address) === accountAddress) {
           setBalance(balance || 0);
+          accountFound = true;
+          return true; // Exit the loop early
         }
       });
+      if (!accountFound) {
+        setBalance(0);
+      }
     } else {
       throw new Error("Unexpected fullState format");
     }
