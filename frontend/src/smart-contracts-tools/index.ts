@@ -61,10 +61,12 @@ function handleStatusUpdate(status: any, actionType: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const checkStatus = () => {
       if (status.isInBlock) {
+        console.log(`${actionType} is in block`);
       } else if (status.type === "Finalized") {
+        console.log(`${actionType} finalized`);
         resolve();
       } else {
-        console.log("in process");
+        console.log(`${actionType} in process`);
       }
     };
 
@@ -102,6 +104,7 @@ async function executeTransaction(
     if ("Approve" in payload) return "Approve";
     if ("Deposit" in payload) return "Deposit";
     if ("withdrawliquidity" in payload) return "Withdraw";
+    if ("WithdrawRewards" in payload) return "Withdraw Rewards";
     return "Transaction";
   };
 
@@ -162,8 +165,7 @@ export async function withdrawTransaction(
   api: GearApi,
   withdrawMessage: MessageSendOptions,
   account: any,
-  accounts: any[],
-  setIsLoading: (loading: boolean) => void
+  accounts: any[]
 ): Promise<void> {
   return executeTransaction(
     api,
@@ -264,7 +266,6 @@ export const getStakingInfo = async (
 
 export const getAPR = async (
   api: GearApi,
-  setTotalLiquidityPool: (liquidityPool: number) => void,
   setApr: (apr: number) => void,
   setFullState: (state: FullStateVST) => void
 ) => {

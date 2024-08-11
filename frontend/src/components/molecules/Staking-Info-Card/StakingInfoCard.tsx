@@ -1,50 +1,141 @@
-import { useContext, useRef } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
-import { useAccount, useApi, useAlert } from "@gear-js/react-hooks";
-import { useState, useEffect } from "react";
-import { getAPR, getStakingInfo } from "smart-contracts-tools";
-import { AlertModalContext } from "contexts/alertContext";
+import { useAccount, useApi } from "@gear-js/react-hooks";
 import { GearApi } from "@gear-js/api";
 import { programIDVST, metadataVST } from "../../../utils/smartPrograms";
 import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
+  getAPR,
+  getStakingInfo,
   withdrawRewardsTransaction,
 } from "smart-contracts-tools";
+import { AlertModalContext } from "contexts/alertContext";
 
-function StakingInfoCard() {
-  const [fullState, setFullState] = useState<any | undefined>({});
+interface TooltipProps {
+  message: string;
+}
 
+interface StakingInfoCardProps {}
+
+type TransactionFunction = (
+  api: GearApi,
+  message: any,
+  account: any,
+  accounts: any[],
+  setLoading?: ((loading: boolean) => void) | undefined
+) => Promise<void>;
+
+const Tooltip: React.FC<TooltipProps> = ({ message }) => {
+  return (
+    <div className="custom-tooltip">
+      <p>{message}</p>
+    </div>
+  );
+};
+
+const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   const { api } = useApi();
   const { account, accounts } = useAccount();
-  const alert = useAlert();
+  const alertModalContext = useContext(AlertModalContext);
 
   const [depositedBalance, setDepositedBalance] = useState<number | null>(null);
   const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
-  const [apr, setApr] = useState(0);
-  const [totalLiquidityPool, setTotalLiquidityPool] = useState(0);
-  const [showMessage, setShowMessage] = useState(false);
+  const [apr, setApr] = useState<number>(0);
+  const [totalLiquidityPool, setTotalLiquidityPool] = useState<number>(0);
+  const [showMessage, setShowMessage] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [fullState, setFullState] = useState<any | undefined>({});
+
   const wrapperRef = useRef<HTMLDivElement>(null);
-  const alertModalContext = useContext(AlertModalContext);
 
-  const handleClick = () => {
-    setShowMessage((prevState) => !prevState);
-  };
+  const handleTransaction = async (
+    messages: { message: any; infoText: string }[],
+    transactions: TransactionFunction[]
+  ) => {
+    for (let i = 0; i < messages.length; i++) {
+      const { message, infoText } = messages[i];
+      const transaction = transactions[i];
 
-  const formatWithCommas = (number: number) => {
-    return number.toLocaleString();
-  };
+      alertModalContext?.showInfoModal(infoText);
 
-  const handleClickOutside = (event: MouseEvent) => {
-    if (
-      wrapperRef.current &&
-      !wrapperRef.current.contains(event.target as Node)
-    ) {
-      setShowMessage(false);
+      try {
+        await transaction(
+          api as GearApi,
+          message,
+          account,
+          accounts,
+          i === messages.length - 1 ? setIsLoading : undefined
+        );
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "An unknown error occurred.";
+        alertModalContext?.showErrorModal(errorMessage);
+        setTimeout(() => {
+          alertModalContext?.hideAlertModal();
+        }, 5000);
+        throw error;
+      }
     }
+
+    alertModalContext?.showSuccessModal();
+    setTimeout(() => {
+      alertModalContext?.hideAlertModal();
+    }, 2000);
+  };
+
+  const handleClaim = async () => {
+    const withdrawRewardsMessage = createWithdrawRewardsMessage();
+    await handleTransaction(
+      [
+        {
+          message: withdrawRewardsMessage,
+          infoText:
+            "Claim rewards in progress. Please check your wallet to sign the transaction.",
+        },
+      ],
+      [withdrawRewardsTransaction]
+    );
+  };
+
+  const actions: { [key: string]: () => Promise<void> } = {
+    Claim: handleClaim,
+  };
+
+  const handleClick = async (actionKey: string) => {
+    setIsLoading(true);
+
+    const action = actions[actionKey];
+    if (action) {
+      try {
+        await action();
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "An unknown error occurred.";
+        alertModalContext?.showErrorModal(errorMessage);
+        setTimeout(() => {
+          alertModalContext?.hideAlertModal();
+        }, 5000);
+      }
+    } else {
+      alertModalContext?.showErrorModal("Invalid action");
+      setTimeout(() => {
+        alertModalContext?.hideAlertModal();
+      }, 5000);
+    }
+    setIsLoading(false);
   };
 
   useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setShowMessage(false);
+      }
+    };
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -60,37 +151,15 @@ function StakingInfoCard() {
         setFullState,
         setRewardsUsdc
       );
-
-      console.log(depositedBalance);
     }
-  }, [api, account, alert, depositedBalance]);
+  }, [api, account, depositedBalance]);
 
   useEffect(() => {
-    getAPR(api, setTotalLiquidityPool, setApr, setFullState);
+    getAPR(api, setApr, setFullState);
   }, [api, fullState]);
 
-  const handleClaim = async () => {
-    const withdrawRewardsMessage = createWithdrawRewardsMessage();
-    try {
-      if (rewardsUsdc <= 0) return;
-      alertModalContext?.showInfoModal(
-        "Claim rewards in progress. Please check your wallet to sign the transaction."
-      );
-      await withdrawRewardsTransaction(
-        api,
-        withdrawRewardsMessage,
-        account,
-        accounts
-      );
-      alertModalContext?.hideAlertModal?.();
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred.";
-      alertModalContext?.showErrorModal(errorMessage);
-      setTimeout(() => {
-        alertModalContext?.hideAlertModal();
-      }, 5000);
-    }
+  const formatWithCommas = (number: number) => {
+    return number.toLocaleString();
   };
 
   return (
@@ -113,9 +182,7 @@ function StakingInfoCard() {
           >
             <p>Total Earned</p>
             <img
-              onClick={() => {
-                handleClick();
-              }}
+              onClick={() => setShowMessage((prev) => !prev)}
               style={{ width: "1rem", height: "1rem", marginLeft: "0.5rem" }}
               src={InfoIcon}
               alt="Info Icon"
@@ -129,25 +196,14 @@ function StakingInfoCard() {
         </div>
         <div
           className={`ButtonFlex ${rewardsUsdc > 0 ? "" : "disabled"}`}
-          onClick={() => {
-            handleClaim();
-          }}
+          onClick={() => handleClick("Claim")}
         >
-          <ButtonGradientBorder text="Claim" isDisabled={rewardsUsdc <= 0} />
+          <ButtonGradientBorder
+            text="Claim"
+            isDisabled={rewardsUsdc <= 0 || isLoading}
+          />
         </div>
       </div>
-    </div>
-  );
-}
-
-interface TooltipProps {
-  message: string;
-}
-
-const Tooltip: React.FC<TooltipProps> = ({ message }) => {
-  return (
-    <div className="custom-tooltip">
-      <p>{message}</p>
     </div>
   );
 };
