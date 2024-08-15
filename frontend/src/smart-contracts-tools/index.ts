@@ -2,10 +2,10 @@ import { encodeAddress, MessageSendOptions } from "@gear-js/api";
 import { web3FromSource } from "@polkadot/extension-dapp";
 import { GearApi } from "@gear-js/api";
 import {
-  programIDVST,
-  programIDFTUSDC,
-  metadataVST,
-  metadataFTUSDC,
+  vstreetProgramID,
+  fungibleTokenProgramID,
+  decodedVstreetMeta,
+  decodedFungibleTokenMeta,
 } from "../utils/smartPrograms";
 
 export interface FullState {
@@ -19,10 +19,10 @@ const gasLimit = 89981924500;
 
 export function createApproveMessage(amount: string): MessageSendOptions {
   return {
-    destination: programIDFTUSDC,
+    destination: fungibleTokenProgramID,
     payload: {
       Approve: {
-        to: programIDVST,
+        to: vstreetProgramID,
         amount: Number(amount),
       },
     },
@@ -33,7 +33,7 @@ export function createApproveMessage(amount: string): MessageSendOptions {
 
 export function createDepositMessage(amount: string): MessageSendOptions {
   return {
-    destination: programIDVST,
+    destination: vstreetProgramID,
     payload: { Deposit: Number(amount) },
     gasLimit: gasLimit,
     value: 0,
@@ -42,7 +42,7 @@ export function createDepositMessage(amount: string): MessageSendOptions {
 
 export function createWithdrawMessage(amount: string): MessageSendOptions {
   return {
-    destination: programIDVST,
+    destination: vstreetProgramID,
     payload: { withdrawliquidity: Number(amount) },
     gasLimit: gasLimit,
     value: 0,
@@ -50,7 +50,7 @@ export function createWithdrawMessage(amount: string): MessageSendOptions {
 }
 export function createWithdrawRewardsMessage(): MessageSendOptions {
   return {
-    destination: programIDVST,
+    destination: vstreetProgramID,
     payload: { WithdrawRewards: null },
     gasLimit: gasLimit,
     value: 0,
@@ -140,7 +140,7 @@ export async function approveTransaction(
   return executeTransaction(
     api,
     approveMessage,
-    metadataFTUSDC,
+    decodedFungibleTokenMeta,
     account,
     accounts
   );
@@ -155,7 +155,7 @@ export async function depositTransaction(
   return executeTransaction(
     api,
     depositMessage,
-    metadataVST,
+    decodedVstreetMeta,
     account,
     accounts
   );
@@ -170,7 +170,7 @@ export async function withdrawTransaction(
   return executeTransaction(
     api,
     withdrawMessage,
-    metadataVST,
+    decodedVstreetMeta,
     account,
     accounts
   );
@@ -184,7 +184,7 @@ export async function withdrawRewardsTransaction(
   return executeTransaction(
     api,
     withdrawRewardsMessage,
-    metadataVST,
+    decodedVstreetMeta,
     account,
     accounts
   );
@@ -198,8 +198,8 @@ export const getBalanceVUSD = async (
 ) => {
   try {
     const result = await api.programState.read(
-      { programId: programIDFTUSDC, payload: "" },
-      metadataFTUSDC
+      { programId: fungibleTokenProgramID },
+      decodedFungibleTokenMeta
     );
     const rawState: unknown = result.toJSON();
 
@@ -240,14 +240,13 @@ export const getStakingInfo = async (
 ) => {
   try {
     const result = await api.programState.read(
-      { programId: programIDVST },
-      metadataVST
+      { programId: vstreetProgramID },
+      decodedVstreetMeta
     );
     const rawState: unknown = result.toJSON();
 
     const fullState = rawState as FullStateVST;
     setFullState(fullState);
-    console.log(fullState);
 
     const userAddress = accountAddress;
     if (userAddress && fullState.users && fullState?.users[userAddress]) {
@@ -271,8 +270,8 @@ export const getAPR = async (
 ) => {
   try {
     const result = await api.programState.read(
-      { programId: programIDVST },
-      metadataVST
+      { programId: vstreetProgramID },
+      decodedVstreetMeta
     );
     const rawState: unknown = result.toJSON();
 

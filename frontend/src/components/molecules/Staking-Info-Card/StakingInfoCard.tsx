@@ -2,7 +2,6 @@ import React, { useContext, useEffect, useRef, useState } from "react";
 import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
 import { useAccount, useApi } from "@gear-js/react-hooks";
 import { GearApi } from "@gear-js/api";
-import { programIDVST, metadataVST } from "../../../utils/smartPrograms";
 import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
