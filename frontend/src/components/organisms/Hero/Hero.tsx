@@ -6,8 +6,10 @@ import {
   Text,
   Button,
   Heading,
+  Image,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
+import logoVara from "../../../assets/images/vara-logo-teal.png";
 import Flag from "components/atoms/Flag";
 import Home1VideoBgSmall from "../../../assets/images/backgrounds/Home-Gif-WebComp1280x741-12fps.gif";
 
@@ -107,6 +109,18 @@ function Hero({ isMobile }: Props) {
                     Whitepaper
                   </Button>
                 </Stack>
+                <Flex
+                  style={{
+                    borderColor: "rgb(0, 255, 196), 0.5",
+                    borderWidth: ".05px",
+                  }}
+                  p="1rem"
+                  w="10rem"
+                  bgColor="black"
+                >
+                  <Text color="white">Secured by</Text>
+                  <Image ml=".2rem" w="2rem" src={logoVara}></Image>
+                </Flex>
               </>
             )}
             {isMobile && (
