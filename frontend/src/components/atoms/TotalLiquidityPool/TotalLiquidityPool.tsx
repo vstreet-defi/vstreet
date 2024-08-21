@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { GearApi } from "@gear-js/api";
 
-import { programIDVST, metadataVST } from "../../../utils/smartPrograms";
+import {
+  vstreetProgramID,
+  decodedVstreetMeta,
+} from "../../../utils/smartPrograms";
 
 function TotalLiquidityPool() {
   const [totalLiquidityPool, setTotalLiquidityPool] = useState(0);
@@ -25,10 +28,9 @@ function TotalLiquidityPool() {
         providerAddress: "wss://testnet.vara.network",
       });
       await api.programState
-        .read({ programId: programIDVST }, metadataVST)
+        .read({ programId: vstreetProgramID }, decodedVstreetMeta)
         .then((result) => {
           setFullState(result.toJSON());
-          console.log("fullState", fullState);
           setTotalLiquidityPool(fullState.totalDeposited);
           setApr(fullState.apr / 10000);
         })
