@@ -1,28 +1,24 @@
 import React, {
   useContext,
-  useEffect,
   useRef,
   useState,
   useCallback,
+  useEffect,
 } from "react";
-import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
 import { useAccount, useApi } from "@gear-js/react-hooks";
 import { GearApi } from "@gear-js/api";
+import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
 import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
-  getAPR,
   getStakingInfo,
   withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
-import { formatNumber } from "utils";
+import { useLiquidityData } from "contexts/stateContext";
 
-interface TooltipProps {
-  message: string;
-}
-
-interface StakingInfoCardProps {}
+// Utility functions
+const formatWithCommas = (number: number) => number.toLocaleString();
 
 type TransactionFunction = (
   api: GearApi,
@@ -32,16 +28,51 @@ type TransactionFunction = (
   setLoading?: (loading: boolean) => void
 ) => Promise<void>;
 
-const Tooltip: React.FC<TooltipProps> = ({ message }) => (
-  <div className="custom-tooltip">
-    <p>{message}</p>
-  </div>
-);
+const handleTransaction = async (
+  messages: { message: any; infoText: string }[],
+  transactions: TransactionFunction[],
+  api: GearApi,
+  account: any,
+  accounts: any[],
+  alertModalContext: any,
+  setIsLoading: (loading: boolean) => void
+) => {
+  for (let i = 0; i < messages.length; i++) {
+    const { message, infoText } = messages[i];
+    const transaction = transactions[i];
 
+    alertModalContext?.showInfoModal(infoText);
+
+    try {
+      await transaction(
+        api,
+        message,
+        account,
+        accounts,
+        i === messages.length - 1 ? setIsLoading : undefined
+      );
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred.";
+      alertModalContext?.showErrorModal(errorMessage);
+      if (alertModalContext?.hideAlertModal) {
+        setTimeout(() => alertModalContext.hideAlertModal(), 3000);
+      }
+
+      throw error;
+    }
+  }
+
+  alertModalContext?.showSuccessModal();
+  if (alertModalContext?.hideAlertModal) {
+    setTimeout(() => alertModalContext.hideAlertModal(), 2000);
+  }
+};
+
+// Hooks
 const useStakingInfo = (api: GearApi | undefined, account: any) => {
   const [depositedBalance, setDepositedBalance] = useState<number | null>(null);
   const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
-  const [apr, setApr] = useState<number>(0);
   const [fullState, setFullState] = useState<any | undefined>({});
 
   useEffect(() => {
@@ -56,13 +87,7 @@ const useStakingInfo = (api: GearApi | undefined, account: any) => {
     }
   }, [api, account]);
 
-  useEffect(() => {
-    if (api) {
-      getAPR(api, setApr, setFullState);
-    }
-  }, [api, fullState]);
-
-  return { depositedBalance, rewardsUsdc, apr };
+  return { depositedBalance, rewardsUsdc };
 };
 
 const useOutsideClick = (
@@ -83,54 +108,52 @@ const useOutsideClick = (
   }, [ref, callback]);
 };
 
+// Components
+interface TooltipProps {
+  message: string;
+}
+
+const Tooltip: React.FC<TooltipProps> = ({ message }) => (
+  <div className="custom-tooltip">
+    <p>{message}</p>
+  </div>
+);
+
+interface InfoRowProps {
+  label: string;
+  value: string;
+  icon?: React.ReactNode;
+}
+
+const InfoRow = React.forwardRef<HTMLDivElement, InfoRowProps>(
+  ({ label, value, icon }, ref) => (
+    <div className="Flex" ref={ref}>
+      <div style={{ display: "flex" }}>
+        <p>{label}</p>
+        {icon}
+      </div>
+      <p>{value}</p>
+    </div>
+  )
+);
+
+InfoRow.displayName = "InfoRow";
+
+// Main component
+interface StakingInfoCardProps {}
+
 const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   const { api } = useApi();
   const { account, accounts } = useAccount();
   const alertModalContext = useContext(AlertModalContext);
+  const liquidityData = useLiquidityData();
 
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const { depositedBalance, rewardsUsdc, apr } = useStakingInfo(api, account);
-
+  const { depositedBalance, rewardsUsdc } = useStakingInfo(api, account);
   useOutsideClick(wrapperRef, () => setShowMessage(false));
-
-  const handleTransaction = async (
-    messages: { message: any; infoText: string }[],
-    transactions: TransactionFunction[]
-  ) => {
-    for (let i = 0; i < messages.length; i++) {
-      const { message, infoText } = messages[i];
-      const transaction = transactions[i];
-
-      alertModalContext?.showInfoModal(infoText);
-
-      try {
-        await transaction(
-          api as GearApi,
-          message,
-          account,
-          accounts,
-          i === messages.length - 1 ? setIsLoading : undefined
-        );
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "An unknown error occurred.";
-        alertModalContext?.showErrorModal(errorMessage);
-        if (alertModalContext?.hideAlertModal) {
-          setTimeout(() => alertModalContext.hideAlertModal(), 3000);
-        }
-
-        throw error;
-      }
-    }
-
-    alertModalContext?.showSuccessModal();
-    if (alertModalContext?.hideAlertModal) {
-      setTimeout(() => alertModalContext.hideAlertModal(), 2000);
-    }
-  };
 
   const handleClaim = useCallback(async () => {
     const withdrawRewardsMessage = createWithdrawRewardsMessage();
@@ -142,9 +165,14 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
             "Claim rewards in progress. Please check your wallet to sign the transaction.",
         },
       ],
-      [withdrawRewardsTransaction]
+      [withdrawRewardsTransaction],
+      api as GearApi,
+      account,
+      accounts,
+      alertModalContext,
+      setIsLoading
     );
-  }, [api, account, accounts]);
+  }, [api, account, accounts, alertModalContext]);
 
   const handleClick = async (actionKey: string) => {
     setIsLoading(true);
@@ -166,7 +194,13 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
     }
   };
 
-  const formatWithCommas = (number: number) => number.toLocaleString();
+  if (!liquidityData) {
+    return <div>Error: Liquidity data not available</div>;
+  }
+
+  const { apr, loading } = liquidityData;
+
+  if (loading) return <div>Loading...</div>;
 
   return (
     <div>
@@ -174,26 +208,24 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
         {showMessage && (
           <Tooltip message="We allow 1 Reward Withdraw per day." />
         )}
-        <div className="Flex">
-          <p>Total Deposited</p>
-          <p>${formatWithCommas(depositedBalance ?? 0)} vUSD</p>
-        </div>
-        <div className="Flex">
-          <div ref={wrapperRef} style={{ display: "flex" }}>
-            <p>Total Earned</p>
+        <InfoRow
+          label="Total Deposited"
+          value={`$${formatWithCommas(depositedBalance ?? 0)} vUSD`}
+        />
+        <InfoRow
+          label="Total Earned"
+          value={`$${formatWithCommas(rewardsUsdc ?? 0)} vUSD`}
+          icon={
             <img
               onClick={() => setShowMessage((prev) => !prev)}
               style={{ width: "1rem", height: "1rem", marginLeft: "0.5rem" }}
               src={InfoIcon}
               alt="Info Icon"
             />
-          </div>
-          <p>${formatWithCommas(rewardsUsdc ?? 0)} vUSD</p>
-        </div>
-        <div className="Flex">
-          <p>APR</p>
-          <p>{formatNumber(apr)}%</p>
-        </div>
+          }
+          ref={wrapperRef}
+        />
+        <InfoRow label="APR" value={`${apr}%`} />
         <div
           className={`ButtonFlex ${rewardsUsdc > 0 ? "" : "disabled"}`}
           onClick={() => handleClick("Claim")}

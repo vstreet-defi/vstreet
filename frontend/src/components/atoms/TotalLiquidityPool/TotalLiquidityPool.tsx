@@ -1,81 +1,33 @@
-import { useEffect, useState } from "react";
-import { GearApi } from "@gear-js/api";
-import {
-  vstreetProgramID,
-  decodedVstreetMeta,
-} from "../../../utils/smartPrograms";
-import { FullStateVST } from "../../../smart-contracts-tools";
-import { formatNumber } from "utils";
+import React from "react";
+import { useLiquidityData } from "contexts/stateContext";
 
-const useTotalLiquidityPool = () => {
-  const [totalLiquidityPool, setTotalLiquidityPool] = useState(0);
-  const [fullState, setFullState] = useState<FullStateVST | undefined>(
-    undefined
-  );
-  const [apr, setApr] = useState(0);
-
-  const fetchTotalLiquidityPool = async () => {
-    try {
-      const api = await GearApi.create({
-        providerAddress: "wss://testnet.vara.network",
-      });
-      const result = await api.programState.read(
-        { programId: vstreetProgramID },
-        decodedVstreetMeta
-      );
-
-      const state = result.toJSON() as unknown as FullStateVST;
-
-      if (state && typeof state === "object" && "users" in state) {
-        setFullState(state);
-        const totalDeposited = Object.values(state.users).reduce(
-          (acc, user) => acc + (user.balance || 0),
-          0
-        );
-        setTotalLiquidityPool(totalDeposited);
-        if (state.apr) {
-          setApr(state.apr / 10000);
-        }
-      } else {
-        throw new Error("Unexpected state format");
-      }
-    } catch (error) {
-      console.error(
-        `Failed to fetch total liquidity pool: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    }
-  };
-
-  useEffect(() => {
-    fetchTotalLiquidityPool();
-  }, []);
-
-  return { totalLiquidityPool, apr, fullState };
-};
-
-const formatWithCommas = (number: number) => {
+const formatWithCommas = (number: number): string => {
   return number.toLocaleString();
 };
 
-const TotalLiquidityPool: React.FC = () => {
-  const { totalLiquidityPool, apr } = useTotalLiquidityPool();
-  const [tvl, setTvl] = useState(0);
+const calculateTvl = (totalLiquidityPool: number): number => {
+  return totalLiquidityPool / 1000000;
+};
 
-  useEffect(() => {
-    setTvl(totalLiquidityPool / 1000000);
-  }, [totalLiquidityPool]);
+const TotalLiquidityPool: React.FC = () => {
+  const liquidityData = useLiquidityData();
+
+  if (!liquidityData) {
+    return <div>Error: Liquidity data not available</div>;
+  }
+
+  const { totalLiquidityPool, apr } = liquidityData;
+  const tvl = calculateTvl(totalLiquidityPool);
 
   return (
     <div className="Container">
       <div>
         <h2 className="Heading-Deposit">Deposit your $vUSD and earn</h2>
-        <p className="DataAPY">{formatNumber(apr)}% Annual Interest (APR)</p>
+        <p className="DataAPY">{apr}% Annual Interest (APR)</p>
       </div>
       <div className="Box">
         <h2 className="Heading">Total Liquidity Pool:</h2>
-        <p className="Data"> ${formatWithCommas(tvl)} vUSD</p>
+        <p className="Data">${formatWithCommas(tvl)} vUSD</p>
       </div>
     </div>
   );
