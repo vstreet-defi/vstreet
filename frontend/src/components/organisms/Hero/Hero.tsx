@@ -109,17 +109,42 @@ function Hero({ isMobile }: Props) {
                     Whitepaper
                   </Button>
                 </Stack>
-                <Flex
-                  style={{
-                    borderColor: "rgb(0, 255, 196), 0.5",
-                    borderWidth: ".05px",
-                  }}
-                  p="1rem"
-                  w="10rem"
-                  bgColor="black"
-                >
-                  <Text color="white">Secured by</Text>
-                  <Image ml=".2rem" w="2rem" src={logoVara}></Image>
+                <Flex justify="flex-end" w="100%">
+                  <Flex
+                    style={{
+                      borderColor: "rgb(0, 255, 196), 0.5",
+                      borderWidth: ".05px",
+                      borderRadius: "1rem",
+                    }}
+                    p="1rem"
+                    pr=".5rem"
+                    w="7.2rem"
+                    bgColor="black"
+                    mr="4rem"
+                  >
+                    <Text fontSize="12px" color="white">
+                      Secured by
+                    </Text>
+                    <Image ml=".2rem" w="1.5rem" src={logoVara}></Image>
+                  </Flex>
+                  {/* Color Version */}
+                  {/* <Flex
+                    style={{
+                      borderColor: "black",
+                      borderWidth: ".05px",
+                      borderRadius: "1rem",
+                    }}
+                    p="1rem"
+                    pr=".5rem"
+                    w="7.2rem"
+                    bgColor="#00FFC4"
+                    mr="4rem"
+                  >
+                    <Text fontWeight="600" fontSize="12px" color="black">
+                      Secured by
+                    </Text>
+                    <Image ml=".2rem" w="1.5rem" src={logoVara}></Image>
+                  </Flex> */}
                 </Flex>
               </>
             )}
@@ -165,13 +190,25 @@ function Hero({ isMobile }: Props) {
               </Stack>
             )}
           </Stack>
-          {/* <Flex
-            flex={1}
-            justify="center"
-            align="center"
-            position="relative"
-            w="full"
-          ></Flex> */}
+
+          <Flex
+            style={{
+              borderColor: "rgb(0, 255, 196), 0.5",
+              borderWidth: ".05px",
+              borderRadius: "1rem",
+            }}
+            p="1rem"
+            pr=".5rem"
+            w="7.2rem"
+            bgColor="black"
+            mr="1rem"
+            alignSelf="flex-end"
+          >
+            <Text fontSize="12px" color="white">
+              Secured by
+            </Text>
+            <Image ml=".2rem" w="1.5rem" src={logoVara}></Image>
+          </Flex>
         </Stack>
       </Box>
     </Container>
