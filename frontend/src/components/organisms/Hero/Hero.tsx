@@ -61,7 +61,7 @@ function Hero({ isMobile }: Props) {
               fontFamily={"'Roboto Mono', monospace"}
               mr={{ base: "0", md: "0rem", lg: "2rem", xl: "6rem" }}
             >
-              Unlock the synthetic assets liquidity to optimize your DeFi
+              Unlock the derivative tokens liquidity to optimize your DeFi
               strategies
             </Text>
             {!isMobile && (

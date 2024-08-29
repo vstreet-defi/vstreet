@@ -8,6 +8,7 @@ import { FundsManager } from "components/organisms/FundsManager/FundsManager";
 import TotalLiquidityPool from "components/atoms/TotalLiquidityPool/TotalLiquidityPool";
 import { AlertModalProvider } from "contexts/alertContext";
 import StakingInfo from "components/organisms/StakingInfo/StakingInfo";
+import { LiquidityProvider } from "contexts/stateContext";
 
 function DappPage() {
   const { isApiReady } = useApi();
@@ -22,37 +23,39 @@ function DappPage() {
 
   return (
     <>
-      <AlertModalProvider>
-        {isAppReady ? (
-          <>
-            <Header
-              isAccountVisible={isAccountReady}
-              items={navBarItems}
-              isMobile={isMobileDevice()}
-            />
-            <DappTemplate
-              bannerComponent={
-                <>
-                  <AlertModal />
-                  <TotalLiquidityPool />
-                </>
-              }
-              leftSectionComponent={
-                <>
-                  <FundsManager />
-                </>
-              }
-              rightSectionComponent={
-                <>
-                  <StakingInfo />
-                </>
-              }
-            />
-          </>
-        ) : (
-          <ApiLoader />
-        )}
-      </AlertModalProvider>
+      <LiquidityProvider>
+        <AlertModalProvider>
+          {isAppReady ? (
+            <>
+              <Header
+                isAccountVisible={isAccountReady}
+                items={navBarItems}
+                isMobile={isMobileDevice()}
+              />
+              <DappTemplate
+                bannerComponent={
+                  <>
+                    <AlertModal />
+                    <TotalLiquidityPool />
+                  </>
+                }
+                leftSectionComponent={
+                  <>
+                    <FundsManager />
+                  </>
+                }
+                rightSectionComponent={
+                  <>
+                    <StakingInfo />
+                  </>
+                }
+              />
+            </>
+          ) : (
+            <ApiLoader />
+          )}
+        </AlertModalProvider>
+      </LiquidityProvider>
     </>
   );
 }

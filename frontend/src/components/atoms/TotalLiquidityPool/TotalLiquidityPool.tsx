@@ -1,61 +1,36 @@
-import { useEffect, useState } from "react";
-import { GearApi } from "@gear-js/api";
+import React from "react";
+import { useLiquidityData } from "contexts/stateContext";
 
-import {
-  vstreetProgramID,
-  decodedVstreetMeta,
-} from "../../../utils/smartPrograms";
+const formatWithCommas = (number: number): string => {
+  return number.toLocaleString();
+};
 
-function TotalLiquidityPool() {
-  const [totalLiquidityPool, setTotalLiquidityPool] = useState(0);
-  const [fullState, setFullState] = useState<any | undefined>({});
-  const [apr, setApr] = useState(0);
-  const [tvl, setTvl] = useState(0);
+const calculateTvl = (totalLiquidityPool: number): number => {
+  return totalLiquidityPool / 1000000;
+};
 
-  const TLVdisplay = async () => {
-    if (fullState) {
-      const tvl1 = fullState.totalDeposited / 1000000;
-      setTvl(tvl1);
-    }
-  };
-  const formatWithCommas = (number: number) => {
-    return number.toLocaleString();
-  };
+const TotalLiquidityPool: React.FC = () => {
+  const liquidityData = useLiquidityData();
 
-  useEffect(() => {
-    const fetchTotalLiquidityPool = async () => {
-      const api = await GearApi.create({
-        providerAddress: "wss://testnet.vara.network",
-      });
-      await api.programState
-        .read({ programId: vstreetProgramID }, decodedVstreetMeta)
-        .then((result) => {
-          setFullState(result.toJSON());
-          setTotalLiquidityPool(fullState.totalDeposited);
-          setApr(fullState.apr / 10000);
-        })
-        .catch(({ message }: Error) => console.log(message));
-    };
+  if (!liquidityData) {
+    return <div>Error: Liquidity data not available</div>;
+  }
 
-    try {
-      fetchTotalLiquidityPool();
-      TLVdisplay();
-    } catch (error) {}
-  }, [fullState.totalDeposited]);
+  const { totalLiquidityPool, apr } = liquidityData;
+  const tvl = calculateTvl(totalLiquidityPool);
 
   return (
     <div className="Container">
       <div>
-        <h2 className="Heading-Deposit">Deposit your $vUSDC and earn</h2>
-        <p className="DataAPY">{apr}% Annual Interest APY</p>
+        <h2 className="Heading-Deposit">Deposit your $vUSD and earn</h2>
+        <p className="DataAPY">{apr}% Annual Interest (APR)</p>
       </div>
       <div className="Box">
-        <h2 className="Heading">Total Liquidity Pool: </h2>
-
-        <p className="Data"> ${formatWithCommas(tvl)} vUSDC</p>
+        <h2 className="Heading">Total Liquidity Pool:</h2>
+        <p className="Data">${formatWithCommas(tvl)} vUSD</p>
       </div>
     </div>
   );
-}
+};
 
 export default TotalLiquidityPool;

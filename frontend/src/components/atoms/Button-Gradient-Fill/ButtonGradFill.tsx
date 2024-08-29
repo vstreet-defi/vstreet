@@ -116,13 +116,13 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
         alertModalContext?.showErrorModal(errorMessage);
         setTimeout(() => {
           alertModalContext?.hideAlertModal();
-        }, 5000);
+        }, 3000);
       }
     } else {
       alertModalContext?.showErrorModal("Invalid action");
       setTimeout(() => {
         alertModalContext?.hideAlertModal();
-      }, 5000);
+      }, 3000);
     }
     setIsLoading(false);
   };
