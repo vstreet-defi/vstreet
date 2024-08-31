@@ -187,28 +187,27 @@ function Hero({ isMobile }: Props) {
                 >
                   Whitepaper
                 </Button>
+                <Flex
+                  style={{
+                    borderColor: "rgb(0, 255, 196), 0.5",
+                    borderWidth: ".05px",
+                    borderRadius: "1rem",
+                  }}
+                  p="1rem"
+                  pr=".5rem"
+                  w="7.2rem"
+                  bgColor="black"
+                  mr="1rem"
+                  alignSelf="flex-end"
+                >
+                  <Text fontSize="12px" color="white">
+                    Secured by
+                  </Text>
+                  <Image ml=".2rem" w="1.5rem" src={logoVara}></Image>
+                </Flex>
               </Stack>
             )}
           </Stack>
-
-          <Flex
-            style={{
-              borderColor: "rgb(0, 255, 196), 0.5",
-              borderWidth: ".05px",
-              borderRadius: "1rem",
-            }}
-            p="1rem"
-            pr=".5rem"
-            w="7.2rem"
-            bgColor="black"
-            mr="1rem"
-            alignSelf="flex-end"
-          >
-            <Text fontSize="12px" color="white">
-              Secured by
-            </Text>
-            <Image ml=".2rem" w="1.5rem" src={logoVara}></Image>
-          </Flex>
         </Stack>
       </Box>
     </Container>
