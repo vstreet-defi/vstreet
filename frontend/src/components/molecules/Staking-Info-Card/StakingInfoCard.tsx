@@ -218,7 +218,12 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
           icon={
             <img
               onClick={() => setShowMessage((prev) => !prev)}
-              style={{ width: "1rem", height: "1rem", marginLeft: "0.5rem" }}
+              style={{
+                width: "1rem",
+                height: "1rem",
+                marginLeft: "0.5rem",
+                cursor: "pointer",
+              }}
               src={InfoIcon}
               alt="Info Icon"
             />
