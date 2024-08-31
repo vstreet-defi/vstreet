@@ -9,6 +9,7 @@ import { GearApi } from "@gear-js/api";
 import { FullStateVST } from "smart-contracts-tools";
 import { decodedVstreetMeta, vstreetProgramID } from "utils/smartPrograms";
 import { formatNumber } from "utils";
+import { useApi } from "@gear-js/react-hooks";
 
 interface LiquidityContextProps {
   apr: number;
@@ -43,16 +44,14 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
     totalLiquidityPool: 0,
     loading: true,
   });
+  const { api } = useApi();
 
   const fetchLiquidityData = useCallback(async () => {
     try {
-      const api = await GearApi.create({
-        providerAddress: "wss://testnet.vara.network",
-      });
       const result = await api.programState.read(
         {
           programId: vstreetProgramID,
-          payload: undefined
+          payload: ''
         },
         decodedVstreetMeta
       );
