@@ -230,7 +230,7 @@ export const getBalanceVUSD = async (
       throw new Error("Unexpected fullState format");
     }
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new Error(`Error: ${error}`);
   }
 };
 
