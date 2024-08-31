@@ -50,7 +50,10 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
         providerAddress: "wss://testnet.vara.network",
       });
       const result = await api.programState.read(
-        { programId: vstreetProgramID },
+        {
+          programId: vstreetProgramID,
+          payload: undefined
+        },
         decodedVstreetMeta
       );
 

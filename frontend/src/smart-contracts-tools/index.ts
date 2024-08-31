@@ -198,7 +198,10 @@ export const getBalanceVUSD = async (
 ) => {
   try {
     const result = await api.programState.read(
-      { programId: fungibleTokenProgramID },
+      {
+        programId: fungibleTokenProgramID,
+        payload: undefined
+      },
       decodedFungibleTokenMeta
     );
     const rawState: unknown = result.toJSON();
@@ -240,7 +243,10 @@ export const getStakingInfo = async (
 ) => {
   try {
     const result = await api.programState.read(
-      { programId: vstreetProgramID },
+      {
+        programId: vstreetProgramID,
+        payload: undefined
+      },
       decodedVstreetMeta
     );
     const rawState: unknown = result.toJSON();
@@ -270,7 +276,10 @@ export const getAPR = async (
 ) => {
   try {
     const result = await api.programState.read(
-      { programId: vstreetProgramID },
+      {
+        programId: vstreetProgramID,
+        payload: undefined
+      },
       decodedVstreetMeta
     );
     const rawState: unknown = result.toJSON();
