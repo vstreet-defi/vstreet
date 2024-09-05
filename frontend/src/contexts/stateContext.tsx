@@ -51,7 +51,7 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
       const result = await api.programState.read(
         {
           programId: vstreetProgramID,
-          payload: ''
+          payload: undefined,
         },
         decodedVstreetMeta
       );
