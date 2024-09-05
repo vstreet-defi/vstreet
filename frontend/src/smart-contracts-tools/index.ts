@@ -230,7 +230,7 @@ export const getBalanceVUSD = async (
       throw new Error("Unexpected fullState format");
     }
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new Error(`Error: ${error}`);
   }
 };
 
@@ -265,7 +265,7 @@ export const getStakingInfo = async (
       if (setRewardsUsdc) setRewardsUsdc(0);
     }
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new Error(`Error: ${error}`);
   }
 };
 
@@ -288,6 +288,6 @@ export const getAPR = async (
     setFullState(fullState);
     if (fullState.apr) setApr(fullState.apr / 10000);
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new Error(`Error: ${error}`);
   }
 };
