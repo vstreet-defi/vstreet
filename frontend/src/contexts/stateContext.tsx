@@ -5,7 +5,6 @@ import React, {
   useEffect,
   useCallback,
 } from "react";
-import { GearApi } from "@gear-js/api";
 import { FullStateVST } from "smart-contracts-tools";
 import { decodedVstreetMeta, vstreetProgramID } from "utils/smartPrograms";
 import { formatNumber } from "utils";
@@ -14,7 +13,6 @@ import { useApi } from "@gear-js/react-hooks";
 interface LiquidityContextProps {
   apr: number;
   totalLiquidityPool: number;
-  loading: boolean;
   refetchData: () => Promise<void>;
 }
 
@@ -42,11 +40,15 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
   >({
     apr: 0,
     totalLiquidityPool: 0,
-    loading: true,
   });
   const { api } = useApi();
 
   const fetchLiquidityData = useCallback(async () => {
+    if (!api) {
+      console.warn("API no está disponible");
+      return;
+    }
+
     try {
       const result = await api.programState.read(
         {
@@ -59,28 +61,27 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
       const state = result.toJSON() as FullStateVST | null;
 
       if (state && typeof state === "object") {
-        setLiquidityData((prevData) => ({
-          ...prevData,
+        setLiquidityData({
           totalLiquidityPool:
             "totalDeposited" in state && state.totalDeposited !== undefined
               ? Number(state.totalDeposited)
-              : prevData.totalLiquidityPool,
+              : 0,
           apr:
             "apr" in state && state.apr !== undefined
               ? formatNumber(state.apr / 10000)
-              : prevData.apr,
-          loading: false,
-        }));
+              : 0,
+        });
       }
     } catch (error) {
       console.error("Error fetching liquidity data:", error);
-      setLiquidityData((prevData) => ({ ...prevData, loading: false }));
     }
-  }, []);
+  }, [api]);
 
   useEffect(() => {
-    fetchLiquidityData();
-  }, [fetchLiquidityData]);
+    if (api) {
+      fetchLiquidityData();
+    }
+  }, [api, fetchLiquidityData]);
 
   const contextValue: LiquidityContextProps = {
     ...liquidityData,

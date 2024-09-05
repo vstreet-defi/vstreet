@@ -69,7 +69,6 @@ const handleTransaction = async (
   }
 };
 
-// Hooks
 const useStakingInfo = (api: GearApi | undefined, account: any) => {
   const [depositedBalance, setDepositedBalance] = useState<number | null>(null);
   const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
@@ -198,9 +197,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
     return <div>Error: Liquidity data not available</div>;
   }
 
-  const { apr, loading } = liquidityData;
-
-  if (loading) return <div>Loading...</div>;
+  const { apr } = liquidityData;
 
   return (
     <div>
