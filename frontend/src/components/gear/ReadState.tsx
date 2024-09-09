@@ -42,10 +42,13 @@ function ReadState() {
             providerAddress: "wss://testnet.vara.network",
           });
           await api.programState
-            .read({
-              programId: vstreetProgramID,
-              payload: undefined
-            }, decodedVstreetMeta)
+            .read(
+              {
+                programId: vstreetProgramID,
+                payload: undefined,
+              },
+              decodedVstreetMeta
+            )
             .then((result) => {
               setFullState(result.toJSON());
             })

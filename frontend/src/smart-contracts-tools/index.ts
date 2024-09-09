@@ -200,7 +200,7 @@ export const getBalanceVUSD = async (
     const result = await api.programState.read(
       {
         programId: fungibleTokenProgramID,
-        payload: undefined
+        payload: undefined,
       },
       decodedFungibleTokenMeta
     );
@@ -216,13 +216,17 @@ export const getBalanceVUSD = async (
 
       const localBalances = fullState.balances || [];
       let accountFound = false;
-      localBalances.some(([address, balance]: [string, number]) => {
-        if (encodeAddress(address) === accountAddress) {
-          setBalance(balance || 0);
-          accountFound = true;
-          return true; // Exit the loop early
-        }
-      });
+      const account = localBalances.find(
+        ([address]: [string, number]) =>
+          encodeAddress(address) === accountAddress
+      );
+
+      if (account) {
+        const [, balance] = account;
+        setBalance(balance || 0);
+        accountFound = true;
+      }
+
       if (!accountFound) {
         setBalance(0);
       }
@@ -245,7 +249,7 @@ export const getStakingInfo = async (
     const result = await api.programState.read(
       {
         programId: vstreetProgramID,
-        payload: undefined
+        payload: undefined,
       },
       decodedVstreetMeta
     );
@@ -278,7 +282,7 @@ export const getAPR = async (
     const result = await api.programState.read(
       {
         programId: vstreetProgramID,
-        payload: undefined
+        payload: undefined,
       },
       decodedVstreetMeta
     );
