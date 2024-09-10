@@ -1,5 +1,3 @@
-import { Flex } from "@chakra-ui/react";
-
 const StakingInfoHeader = () => {
   return (
     <div className="BasicCardHeader">

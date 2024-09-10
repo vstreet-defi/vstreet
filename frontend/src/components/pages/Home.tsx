@@ -7,6 +7,7 @@ import { Footer } from "../templates/Footer/Footer";
 import Header from "../templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
 import { HomeTab } from "../templates/Header/Header";
+import SecuredByVara from "components/atoms/SecuredByVara/SecuredByVara";
 
 function Home() {
   const navBarItems = [HomeTab.GitHub, HomeTab.Team, HomeTab.ContactUs];
@@ -17,6 +18,7 @@ function Home() {
         items={navBarItems}
         isMobile={isMobileDevice()}
       />
+      <SecuredByVara />
       <Hero isMobile={isMobileDevice()} />
       <Features isMobile={isMobileDevice()} />
       <Shilling />

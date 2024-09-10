@@ -26,7 +26,6 @@ function Hero({ isMobile }: Props) {
         bgRepeat="no-repeat"
         bgPos="bottom"
         bgSize={{ base: "cover", md: "fill" }}
-        // bgImage={{ base: Home1VideoBgSmall, md: Home1VideoBg }}
         bgImage={Home1VideoBgSmall}
       >
         <Stack
@@ -151,13 +150,6 @@ function Hero({ isMobile }: Props) {
               </Stack>
             )}
           </Stack>
-          {/* <Flex
-            flex={1}
-            justify="center"
-            align="center"
-            position="relative"
-            w="full"
-          ></Flex> */}
         </Stack>
       </Box>
     </Container>
