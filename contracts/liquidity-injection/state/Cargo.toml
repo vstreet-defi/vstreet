@@ -4,14 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-gstd = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0" }
-gmeta = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0", features = ["codegen"] }
+gstd = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2" }
+gmeta = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2", features = ["codegen"] }
 parity-scale-codec = { version = "3", default-features = false }
 scale-info = { version = "2", default-features = false }
 io = { path = "../io" }
 
 [build-dependencies]
-gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0", features = ["metawasm"] }
+gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2", features = ["metawasm"] }
 
 [features]
 binary-vendor = []

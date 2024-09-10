@@ -5,23 +5,22 @@ edition = "2021"
 
 [dependencies]
 io = { path = "io" }
-gstd = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0" }
-gmeta = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0" }
+gstd = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2" }
+gmeta = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2" }
 parity-scale-codec = { version = "3", default-features = false }
 scale-info = { version = "2", default-features = false }
-hashbrown = "0.14"
 
 [build-dependencies]
 io = { path = "io" }
-gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0" }
-gmeta = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0" }
+gear-wasm-builder = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2" }
+gmeta = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2" }
 
 [dev-dependencies]
 state = { path = "state" }
-gtest = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0" }
-gstd = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0", features = ["debug"] }
+gtest = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2" }
+gstd = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2", features = ["debug"] }
 tokio = "1"
-gclient = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.0" }
+gclient = { git = "https://github.com/gear-tech/gear.git", tag = "v1.4.2" }
 
 [features]
 # Used for inserting constants with WASM binaries (NOT paths) of the contract in

@@ -2,10 +2,10 @@ import { encodeAddress, MessageSendOptions } from "@gear-js/api";
 import { web3FromSource } from "@polkadot/extension-dapp";
 import { GearApi } from "@gear-js/api";
 import {
-  programIDVST,
-  programIDFTUSDC,
-  metadataVST,
-  metadataFTUSDC,
+  vstreetProgramID,
+  fungibleTokenProgramID,
+  decodedVstreetMeta,
+  decodedFungibleTokenMeta,
 } from "../utils/smartPrograms";
 
 export interface FullState {
@@ -19,10 +19,10 @@ const gasLimit = 89981924500;
 
 export function createApproveMessage(amount: string): MessageSendOptions {
   return {
-    destination: programIDFTUSDC,
+    destination: fungibleTokenProgramID,
     payload: {
       Approve: {
-        to: programIDVST,
+        to: vstreetProgramID,
         amount: Number(amount),
       },
     },
@@ -33,7 +33,7 @@ export function createApproveMessage(amount: string): MessageSendOptions {
 
 export function createDepositMessage(amount: string): MessageSendOptions {
   return {
-    destination: programIDVST,
+    destination: vstreetProgramID,
     payload: { Deposit: Number(amount) },
     gasLimit: gasLimit,
     value: 0,
@@ -42,7 +42,7 @@ export function createDepositMessage(amount: string): MessageSendOptions {
 
 export function createWithdrawMessage(amount: string): MessageSendOptions {
   return {
-    destination: programIDVST,
+    destination: vstreetProgramID,
     payload: { withdrawliquidity: Number(amount) },
     gasLimit: gasLimit,
     value: 0,
@@ -50,7 +50,7 @@ export function createWithdrawMessage(amount: string): MessageSendOptions {
 }
 export function createWithdrawRewardsMessage(): MessageSendOptions {
   return {
-    destination: programIDVST,
+    destination: vstreetProgramID,
     payload: { WithdrawRewards: null },
     gasLimit: gasLimit,
     value: 0,
@@ -61,10 +61,12 @@ function handleStatusUpdate(status: any, actionType: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const checkStatus = () => {
       if (status.isInBlock) {
+        console.log(`${actionType} is in block`);
       } else if (status.type === "Finalized") {
+        console.log(`${actionType} finalized`);
         resolve();
       } else {
-        console.log("in process");
+        console.log(`${actionType} in process`);
       }
     };
 
@@ -102,6 +104,7 @@ async function executeTransaction(
     if ("Approve" in payload) return "Approve";
     if ("Deposit" in payload) return "Deposit";
     if ("withdrawliquidity" in payload) return "Withdraw";
+    if ("WithdrawRewards" in payload) return "Withdraw Rewards";
     return "Transaction";
   };
 
@@ -137,7 +140,7 @@ export async function approveTransaction(
   return executeTransaction(
     api,
     approveMessage,
-    metadataFTUSDC,
+    decodedFungibleTokenMeta,
     account,
     accounts
   );
@@ -152,7 +155,7 @@ export async function depositTransaction(
   return executeTransaction(
     api,
     depositMessage,
-    metadataVST,
+    decodedVstreetMeta,
     account,
     accounts
   );
@@ -162,13 +165,12 @@ export async function withdrawTransaction(
   api: GearApi,
   withdrawMessage: MessageSendOptions,
   account: any,
-  accounts: any[],
-  setIsLoading: (loading: boolean) => void
+  accounts: any[]
 ): Promise<void> {
   return executeTransaction(
     api,
     withdrawMessage,
-    metadataVST,
+    decodedVstreetMeta,
     account,
     accounts
   );
@@ -182,7 +184,7 @@ export async function withdrawRewardsTransaction(
   return executeTransaction(
     api,
     withdrawRewardsMessage,
-    metadataVST,
+    decodedVstreetMeta,
     account,
     accounts
   );
@@ -196,8 +198,11 @@ export const getBalanceVUSD = async (
 ) => {
   try {
     const result = await api.programState.read(
-      { programId: programIDFTUSDC, payload: "" },
-      metadataFTUSDC
+      {
+        programId: fungibleTokenProgramID,
+        payload: undefined,
+      },
+      decodedFungibleTokenMeta
     );
     const rawState: unknown = result.toJSON();
 
@@ -211,13 +216,17 @@ export const getBalanceVUSD = async (
 
       const localBalances = fullState.balances || [];
       let accountFound = false;
-      localBalances.some(([address, balance]: [string, number]) => {
-        if (encodeAddress(address) === accountAddress) {
-          setBalance(balance || 0);
-          accountFound = true;
-          return true; // Exit the loop early
-        }
-      });
+      const account = localBalances.find(
+        ([address]: [string, number]) =>
+          encodeAddress(address) === accountAddress
+      );
+
+      if (account) {
+        const [, balance] = account;
+        setBalance(balance || 0);
+        accountFound = true;
+      }
+
       if (!accountFound) {
         setBalance(0);
       }
@@ -225,7 +234,7 @@ export const getBalanceVUSD = async (
       throw new Error("Unexpected fullState format");
     }
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new Error(`Error: ${error}`);
   }
 };
 
@@ -238,14 +247,16 @@ export const getStakingInfo = async (
 ) => {
   try {
     const result = await api.programState.read(
-      { programId: programIDVST },
-      metadataVST
+      {
+        programId: vstreetProgramID,
+        payload: undefined,
+      },
+      decodedVstreetMeta
     );
     const rawState: unknown = result.toJSON();
 
     const fullState = rawState as FullStateVST;
     setFullState(fullState);
-    console.log(fullState);
 
     const userAddress = accountAddress;
     if (userAddress && fullState.users && fullState?.users[userAddress]) {
@@ -258,20 +269,22 @@ export const getStakingInfo = async (
       if (setRewardsUsdc) setRewardsUsdc(0);
     }
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new Error(`Error: ${error}`);
   }
 };
 
 export const getAPR = async (
   api: GearApi,
-  setTotalLiquidityPool: (liquidityPool: number) => void,
   setApr: (apr: number) => void,
   setFullState: (state: FullStateVST) => void
 ) => {
   try {
     const result = await api.programState.read(
-      { programId: programIDVST },
-      metadataVST
+      {
+        programId: vstreetProgramID,
+        payload: undefined,
+      },
+      decodedVstreetMeta
     );
     const rawState: unknown = result.toJSON();
 
@@ -279,6 +292,6 @@ export const getAPR = async (
     setFullState(fullState);
     if (fullState.apr) setApr(fullState.apr / 10000);
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new Error(`Error: ${error}`);
   }
 };

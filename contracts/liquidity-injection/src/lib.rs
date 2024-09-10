@@ -23,15 +23,33 @@ extern fn init() {
 async fn main() {
     let action: LiquidityAction = msg::load().expect("Could not load Action");
     let msg_source = msg::source();
-
-    let result = unsafe {
-        LIQUIDITY_POOL.as_mut()
-            .expect("Liquidity pool not initialized")
-            .handle_action(action, msg_source)
-            .await
+    let liquidity_pool = unsafe {
+        LIQUIDITY_POOL.as_mut().expect("Liquidity pool not initialized")
+    };
+    let result = match action {
+        LiquidityAction::Deposit(amount) => {
+            let result = liquidity_pool.deposit(msg_source, amount).await;
+            result
+        },
+        LiquidityAction::WithdrawLiquidity(amount) => {
+            let result = liquidity_pool.withdraw_liquidity(msg_source, amount).await;
+            result
+        },
+        LiquidityAction::WithdrawRewards => {
+            let result = liquidity_pool.withdraw_rewards(msg_source).await;
+            result
+        },
+        LiquidityAction::ModifyTotalBorrowed(amount) => {
+            let result = liquidity_pool.modify_total_borrowed(amount);
+            result
+        },
+        LiquidityAction::ModifyAvailableRewardsPool(amount) => {
+            let result = liquidity_pool.modify_available_rewards_pool(amount);
+            result
+        },
     };
 
-    msg::reply(result, 0).expect("Failed to encode or reply");
+    msg::reply(result, 0).expect("Failed to encode or reply with `Result<LiquidityEvent, Error>`");
 }
 
 #[no_mangle]

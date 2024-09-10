@@ -128,7 +128,7 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
 
   return (
     <header>
-      <img src={Logo} alt="Logo" onClick={() => navigate("/")} />
+      <img className="NavBar-Logo" src={Logo} alt="Logo" onClick={() => navigate("/")} />
       {renderContent()}
     </header>
   );

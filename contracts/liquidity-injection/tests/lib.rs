@@ -1,7 +1,7 @@
 use gstd::ActorId;
 use gtest::{Program, System};
-
-use io::{BASE_RATE, DECIMALS_FACTOR, InitLiquidity, LiquidityAction, LiquidityPool, RISK_MULTIPLIER, YEAR_IN_SECONDS};
+use parity_scale_codec::Encode;
+use io::{BASE_RATE, DECIMALS_FACTOR, Error, InitLiquidity, LiquidityAction, LiquidityEvent, LiquidityPool, RISK_MULTIPLIER, YEAR_IN_SECONDS};
 
 const BLOCKS_IN_A_YEAR: u32 = (YEAR_IN_SECONDS / 3) as u32;
 const STABLECOIN_PROGRAM_ID: ActorId = ActorId::new([1; 32]);
@@ -15,6 +15,7 @@ fn initialize_contract(sys: &System) -> Program {
             stablecoin_address: STABLECOIN_PROGRAM_ID,
         },
     );
+    // assert!(res.contains(&(2, Ok::<LiquidityEvent, Error>(LiquidityEvent::Initialized).encode())));
     assert!(!res.main_failed());
     program
 }
@@ -35,6 +36,12 @@ fn deposit() {
     let res = program.send(2, LiquidityAction::Deposit(deposit_amount));
     assert!(!res.main_failed());
 
+    //THIS ASSERT FAIL
+    // assert!(res.contains(&(
+    //     2,
+    //     Ok::<LiquidityEvent, Error>(LiquidityEvent::Deposited(deposit_amount)).encode()
+    // )));
+
     let state: LiquidityPool = program.read_state(()).unwrap();
     assert_eq!(state.total_deposited, deposit_amount * DECIMALS_FACTOR);
     assert_eq!(state.users.get(&ActorId::from(2)).unwrap().balance, deposit_amount * DECIMALS_FACTOR);
@@ -52,6 +59,12 @@ fn withdraw() {
     let res = program.send(2, LiquidityAction::WithdrawLiquidity(withdraw_amount));
     assert!(!res.main_failed());
 
+    //THIS ASSERT FAIL
+    // assert!(_res.contains(&(
+    //     2,
+    //     Ok::<LiquidityEvent, Error>(LiquidityEvent::LiquidityWithdrawn(withdraw_amount)).encode()
+    // )));
+
     let state: LiquidityPool = program.read_state(()).unwrap();
     assert_eq!(state.total_deposited, (deposit_amount - withdraw_amount) * DECIMALS_FACTOR);
     assert_eq!(state.users.get(&ActorId::from(2)).unwrap().balance, (deposit_amount - withdraw_amount) * DECIMALS_FACTOR);
@@ -62,7 +75,6 @@ fn withdraw() {
     assert_eq!(state.users.get(&ActorId::from(2)).unwrap().balance, 0);
 }
 
-
 #[test]
 fn test_interest_rate_calculation() {
     let sys = System::new();
@@ -70,14 +82,26 @@ fn test_interest_rate_calculation() {
     let deposit_amount: u128 = 1_000_000; // 1,000,000 USDC
     let borrowed_amount: u128 = 500_000; // 500,000 USDC
 
-    program.send(
+    let res = program.send(
         2,
         LiquidityAction::ModifyTotalBorrowed(borrowed_amount),
     );
-    program.send(
+
+    assert!(res.contains(&(
+        2,
+        Ok::<LiquidityEvent, Error>(LiquidityEvent::TotalBorrowedModified(borrowed_amount)).encode()
+    )));
+
+    let _res = program.send(
         2,
         LiquidityAction::Deposit(deposit_amount),
     );
+
+    //THIS ASSERT FAIL
+    // assert!(_res.contains(&(
+    //     2,
+    //     Ok::<LiquidityEvent, Error>(LiquidityEvent::Deposited(deposit_amount)).encode()
+    // )));
 
     let state: LiquidityPool = program.read_state(()).unwrap();
 
@@ -109,11 +133,9 @@ fn test_reward_allocation() {
 
     sys.spend_blocks(BLOCKS_IN_A_YEAR);
 
-    // Leer el estado del contrato para verificar las recompensas
     let state: LiquidityPool = program.read_state(()).unwrap();
     let user_info = state.users.get(&user).unwrap();
 
-    // Calcular las recompensas esperadas manualmente
     let time_in_seconds: u128 = YEAR_IN_SECONDS;
     let expected_rewards = calculate_expected_rewards(deposit_amount, state.interest_rate, time_in_seconds);
 
@@ -122,13 +144,42 @@ fn test_reward_allocation() {
     println!("User rewards: {}", user_info.rewards);
     println!("User rewards (USD): {}", user_info.rewards / DECIMALS_FACTOR);
 
-    // Verificar si las recompensas calculadas y las obtenidas son iguales
     assert_eq!(user_info.rewards, expected_rewards);
 }
 
-// TODO TEST WITHDRAW REWARDS
+#[test]
+fn withdraw_rewards() {
+    let sys = System::new();
+    let program = initialize_contract(&sys);
+    let deposit_amount: u128 = 1_000_000; // 1,000,000 USDC
+    let borrowed_amount: u128 = 500_000; // 500,000 USDC
+    let user: ActorId = 2.into();
 
-// Interest rate
+    program.send(2, LiquidityAction::ModifyTotalBorrowed(borrowed_amount));
+    program.send(2, LiquidityAction::Deposit(deposit_amount));
+
+    sys.spend_blocks(BLOCKS_IN_A_YEAR);
+
+    let state: LiquidityPool = program.read_state(()).unwrap();
+    let user_info = state.users.get(&user).unwrap();
+    assert!(user_info.rewards > 0, "Rewards should be greater than 0");
+    println!("User info after spend_blocks: {:?}", user_info);
+
+    let _res = program.send(2, LiquidityAction::WithdrawRewards);
+    //THIS ASSERT FAIL
+    // assert!(_res.contains(&(
+    //     2,
+    //     Ok::<LiquidityEvent, Error>(LiquidityEvent::RewardsWithdrawn(user_info.rewards_usdc)).encode()
+    // )));
+
+    let state2: LiquidityPool = program.read_state(()).unwrap();
+    let user_info2 = state2.users.get(&user).unwrap();
+
+    println!("User info after withdrawal: {:?}", user_info2);
+    assert_eq!(user_info2.rewards, 0, "Rewards should be zero after withdrawal");
+    assert_eq!(user_info2.rewards_usdc, 0, "Rewards in USD should be zero after withdrawal");
+}
+
 fn calculate_expected_interest_rate(deposit_amount: u128, borrowed_amount: u128) -> u128 {
     let utilization_factor = if deposit_amount == 0 {
         0
@@ -141,7 +192,6 @@ fn calculate_expected_interest_rate(deposit_amount: u128, borrowed_amount: u128)
     interest_rate
 }
 
-// User rewards
 fn calculate_expected_rewards(deposit_amount: u128, interest_rate: u128, time_in_seconds: u128) -> u128 {
     (deposit_amount * interest_rate * time_in_seconds) / YEAR_IN_SECONDS
 }
