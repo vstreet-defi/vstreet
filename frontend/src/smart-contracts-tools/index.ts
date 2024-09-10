@@ -216,13 +216,17 @@ export const getBalanceVUSD = async (
 
       const localBalances = fullState.balances || [];
       let accountFound = false;
-      localBalances.some(([address, balance]: [string, number]) => {
-        if (encodeAddress(address) === accountAddress) {
-          setBalance(balance || 0);
-          accountFound = true;
-          return true; // Exit the loop early
-        }
-      });
+      const account = localBalances.find(
+        ([address]: [string, number]) =>
+          encodeAddress(address) === accountAddress
+      );
+
+      if (account) {
+        const [, balance] = account;
+        setBalance(balance || 0);
+        accountFound = true;
+      }
+
       if (!accountFound) {
         setBalance(0);
       }

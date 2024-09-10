@@ -36,9 +36,10 @@ function Accounts({ list, onChange }: Props) {
   return isAnyAccount ? (
     <ul className={styles.list}>{getAccounts()}</ul>
   ) : (
-    <p>
-      No accounts found. Please open Polkadot extension, create a new account or
-      import existing one and reload the page.
+    <p className={styles.accountNotFound}>
+      No accounts detected. Please check if your Vara Network-compatible wallet
+      extension is installed, then create or import an account, connect, and
+      reload the page.
     </p>
   );
 }

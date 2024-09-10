@@ -4,6 +4,30 @@ import linkedinIcon from "../../../assets/images/icons/linkedin-icon.png";
 import githubIcon from "../../../assets/images/icons/github-icon.png";
 //import gitbookIcon from "../../../assets/images/icons/gitbook-icon.png";
 
+const socialMediaLinks = [
+  {
+    icon: xIcon,
+    alt: "x-icon",
+    url: "https://twitter.com/vstreet_io",
+  },
+  {
+    icon: discordIcon,
+    alt: "discord-icon",
+    url: "https://discord.gg/jBMqWd8kET",
+  },
+  {
+    icon: linkedinIcon,
+    alt: "linkedin-icon",
+    url: "https://www.linkedin.com/in/vstreet-de-fi-615449304/",
+  },
+  {
+    icon: githubIcon,
+    alt: "github-icon",
+    url: "https://github.com/vstreet-defi/vstreet",
+  },
+  // { icon: gitbookIcon, alt: "gitbook-icon", url: "https://gitbook-url" }
+];
+
 function SocialMedia() {
   return (
     <div className="social-media" id="social">
@@ -13,40 +37,14 @@ function SocialMedia() {
         DeFi strategies on top of the fastest blockchain.
       </p>
       <div className="social-icons-container">
-        <img
-          src={xIcon}
-          onClick={() =>
-            window.open("https://twitter.com/vstreet_io", "_blank")
-          }
-          alt="x-icon"
-        />
-        <img
-          src={discordIcon}
-          onClick={() => window.open("https://discord.gg/cF4Fk5WY", "_blank")}
-          alt=""
-        />
-        <img
-          src={linkedinIcon}
-          onClick={() =>
-            window.open(
-              "https://www.linkedin.com/in/vstreet-de-fi-615449304/",
-              "_blank"
-            )
-          }
-          alt=""
-        />
-        <img
-          src={githubIcon}
-          onClick={() =>
-            window.open("https://github.com/vstreet-defi/vstreet", "_blank")
-          }
-          alt=""
-        />
-        {/* <img
-          src={gitbookIcon}
-          // onClick={() => window.open("", "_blank")}
-          alt=""
-        /> */}
+        {socialMediaLinks.map(({ icon, alt, url }) => (
+          <img
+            key={alt}
+            src={icon}
+            onClick={() => window.open(url, "_blank")}
+            alt={alt}
+          />
+        ))}
       </div>
     </div>
   );
