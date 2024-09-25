@@ -110,6 +110,16 @@ pub struct LiquidityPool {
 }
 
 impl LiquidityPool {
+    pub async fn handle_action(&mut self, action: LiquidityAction, user: ActorId) -> Result<LiquidityEvent, Error> {
+        match action {
+            LiquidityAction::Deposit(amount) => self.deposit(user, amount).await,
+            LiquidityAction::WithdrawLiquidity(amount) => self.withdraw_liquidity(user, amount).await,
+            LiquidityAction::WithdrawRewards => self.withdraw_rewards(user).await,
+            LiquidityAction::ModifyTotalBorrowed(amount) => self.modify_total_borrowed(amount),
+            LiquidityAction::ModifyAvailableRewardsPool(amount) => self.modify_available_rewards_pool(amount),
+        }
+    }
+
     pub fn update_all_rewards(&mut self) {
         self.apr = self.calculate_apr();
 
@@ -145,63 +155,67 @@ impl LiquidityPool {
         self.interest_rate + self.dev_fee
     }
 
-    pub async fn deposit(&mut self, user: ActorId, amount: u128) -> Result<LiquidityEvent, Error> {
+    async fn deposit(&mut self, user: ActorId, amount: u128) -> Result<LiquidityEvent, Error> {
+        debug!("Depositing funds");
+        if amount == 0 {
+            return Err(Error::ZeroAmount);
+        }
+
         self.apr = self.calculate_apr();
+        debug!("New APR after deposit: {}", self.apr);
 
         let current_timestamp = exec::block_timestamp() as u128;
         let user_info = self.users
             .entry(user)
             .or_insert_with(|| Self::create_new_user(current_timestamp));
-
-        Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
-
-        Self::transfer_tokens(&self.stablecoin_address, msg::source(), exec::program_id(), amount).await.expect("Error during transfer tokens during the deposit");
 
         user_info.balance = user_info.balance.saturating_add(amount * DECIMALS_FACTOR);
         user_info.balance_usdc = user_info.balance / DECIMALS_FACTOR;
         self.total_deposited = self.total_deposited.saturating_add(amount * DECIMALS_FACTOR);
 
+        Self::transfer_tokens(&self.stablecoin_address, msg::source(), exec::program_id(), amount).await?;
+        Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
         Ok(LiquidityEvent::Deposited(amount))
     }
 
-    pub async fn withdraw_liquidity(&mut self, user: ActorId, amount: u128) -> Result<LiquidityEvent, Error> {
+    async fn withdraw_liquidity(&mut self, user: ActorId, amount: u128) -> Result<LiquidityEvent, Error> {
         self.apr = self.calculate_apr();
+        debug!("New APR after deposit: {}", self.apr);
 
         let current_timestamp = exec::block_timestamp() as u128;
-        let user_info = self.users
-            .entry(user)
-            .or_insert_with(|| Self::create_new_user(current_timestamp));
 
-        Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
+        let user_info = self.users.get_mut(&user).ok_or(Error::UserNotFound)?;
 
         if amount == 0 || amount > user_info.balance {
             return Err(Error::InvalidAmount);
         }
 
-        Self::transfer_tokens(&self.stablecoin_address, exec::program_id(), msg::source(), amount).await.expect("Transfer tokens failed during the withdrawal");
-
         user_info.balance = user_info.balance.saturating_sub(amount * DECIMALS_FACTOR);
         user_info.balance_usdc = user_info.balance / DECIMALS_FACTOR;
         self.total_deposited = self.total_deposited.saturating_sub(amount * DECIMALS_FACTOR);
 
+        Self::transfer_tokens(&self.stablecoin_address, exec::program_id(), msg::source(), amount).await.expect("Transfer tokens failed during the withdrawal");
+        Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
+
         Ok(LiquidityEvent::LiquidityWithdrawn(amount))
     }
 
-    pub async fn withdraw_rewards(&mut self, user: ActorId) -> Result<LiquidityEvent, Error> {
+    async fn withdraw_rewards(&mut self, user: ActorId) -> Result<LiquidityEvent, Error> {
         self.apr = self.calculate_apr();
 
         let current_timestamp = exec::block_timestamp() as u128;
-        let user_info = self.users
-            .entry(user)
-            .or_insert_with(|| Self::create_new_user(current_timestamp));
+        let user_info = self.users.get_mut(&user).ok_or(Error::UserNotFound)?;
 
         Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
-
         let rewards_to_withdraw = user_info.rewards;
 
         if rewards_to_withdraw == 0 || rewards_to_withdraw > self.available_rewards_pool {
             return Err(Error::InvalidAmount);
         }
+
+        user_info.rewards = user_info.rewards.saturating_sub(rewards_to_withdraw);
+        user_info.rewards_usdc = user_info.rewards_usdc.saturating_sub(user_info.rewards_usdc);
+        self.total_rewards_distributed = self.total_rewards_distributed.saturating_add(rewards_to_withdraw);
 
         Self::transfer_tokens(
             &self.stablecoin_address,
@@ -209,22 +223,20 @@ impl LiquidityPool {
             msg::source(),
             rewards_to_withdraw / DECIMALS_FACTOR,
         ).await.expect("Transfer tokens failed during the rewards withdrawal");
-
-        user_info.rewards = user_info.rewards;
-        user_info.rewards_usdc = 0;
-        self.total_rewards_distributed = self.total_rewards_distributed.saturating_add(rewards_to_withdraw);
-
+        Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
+        
         Ok(LiquidityEvent::RewardsWithdrawn(rewards_to_withdraw / DECIMALS_FACTOR))
     }
 
-    pub fn modify_total_borrowed(&mut self, amount: u128) -> Result<LiquidityEvent, Error> {
+    fn modify_total_borrowed(&mut self, amount: u128) -> Result<LiquidityEvent, Error> {
+        debug!("Borrowing funds");
         self.total_borrowed = amount * DECIMALS_FACTOR;
         self.apr = self.calculate_apr();
 
         Ok(LiquidityEvent::TotalBorrowedModified(amount))
     }
 
-    pub fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<LiquidityEvent, Error> {
+    fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<LiquidityEvent, Error> {
         self.available_rewards_pool = amount * DECIMALS_FACTOR;
 
        Ok(LiquidityEvent::AvailableRewardsPoolModified(amount))
