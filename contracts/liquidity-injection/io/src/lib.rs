@@ -8,7 +8,7 @@ pub const YEAR_IN_SECONDS: u128 = 31_536_000; // 365 * 24 * 60 * 60
 pub const BASE_RATE: u128 = 10000; // 0.01 * DECIMALS_FACTOR
 pub const RISK_MULTIPLIER: u128 = 40000; // 0.04 * DECIMALS_FACTOR
 
-#[derive(Debug, Decode, Encode, TypeInfo)]
+#[derive(Debug, PartialEq, Decode, Encode, TypeInfo)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
 pub enum FTAction {
@@ -49,7 +49,7 @@ pub enum LiquidityAction {
     ModifyAvailableRewardsPool(u128),
 }
 
-#[derive(Debug, Clone, Encode, Decode, TypeInfo)]
+#[derive(Debug, PartialEq, Clone, Encode, Decode, TypeInfo)]
 #[codec(crate = gstd::codec)]
 #[scale_info(crate = gstd::scale_info)]
 pub enum LiquidityEvent {

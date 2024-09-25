@@ -2,6 +2,7 @@ use gstd::ActorId;
 use gtest::{Program, System};
 use parity_scale_codec::Encode;
 use io::{BASE_RATE, DECIMALS_FACTOR, Error, InitLiquidity, LiquidityAction, LiquidityEvent, LiquidityPool, RISK_MULTIPLIER, YEAR_IN_SECONDS};
+use gstd::Decode; 
 
 const BLOCKS_IN_A_YEAR: u32 = (YEAR_IN_SECONDS / 3) as u32;
 const STABLECOIN_PROGRAM_ID: ActorId = ActorId::new([1; 32]);
@@ -33,18 +34,35 @@ fn deposit() {
     let sys = System::new();
     let program = initialize_contract(&sys);
     let deposit_amount: u128 = 1000; // 1000 USDC
-    let res = program.send(2, LiquidityAction::Deposit(deposit_amount));
-    assert!(!res.main_failed());
+    // let res = program.send(2, LiquidityAction::Deposit(deposit_amount));
+    // assert!(!res.main_failed());
 
-    //THIS ASSERT FAIL
-    // assert!(res.contains(&(
-    //     2,
-    //     Ok::<LiquidityEvent, Error>(LiquidityEvent::Deposited(deposit_amount)).encode()
-    // )));
+     // Send deposit action
+     let res = program.send(2, LiquidityAction::Deposit(deposit_amount));
+     assert!(!res.main_failed());
+ 
+     // Debug output
+     println!("Deposit action result: {:?}", res);
+ 
+     // Check if the deposit event was emitted
+    assert!(res.log().iter().any(|log| {
+        let payload = log.payload();
+        if let Ok(event) = LiquidityEvent::decode(&mut &payload[..]) {
+            return event == LiquidityEvent::Deposited(deposit_amount);
+        }
+        false
+    }));
 
+    // Read the state after deposit
     let state: LiquidityPool = program.read_state(()).unwrap();
+    println!("LiquidityPool state after deposit: {:?}", state);
+
+    // Check the state values
     assert_eq!(state.total_deposited, deposit_amount * DECIMALS_FACTOR);
     assert_eq!(state.users.get(&ActorId::from(2)).unwrap().balance, deposit_amount * DECIMALS_FACTOR);
+    // let state: LiquidityPool = program.read_state(()).unwrap();
+    // assert_eq!(state.total_deposited, deposit_amount * DECIMALS_FACTOR);
+    // assert_eq!(state.users.get(&ActorId::from(2)).unwrap().balance, deposit_amount * DECIMALS_FACTOR);
 }
 
 #[test]
