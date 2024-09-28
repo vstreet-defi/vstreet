@@ -251,19 +251,16 @@ impl LiquidityPool {
             rewards_usdc: 0,
         }
     }
-
     async fn transfer_tokens(token_address: &ActorId, from: ActorId, to: ActorId, amount: u128) -> Result<(), Error> {
         let payload = FTAction::Transfer { from, to, amount };
-
         let result = msg::send_for_reply_as(*token_address, payload, 0, 0)
-            .unwrap()
+            .map_err(|_| Error::TransferFailed)?
             .await
-            .unwrap();
+            .map_err(|_| Error::TransferFailed)?;
 
-        if let FTEvent::Err = result {
-            Err(Error::TransferFailed)
-        } else {
-            Ok(())
+        match result {
+            FTEvent::Err => Err(Error::TransferFailed),
+            _ => Ok(()),
         }
     }
 }
