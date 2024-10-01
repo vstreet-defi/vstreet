@@ -76,9 +76,11 @@ pub enum Error {
 pub struct UserInfo {
     pub balance: u128,
     pub rewards: u128,
+    pub rewards_withdrawn: u128,
     pub last_updated: u128,
     pub balance_usdc: u128,
     pub rewards_usdc: u128,
+    pub rewards_usdc_withdrawn: u128,
 }
 
 pub struct ContractMetadata;
@@ -207,14 +209,17 @@ impl LiquidityPool {
         let user_info = self.users.get_mut(&user).ok_or(Error::UserNotFound)?;
 
         Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
-        let rewards_to_withdraw = user_info.rewards;
+        let rewards_to_withdraw = user_info.rewards.saturating_sub(user_info.rewards_withdrawn);
 
         if rewards_to_withdraw == 0 || rewards_to_withdraw > self.available_rewards_pool {
             return Err(Error::InvalidAmount);
         }
 
         user_info.rewards = user_info.rewards.saturating_sub(rewards_to_withdraw);
+        user_info.rewards_withdrawn = user_info.rewards_withdrawn.saturating_add(rewards_to_withdraw);
         user_info.rewards_usdc = user_info.rewards_usdc.saturating_sub(user_info.rewards_usdc);
+        user_info.rewards_usdc_withdrawn = user_info.rewards_usdc_withdrawn.saturating_add(user_info.rewards_usdc);
+
         self.total_rewards_distributed = self.total_rewards_distributed.saturating_add(rewards_to_withdraw);
 
         Self::transfer_tokens(
@@ -246,9 +251,11 @@ impl LiquidityPool {
         UserInfo {
             balance: 0,
             rewards: 0,
+            rewards_withdrawn: 0,
             last_updated: timestamp,
             balance_usdc: 0,
             rewards_usdc: 0,
+            rewards_usdc_withdrawn: 0,
         }
     }
     async fn transfer_tokens(token_address: &ActorId, from: ActorId, to: ActorId, amount: u128) -> Result<(), Error> {

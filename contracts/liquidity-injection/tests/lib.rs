@@ -184,6 +184,11 @@ fn withdraw_rewards() {
     assert_eq!(user_info2.rewards_usdc, 0, "Rewards in USD should be zero after withdrawal");
 
     let _res2 = program.send(2, LiquidityAction::WithdrawRewards);
+
+    let state3: LiquidityPool = program.read_state(()).unwrap();
+    let user_info3 = state3.users.get(&user).unwrap();
+
+    println!("User info after second withdrawal: {:?}", user_info3);
 }
 
 fn calculate_expected_interest_rate(deposit_amount: u128, borrowed_amount: u128) -> u128 {
