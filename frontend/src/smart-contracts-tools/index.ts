@@ -1,11 +1,18 @@
 import { encodeAddress, MessageSendOptions } from "@gear-js/api";
 import { web3FromSource } from "@polkadot/extension-dapp";
 import { GearApi } from "@gear-js/api";
+
+//Sails-js Impotrts
+import { Sails } from "sails-js";
+import { SailsIdlParser } from "sails-js-parser";
+
+
 import {
   vstreetProgramID,
   fungibleTokenProgramID,
   decodedVstreetMeta,
   decodedFungibleTokenMeta,
+  idlVFT,
 } from "../utils/smartPrograms";
 
 export interface FullState {
@@ -189,6 +196,47 @@ export async function withdrawRewardsTransaction(
     accounts
   );
 }
+
+export const getVFTBalance = async ( api: GearApi,
+  accountAddress: string,
+  setBalance: (balance: number) => void,
+ ) => {
+    const parser = await SailsIdlParser.new();
+              const sails = new Sails(parser);
+
+              sails.parseIdl(idlVFT);
+
+              sails.setProgramId(fungibleTokenProgramID);
+
+
+             if (accountAddress) {
+
+              try {
+                const gearApi = await GearApi.create({
+                  providerAddress: 'wss://testnet.vara.network',
+                });
+                sails.setApi(gearApi);
+                // functionArg1, functionArg2 are the arguments of the query function from the IDL file
+                const result = await sails.services.Vft.queries.BalanceOf(
+                  accountAddress,
+                  undefined,
+                  undefined,
+                  accountAddress
+                );
+                const balance = result as number;
+                setBalance(balance);
+                console.log(result);
+              } catch (error) {
+                console.error("Error calling BalanceOf:", error);
+              }
+             }
+
+             if (!accountAddress) {
+              setBalance(0);
+              throw new Error("No account address");
+            }
+
+};
 
 export const getBalanceVUSD = async (
   api: GearApi,

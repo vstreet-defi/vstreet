@@ -5,12 +5,18 @@ import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 import { useEffect, useState } from "react";
 import { useAccount, useApi } from "@gear-js/react-hooks";
+import { GearApi } from '@gear-js/api';
 import {
   FullState,
   FullStateVST,
-  getBalanceVUSD,
+  getVFTBalance,
   getStakingInfo,
 } from "smart-contracts-tools";
+
+//Sails-js Impotrts
+import { Sails } from 'sails-js';
+import { SailsIdlParser } from 'sails-js-parser';
+
 
 type props = {
   buttonLabel: string;
@@ -30,9 +36,17 @@ function FundsCard({ buttonLabel }: props) {
     setInputValue(value);
   };
 
+
+
   useEffect(() => {
     if (account) {
-      getBalanceVUSD(api, account.address, setBalance, setFullState);
+        // getBalanceVUSD(api, account.address, setBalance, setFullState);
+        
+        //call sails get balance 
+        getVFTBalance(api, account.decodedAddress, setBalance);
+        
+  
+
       getStakingInfo(
         api,
         account.decodedAddress,
