@@ -1,6 +1,14 @@
 import React, { useContext, useState } from "react";
 import { AlertModalContext } from "contexts/alertContext";
 import { useAccount, useApi } from "@gear-js/react-hooks";
+import { web3Accounts, web3FromSource } from "@polkadot/extension-dapp";
+
+//Sails-js Impotrts
+import { Sails } from "sails-js";
+import { SailsIdlParser } from "sails-js-parser";
+
+import { fungibleTokenProgramID, idlVFT } from "../../../utils/smartPrograms";
+
 import {
   createApproveMessage,
   createDepositMessage,
@@ -127,10 +135,74 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     setIsLoading(false);
   };
 
+  const handleSailsFunction = async () => {
+    const parser = await SailsIdlParser.new();
+    const sails = new Sails(parser);
+
+    sails.parseIdl(idlVFT);
+
+    sails.setProgramId(fungibleTokenProgramID);
+
+    // Retrieve all accounts from the wallet extension
+    const allAccounts = await web3Accounts();
+    const accountWEB = allAccounts[0];
+
+    const injector = await web3FromSource(accountWEB.meta.source);
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+
+    sails.setApi(gearApi);
+
+    if (accounts.length === 0) {
+      alertModalContext?.showErrorModal("No account found");
+      setTimeout(() => {
+        alertModalContext?.hideAlertModal();
+      }, 3000);
+      return;
+    } else {
+      // Create the transaction type
+      const transaction = await sails.services.Vft.functions.Transfer(
+        "0x7ee46e62bb39443e7c6d0308b66aaa9e13b3e6011d2e0edb62fad3903dfd313f",
+        amount
+      );
+      //set the account signer
+      transaction.withAccount(accountWEB.address, {
+        signer: injector.signer,
+      });
+
+      // Calculate gas limit with default options
+      await transaction.calculateGas();
+
+      // Sign and send the transaction
+      const { msgId, blockHash, txHash, response, isFinalized } =
+        await transaction.signAndSend();
+
+      console.log("Message ID:", msgId);
+      console.log("Transaction hash:", txHash);
+      console.log("Block hash:", blockHash);
+
+      // Check if the transaction is finalized
+      const finalized = await isFinalized;
+      console.log("Is finalized:", finalized);
+
+      // Get the response from the program
+      try {
+        const result = await response();
+        console.log("Program response:", result);
+      } catch (error) {
+        console.error("Error executing message:", error);
+      }
+
+      console.log(transaction);
+    }
+  };
+
   return (
     <button
       className={`btn-grad-fill ${isLoading ? "btn-grad-fill--loading" : ""}`}
-      onClick={handleClick}
+      onClick={handleSailsFunction}
       disabled={Number(amount) > balance || Number(amount) === 0 || isLoading}
     >
       {isLoading ? <Loader /> : label}
