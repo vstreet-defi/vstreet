@@ -7,6 +7,9 @@ import { web3Accounts, web3FromSource } from "@polkadot/extension-dapp";
 import { Sails } from "sails-js";
 import { SailsIdlParser } from "sails-js-parser";
 
+//Import useWallet from contexts
+import { useWallet } from "contexts/accountContext";
+
 import { fungibleTokenProgramID, idlVFT } from "../../../utils/smartPrograms";
 
 import {
@@ -39,6 +42,10 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   const { accounts, account } = useAccount();
   const { api } = useApi();
   const alertModalContext = useContext(AlertModalContext);
+
+  //Polkadot Extension Wallet-Hook by PSYLABS
+  const { selectedAccount, hexAddress, allAccounts, accountData } = useWallet();
+  console.log("accountData", accountData);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -143,9 +150,17 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
 
     sails.setProgramId(fungibleTokenProgramID);
 
-    // Retrieve all accounts from the wallet extension
-    const allAccounts = await web3Accounts();
-    const accountWEB = allAccounts[0];
+    // Retrieve selected account data
+    const accountWEB = accountData;
+
+    // Check if accountWEB is null
+    if (!accountWEB) {
+      alertModalContext?.showErrorModal("No account data found");
+      setTimeout(() => {
+        alertModalContext?.hideAlertModal();
+      }, 3000);
+      return;
+    }
 
     const injector = await web3FromSource(accountWEB.meta.source);
 
@@ -155,6 +170,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
 
     sails.setApi(gearApi);
 
+    //make an erorr modal if no account is found
     if (accounts.length === 0) {
       alertModalContext?.showErrorModal("No account found");
       setTimeout(() => {
@@ -163,8 +179,8 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       return;
     } else {
       // Create the transaction type
-      const transaction = await sails.services.Vft.functions.Transfer(
-        "0x7ee46e62bb39443e7c6d0308b66aaa9e13b3e6011d2e0edb62fad3903dfd313f",
+      const transaction = await sails.services.Vft.functions.Approve(
+        "0x9d31e69196fc155c7999a44ff34250538842ed5a76ba726f418687bf2182616e",
         amount
       );
       //set the account signer

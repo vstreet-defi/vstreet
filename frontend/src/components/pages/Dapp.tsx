@@ -9,11 +9,23 @@ import TotalLiquidityPool from "components/atoms/TotalLiquidityPool/TotalLiquidi
 import { AlertModalProvider } from "contexts/alertContext";
 import StakingInfo from "components/organisms/StakingInfo/StakingInfo";
 import { LiquidityProvider } from "contexts/stateContext";
+import { useWallet } from "../../contexts/accountContext";
+
 
 function DappPage() {
-  const { isApiReady } = useApi();
-  const { isAccountReady } = useAccount();
-  const isAppReady = isApiReady && isAccountReady;
+  // const { isApiReady } = useApi();
+  // const { isAccountReady } = useAccount();
+  // const isAppReady = isApiReady && isAccountReady;
+
+  //Polkadot Extension Wallet-Hook by PSYLABS
+  const {
+    allAccounts,
+    selectedAccount,
+    handleConnectWallet,
+    handleSelectAccount,
+    formatAccount,
+  } = useWallet();
+
   const navBarItems = [
     DappTab.Home,
     DappTab.Supply,
@@ -21,11 +33,13 @@ function DappPage() {
     DappTab.Markets,
   ];
 
+  const isAccountReady = allAccounts.length > 0;
+
   return (
     <>
       <LiquidityProvider>
         <AlertModalProvider>
-          {isAppReady ? (
+          {
             <>
               <Header
                 isAccountVisible={isAccountReady}
@@ -51,9 +65,7 @@ function DappPage() {
                 }
               />
             </>
-          ) : (
-            <ApiLoader />
-          )}
+          }
         </AlertModalProvider>
       </LiquidityProvider>
     </>
