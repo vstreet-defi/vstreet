@@ -180,7 +180,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     } else {
       // Create the transaction type
       const transaction = await sails.services.Vft.functions.Approve(
-        "0x9d31e69196fc155c7999a44ff34250538842ed5a76ba726f418687bf2182616e",
+        "0xae51577b0f30f25023da63d3ee254940f60930ad7ae2390eb31bbeab59a44bac",
         amount
       );
       //set the account signer
