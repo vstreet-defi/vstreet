@@ -1,0 +1,10 @@
+[package]
+name = "vstreet-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+sails-rs = "0.6.1"
+parity-scale-codec = { version = "3.6", default-features = false }
+scale-info = { version = "2.10", default-features = false }
+
