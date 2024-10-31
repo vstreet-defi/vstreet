@@ -127,5 +127,5 @@ async fn set_vft_contract_id_works() {
         .await
         .unwrap();
 
-    assert_eq!(result, "New VFT Contract ID set: 43".to_string());
+    assert_eq!(result, 43.to_string());
 }

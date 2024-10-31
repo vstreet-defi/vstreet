@@ -122,7 +122,7 @@ where VftClient: Vft, {
         
     }
 
-
+    //Querys
     // Service's query owner of the contract
     pub fn contract_owner(&self) -> String {
         let state = self.state_ref();
