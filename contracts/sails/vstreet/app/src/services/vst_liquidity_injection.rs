@@ -101,8 +101,8 @@ where VftClient: Vft, {
         }
     }
 
-     /// ## Change vft contract id
-    /// Only the contract owner can perform this action
+     // ## Change vft contract id
+    // Only the contract owner can perform this action
     pub fn set_vft_contract_id(&mut self, vft_contract_id: ActorId) -> String {
         let state = self.state_mut();
 
@@ -122,24 +122,21 @@ where VftClient: Vft, {
         
     }
 
-    // Service's method (command)
-    pub fn do_something(&mut self) -> String {
-        "Hello from Vstreet!".to_string()
-    }
-
-    // Service's query
-    pub fn get_something(&self) -> String {
-        "Hello from Vstreet!".to_string()
-    }
-
-    // Service's query
+    //Querys
+    // Service's query owner of the contract
     pub fn contract_owner(&self) -> String {
         let state = self.state_ref();
         state.owner.to_string()
     } 
 
+    //Service's query seted VFT of the contract
+    pub fn vft_contract_id(&self) -> String {
+        let state = self.state_ref();
+        let contract_id = state.vft_contract_id.unwrap();
+        contract_id.to_string() 
+    } 
 
-    // State functions
+    // State mutable & ref functions
     fn state_mut(&self) -> &'static mut VstreetState {
         let state = unsafe { VSTREET_STATE.as_mut() };
         debug_assert!(state.is_none(), "state is not started!");
@@ -201,17 +198,4 @@ where VftClient: Vft, {
         }
     }
 
-    // async fn transfer_tokens(token_address: &ActorId, from: ActorId, to: ActorId, amount: u128) {
-
-    //     let response = self.vft_client.TransferFrom.(from: actor_id, to: actor_id, value: u256).send_recv(vft_contract_id).await;
-    //     self.notify_on(LiquidityEvent::Deposit { amount })
-    //             .expect("Notification Error");
-        
-    // }
-
-    // LiquidityInjection
-    // WithdrawLiquidty method
-    // pb fn withdraw_liquidity(&mut self, user: ActorId, amount: u128) -> Result<LiquidityEvent, Error> {
-    //     Ok(LiquidityEvent::LiquidityWithdrawn(amount))
-    // }
 }
