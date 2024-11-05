@@ -1,5 +1,6 @@
 #![no_std]
 
+use sails_rs::calls::{Call, Query};
 use sails_rs::{
     prelude::*,
     gstd::{
@@ -151,12 +152,12 @@ where VftClient: Vft, {
     
 
     // DepositLiquidty method
-    pub fn deposit(&mut self, user: ActorId, amount: u128)  {
+    pub async fn deposit(&mut self, amount: u128) -> String {
         debug!("Depositing funds");
         if amount == 0 {
             self.notify_on(LiquidityEvent::Error("Zero Amount".to_string()) )
             .expect("Notification Error");
-            return;
+            return "Zero Amount".to_string();
         }
 
      
@@ -167,7 +168,7 @@ where VftClient: Vft, {
         
         let current_timestamp = exec::block_timestamp() as u128;
         let user_info = state_mut.users
-            .entry(user)
+            .entry(msg::source())
             .or_insert_with(|| Self::create_new_user(current_timestamp));
 
         user_info.balance = user_info.balance.saturating_add(amount * DECIMALS_FACTOR);
@@ -175,13 +176,23 @@ where VftClient: Vft, {
         state_mut.total_deposited = state_mut.total_deposited.saturating_add(amount * DECIMALS_FACTOR);
 
         
-        // Self::transfer_tokens(&self.stablecoin_address, msg::source(), exec::program_id(), amount).await?;
+       // Transfer tokens from user to contract
+        let result = self.transfer_tokens(msg::source(), exec::program_id(), amount).await;
+
+        if let Err(_) = result {
+            self.notify_on(LiquidityEvent::Error("Error in VFT Transfer call".to_string()))
+                .expect("Notification Error");
+            return "Error in VFT Transfer call".to_string();
+        }
+
         // Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
 
-        let amountDeposited: u128 = amount * DECIMALS_FACTOR;
-
-        self.notify_on(LiquidityEvent::Deposit { amount: amountDeposited })
+        // Notify the deposit event
+        let amount_deposited: u128 = amount * DECIMALS_FACTOR;
+        self.notify_on(LiquidityEvent::Deposit { amount : amount_deposited })
                 .expect("Notification Error");
+
+                format!("New Liquidity Deposit: {:?}", amount_deposited)
 
         
     }
@@ -196,6 +207,32 @@ where VftClient: Vft, {
             rewards_usdc: 0,
             rewards_usdc_withdrawn: 0,
         }
+    }
+
+    //Transfer tokens
+    async fn transfer_tokens(&mut self, from: ActorId, to: ActorId, amount: u128) -> Result<(), String> {
+
+        let state = self.state_ref();
+
+        let response = self
+        .vft_client
+        .transfer_from(from, to, U256::from(amount))
+        .send_recv(state.vft_contract_id.unwrap())
+        .await;
+
+        let Ok(transfer_status) = response else {
+            self.notify_on(LiquidityEvent::Error("Error in VFT Contract".to_string()))
+                .expect("Notification Error");
+            return Err("Error in VFT Contract".to_string());
+        };
+    
+        if !transfer_status {
+            self.notify_on(LiquidityEvent::Error("Operation was not performed".to_string()))
+                .expect("Notification Error");
+            return Err("Operation was not performed".to_string());
+        }
+    
+        Ok(())
     }
 
 }
