@@ -137,6 +137,20 @@ where VftClient: Vft, {
         contract_id.to_string() 
     } 
 
+    //Service's query user-balance
+    pub fn user_balance(&self, user: ActorId) -> String {
+        let state = self.state_ref();
+        let user_info = state.users.get(&user).unwrap();
+        user_info.balance_usdc.to_string()
+    }
+
+    //Service's query all users
+    pub fn all_users(&self) -> String {
+        let state = self.state_ref();
+        let users = state.users.keys().map(|id| id.to_string()).collect::<Vec<_>>();
+        users.join(", ")
+    }
+
     // State mutable & ref functions
     fn state_mut(&self) -> &'static mut VstreetState {
         let state = unsafe { VSTREET_STATE.as_mut() };
