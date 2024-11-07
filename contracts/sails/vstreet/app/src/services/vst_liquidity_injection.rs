@@ -223,16 +223,6 @@ where VftClient: Vft, {
         user_info.balance_usdc = user_info.balance / DECIMALS_FACTOR;
         state_mut.total_deposited = state_mut.total_deposited.saturating_add(amount * DECIMALS_FACTOR);
 
-        
-       // Transfer tokens from user to contract
-        let result = self.transfer_tokens(msg::source(), exec::program_id(), amount).await;
-
-        if let Err(_) = result {
-            self.notify_on(LiquidityEvent::Error("Error in VFT Transfer call".to_string()))
-                .expect("Notification Error");
-            return "Error in VFT Transfer call".to_string();
-        }
-
         Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
 
         // Notify the deposit event
