@@ -29,7 +29,7 @@ static mut VSTREET_STATE: Option<VstreetState> = None;
 enum LiquidityEvent {
     Deposit{amount:u128},
     VFTseted(ActorId),
-    Withdraw(u128),
+    WithdrawLiquidity{amount:u128},
     WithdrawRewards{amount_withdrawn:u128},
     Error(String),
     TotalBorrowedModified{borrowed:u128},
@@ -139,6 +139,42 @@ where VftClient: Vft, {
         contract_id.to_string() 
     } 
 
+    //Service's query user-balance
+    pub fn user_balance(&self, user: ActorId) -> String {
+        let state = self.state_ref();
+        let user_info = state.users.get(&user).unwrap();
+        user_info.balance_usdc.to_string()
+    }
+
+    //Service's query user-rewards
+    pub fn user_rewards(&self, user: ActorId) -> String {
+        let state = self.state_ref();
+        let user_info = state.users.get(&user).unwrap();
+        user_info.rewards_usdc.to_string()
+    }
+
+    //Service's query all users
+    pub fn all_users(&self) -> String {
+        let state = self.state_ref();
+        let users = state.users.keys().map(|id| id.to_string()).collect::<Vec<_>>();
+        users.join(", ")
+    }
+
+    //Service's query APR , interest rate, dev fee, total borrowed, available rewards pool, base rate, risk multiplier, utilization factor
+    pub fn contract_info(&self) -> String {
+        let state = self.state_ref();
+        format!("APR: {}, Interest Rate: {}, Dev Fee: {}, Total Borrowed: {}, Available Rewards Pool: {}, Base Rate: {}, Risk Multiplier: {}, Utilization Factor: {}",
+            state.apr, state.interest_rate, state.dev_fee, state.total_borrowed, state.available_rewards_pool, state.base_rate, state.risk_multiplier, state.utilization_factor)
+    }
+   
+
+    //Service's query total deposited
+    pub fn total_deposited(&self) -> String {
+        let state = self.state_ref();
+        state.total_deposited.to_string()
+    }
+
+
     // State mutable & ref functions
     fn state_mut(&self) -> &'static mut VstreetState {
         let state = unsafe { VSTREET_STATE.as_mut() };
@@ -166,7 +202,18 @@ where VftClient: Vft, {
 
         state_mut.apr = self.calculate_apr();
         debug!("New APR after deposit: {}", state_mut.apr);
-        
+
+          
+       // Transfer tokens from user to contract
+       let result = self.transfer_tokens(msg::source(), exec::program_id(), amount).await;
+
+       if let Err(_) = result {
+           self.notify_on(LiquidityEvent::Error("Error in VFT Transfer call".to_string()))
+               .expect("Notification Error");
+           return "Error in VFT Transfer call".to_string();
+       }
+
+       // Update user balance
         let current_timestamp = exec::block_timestamp() as u128;
         let user_info = state_mut.users
             .entry(msg::source())
@@ -175,16 +222,6 @@ where VftClient: Vft, {
         user_info.balance = user_info.balance.saturating_add(amount * DECIMALS_FACTOR);
         user_info.balance_usdc = user_info.balance / DECIMALS_FACTOR;
         state_mut.total_deposited = state_mut.total_deposited.saturating_add(amount * DECIMALS_FACTOR);
-
-        
-       // Transfer tokens from user to contract
-        let result = self.transfer_tokens(msg::source(), exec::program_id(), amount).await;
-
-        if let Err(_) = result {
-            self.notify_on(LiquidityEvent::Error("Error in VFT Transfer call".to_string()))
-                .expect("Notification Error");
-            return "Error in VFT Transfer call".to_string();
-        }
 
         Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
 
@@ -196,6 +233,48 @@ where VftClient: Vft, {
                 format!("New Liquidity Deposit: {:?}", amount_deposited)
 
         
+    }
+
+    // WithdrawLiquidity method
+    pub async fn withdraw_liquidity(&mut self, amount: u128) -> String {
+        let state_mut = self.state_mut();
+
+        state_mut.apr = self.calculate_apr();
+        debug!("New APR after deposit: {}", state_mut.apr);
+
+        let current_timestamp = exec::block_timestamp() as u128;
+
+        let user_info = state_mut.users.get_mut(&msg::source()).unwrap();
+
+        // Check if amount is valid
+        if amount == 0 || amount > user_info.balance {
+            self.notify_on(LiquidityEvent::Error("Invalid Amount".to_string()))
+                .expect("Notification Error");
+            return "Invalid Amount".to_string();
+        }
+
+        // Transfer tokens from contract to user
+        let result = self.transfer_tokens(exec::program_id(), msg::source(), amount).await;
+
+        // Check if transfer was successful
+        if let Err(_) = result {
+            self.notify_on(LiquidityEvent::Error("Error in VFT Transfer call".to_string()))
+                .expect("Notification Error");
+            return "Error in VFT Transfer call".to_string();
+        }
+
+        // Update balance and rewards
+        user_info.balance = user_info.balance.saturating_sub(amount * DECIMALS_FACTOR);
+        user_info.balance_usdc = user_info.balance / DECIMALS_FACTOR;
+        state_mut.total_deposited = state_mut.total_deposited.saturating_sub(amount * DECIMALS_FACTOR);
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+
+        // Notify the withdraw event
+        let amount_withdrawn: u128 = amount * DECIMALS_FACTOR;
+        self.notify_on(LiquidityEvent::WithdrawLiquidity{amount: amount_withdrawn})
+                .expect("Notification Error");
+
+        format!("New Liquidity Withdrawn: {:?}", amount_withdrawn)
     }
 
     fn create_new_user(timestamp: u128) -> UserInfo {
