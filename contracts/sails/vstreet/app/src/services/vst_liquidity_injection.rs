@@ -32,6 +32,8 @@ enum LiquidityEvent {
     Withdraw(u128),
     WithdrawRewards(u128),
     Error(String),
+    TotalBorrowedModified{borrowed:u128},
+    AvailableRewardsPoolModified{pool:u128},
 }
 
 // #[derive(Encode, Decode, TypeInfo)]
@@ -177,8 +179,8 @@ where VftClient: Vft, {
      
         let state_mut = self.state_mut();
 
-        // self.apr = self.calculate_apr();
-        // debug!("New APR after deposit: {}", self.apr);
+        state_mut.apr = self.calculate_apr();
+        debug!("New APR after deposit: {}", state_mut.apr);
         
         let current_timestamp = exec::block_timestamp() as u128;
         let user_info = state_mut.users
@@ -249,4 +251,44 @@ where VftClient: Vft, {
         Ok(())
     }
 
+    pub async fn modify_total_borrowed(&mut self, amount: u128) -> Result<(), String> {
+        let state_mut = self.state_mut();
+        state_mut.total_borrowed = amount * DECIMALS_FACTOR;
+        state_mut.apr = self.calculate_apr();
+
+        // Notify the TotalBorrowedModified event
+        let amount_borrowed: u128 = amount * DECIMALS_FACTOR;
+        self.notify_on(LiquidityEvent::TotalBorrowedModified { borrowed : amount_borrowed })
+                .expect("Notification Error");
+
+        Ok(())
+    }
+
+    pub async fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<(), String> {
+        let state_mut = self.state_mut();
+        state_mut.available_rewards_pool = amount * DECIMALS_FACTOR;
+
+        // Notify the AvailableRewardsPoolModified event
+        let new_rewards_pool: u128 = amount * DECIMALS_FACTOR;
+        self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
+                .expect("Notification Error");
+
+        Ok(())
+    }
+
+    // Borrowers APR (INTEREST RATE + DEV FEE)
+    fn calculate_apr(&mut self) -> u128 {
+        let state_mut = self.state_mut();
+
+        state_mut.utilization_factor = if state_mut.total_deposited == 0 {
+            0
+        } else {
+            (state_mut.total_borrowed * DECIMALS_FACTOR) / state_mut.total_deposited
+        };
+
+        state_mut.interest_rate = state_mut.base_rate + (state_mut.utilization_factor * state_mut.risk_multiplier / DECIMALS_FACTOR);
+        state_mut.dev_fee = state_mut.interest_rate / 100;
+
+        state_mut.interest_rate + state_mut.dev_fee
+    }
 }
