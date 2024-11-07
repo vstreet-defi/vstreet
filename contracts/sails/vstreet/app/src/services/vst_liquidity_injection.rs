@@ -30,7 +30,7 @@ enum LiquidityEvent {
     Deposit{amount:u128},
     VFTseted(ActorId),
     WithdrawLiquidity{amount:u128},
-    WithdrawRewards(u128),
+    WithdrawRewards{amount_withdrawn:u128},
     Error(String),
     TotalBorrowedModified{borrowed:u128},
     AvailableRewardsPoolModified{pool:u128},
@@ -197,7 +197,6 @@ where VftClient: Vft, {
             .expect("Notification Error");
             return "Zero Amount".to_string();
         }
-
      
         let state_mut = self.state_mut();
 
@@ -223,6 +222,16 @@ where VftClient: Vft, {
         user_info.balance = user_info.balance.saturating_add(amount * DECIMALS_FACTOR);
         user_info.balance_usdc = user_info.balance / DECIMALS_FACTOR;
         state_mut.total_deposited = state_mut.total_deposited.saturating_add(amount * DECIMALS_FACTOR);
+
+        
+       // Transfer tokens from user to contract
+        let result = self.transfer_tokens(msg::source(), exec::program_id(), amount).await;
+
+        if let Err(_) = result {
+            self.notify_on(LiquidityEvent::Error("Error in VFT Transfer call".to_string()))
+                .expect("Notification Error");
+            return "Error in VFT Transfer call".to_string();
+        }
 
         Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
 
@@ -357,7 +366,17 @@ where VftClient: Vft, {
         state_mut.interest_rate + state_mut.dev_fee
     }
 
-    // Update user rewards
+    pub fn update_all_rewards(&mut self) {
+        let state_mut = self.state_mut();
+        state_mut.apr = self.calculate_apr();
+
+        let current_timestamp = exec::block_timestamp() as u128;
+
+        for user_info in state_mut.users.values_mut() {
+            Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        }
+    }
+
     fn update_user_rewards(user_info: &mut UserInfo, current_timestamp: u128, interest_rate: u128) {
         let time_diff_seconds = (current_timestamp - user_info.last_updated) / 1000;
         if time_diff_seconds > 0 {
@@ -369,18 +388,49 @@ where VftClient: Vft, {
         }
     }
 
-    // Update all rewards
-    pub fn update_all_rewards(&mut self) -> String {
+    async fn withdraw_rewards(&mut self, user: ActorId) -> Result<(), String> {
         let state_mut = self.state_mut();
-
         state_mut.apr = self.calculate_apr();
 
         let current_timestamp = exec::block_timestamp() as u128;
 
-        for user_info in state_mut.users.values_mut() {
-            Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        let user_info = if let Some(user_info) = state_mut.users.get_mut(&user) {
+            user_info
+        } else {
+            self.notify_on(LiquidityEvent::Error("User not found".to_string()))
+                .expect("Notification Error");
+            return Err("User not found".to_string());
+        };
+
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        let rewards_to_withdraw = user_info.rewards.saturating_sub(user_info.rewards_withdrawn);
+
+        if rewards_to_withdraw == 0 || rewards_to_withdraw > state_mut.available_rewards_pool {
+            self.notify_on(LiquidityEvent::Error("Invalid amount".to_string()))
+                .expect("Notification Error");
+                 return Err("Invalid amount".to_string());
         }
 
-        "All rewards updated".to_string()
+        user_info.rewards = user_info.rewards.saturating_sub(rewards_to_withdraw);
+        user_info.rewards_withdrawn = user_info.rewards_withdrawn.saturating_add(rewards_to_withdraw);
+        user_info.rewards_usdc = user_info.rewards_usdc.saturating_sub(user_info.rewards_usdc);
+        user_info.rewards_usdc_withdrawn = user_info.rewards_usdc_withdrawn.saturating_add(user_info.rewards_usdc);
+
+        state_mut.total_rewards_distributed = state_mut.total_rewards_distributed.saturating_add(rewards_to_withdraw);
+
+        self.transfer_tokens(
+            exec::program_id(),
+            msg::source(),
+            rewards_to_withdraw / DECIMALS_FACTOR
+        ).await.expect("Transfer tokens failed during the rewards withdrawal");
+
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        
+        // Notify the WithdrawRewards event
+        let amount: u128 = rewards_to_withdraw / DECIMALS_FACTOR;
+        self.notify_on(LiquidityEvent::WithdrawRewards { amount_withdrawn : amount })
+                .expect("Notification Error");
+
+        Ok(())
     }
 }
