@@ -30,7 +30,7 @@ enum LiquidityEvent {
     Deposit{amount:u128},
     VFTseted(ActorId),
     Withdraw(u128),
-    WithdrawRewards(u128),
+    WithdrawRewards{amount_withdrawn:u128},
     Error(String),
     TotalBorrowedModified{borrowed:u128},
     AvailableRewardsPoolModified{pool:u128},
@@ -161,7 +161,6 @@ where VftClient: Vft, {
             .expect("Notification Error");
             return "Zero Amount".to_string();
         }
-
      
         let state_mut = self.state_mut();
 
@@ -187,7 +186,7 @@ where VftClient: Vft, {
             return "Error in VFT Transfer call".to_string();
         }
 
-        // Self::update_user_rewards(user_info, current_timestamp, self.interest_rate);
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
 
         // Notify the deposit event
         let amount_deposited: u128 = amount * DECIMALS_FACTOR;
@@ -276,5 +275,73 @@ where VftClient: Vft, {
         state_mut.dev_fee = state_mut.interest_rate / 100;
 
         state_mut.interest_rate + state_mut.dev_fee
+    }
+
+    pub fn update_all_rewards(&mut self) {
+        let state_mut = self.state_mut();
+        state_mut.apr = self.calculate_apr();
+
+        let current_timestamp = exec::block_timestamp() as u128;
+
+        for user_info in state_mut.users.values_mut() {
+            Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        }
+    }
+
+    fn update_user_rewards(user_info: &mut UserInfo, current_timestamp: u128, interest_rate: u128) {
+        let time_diff_seconds = (current_timestamp - user_info.last_updated) / 1000;
+        if time_diff_seconds > 0 {
+            let rewards = (user_info.balance * interest_rate * time_diff_seconds) / (YEAR_IN_SECONDS * DECIMALS_FACTOR);
+            debug!("Calculated rewards: {}", rewards);
+            user_info.rewards = user_info.rewards.saturating_add(rewards);
+            user_info.rewards_usdc = user_info.rewards / DECIMALS_FACTOR;
+            user_info.last_updated = current_timestamp;
+        }
+    }
+
+    async fn withdraw_rewards(&mut self, user: ActorId) -> Result<(), String> {
+        let state_mut = self.state_mut();
+        state_mut.apr = self.calculate_apr();
+
+        let current_timestamp = exec::block_timestamp() as u128;
+
+        let user_info = if let Some(user_info) = state_mut.users.get_mut(&user) {
+            user_info
+        } else {
+            self.notify_on(LiquidityEvent::Error("User not found".to_string()))
+                .expect("Notification Error");
+            return Err("User not found".to_string());
+        };
+
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        let rewards_to_withdraw = user_info.rewards.saturating_sub(user_info.rewards_withdrawn);
+
+        if rewards_to_withdraw == 0 || rewards_to_withdraw > state_mut.available_rewards_pool {
+            self.notify_on(LiquidityEvent::Error("Invalid amount".to_string()))
+                .expect("Notification Error");
+                 return Err("Invalid amount".to_string());
+        }
+
+        user_info.rewards = user_info.rewards.saturating_sub(rewards_to_withdraw);
+        user_info.rewards_withdrawn = user_info.rewards_withdrawn.saturating_add(rewards_to_withdraw);
+        user_info.rewards_usdc = user_info.rewards_usdc.saturating_sub(user_info.rewards_usdc);
+        user_info.rewards_usdc_withdrawn = user_info.rewards_usdc_withdrawn.saturating_add(user_info.rewards_usdc);
+
+        state_mut.total_rewards_distributed = state_mut.total_rewards_distributed.saturating_add(rewards_to_withdraw);
+
+        self.transfer_tokens(
+            exec::program_id(),
+            msg::source(),
+            rewards_to_withdraw / DECIMALS_FACTOR
+        ).await.expect("Transfer tokens failed during the rewards withdrawal");
+
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        
+        // Notify the WithdrawRewards event
+        let amount: u128 = rewards_to_withdraw / DECIMALS_FACTOR;
+        self.notify_on(LiquidityEvent::WithdrawRewards { amount_withdrawn : amount })
+                .expect("Notification Error");
+
+        Ok(())
     }
 }
