@@ -29,9 +29,8 @@ pub struct VstreetProgram;
 
 #[sails_rs::program]
 impl VstreetProgram {
+    
     // Program's constructor
-  
-
     pub fn new_with_vft(vft_contract_id: ActorId) -> Self {
         LiquidityInjectionService::<VftClient<GStdRemoting>>::seed(
             msg::source(), 
