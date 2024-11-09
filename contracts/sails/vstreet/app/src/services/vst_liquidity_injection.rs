@@ -286,6 +286,7 @@ where VftClient: Vft, {
             balance_usdc: 0,
             rewards_usdc: 0,
             rewards_usdc_withdrawn: 0,
+            balance_vara: 0,
         }
     }
 

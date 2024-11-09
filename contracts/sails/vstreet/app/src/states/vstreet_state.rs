@@ -16,6 +16,7 @@ pub struct UserInfo {
     pub balance_usdc: u128,
     pub rewards_usdc: u128,
     pub rewards_usdc_withdrawn: u128,
+    pub balance_vara: u128,
 }
 
 #[derive(Clone)]
