@@ -17,9 +17,6 @@ pub mod services;
 //Import the Liquidity Injection LiquidityInjectionService from the services module
 use services::vst_liquidity_injection::LiquidityInjectionService;
 
-//Import the BorrowWithCollateralService from the services module
-use services::vst_borrow_with_vara::BorrowWithCollateralService;
-
 //Import the VftClient from the clients module
 use clients::extended_vft_client::Vft as VftClient;
 
@@ -41,7 +38,7 @@ impl VstreetProgram {
              0, 0, 0, 0, 
              BTreeMap::new(), 
              0, 0, 0, 0, 0, 0,);
-             
+
         Self
     }
 
@@ -53,10 +50,4 @@ impl VstreetProgram {
         LiquidityInjectionService::new(vft_client)
     }
 
-    // Expose BorrowWithCollateralService
-    #[route("BorrowWithVaraService")]
-    pub fn borrow_with_collateral(&self) -> BorrowWithCollateralService<VftClient<GStdRemoting>> {
-        let vft_client = VftClient::new(GStdRemoting);
-        BorrowWithCollateralService::new(vft_client)
-    }
 }

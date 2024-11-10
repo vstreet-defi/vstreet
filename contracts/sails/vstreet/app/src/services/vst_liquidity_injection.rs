@@ -21,6 +21,7 @@ pub const DECIMALS_FACTOR: u128 = 10_u128.pow(6);
 pub const YEAR_IN_SECONDS: u128 = 31_536_000; // 365 * 24 * 60 * 60
 pub const BASE_RATE: u128 = 10000; // 0.01 * DECIMALS_FACTOR
 pub const RISK_MULTIPLIER: u128 = 40000; // 0.04 * DECIMALS_FACTOR
+const ONE_TVARA: u128 = 1_000_000_000_000; // Value of one TVara and Vara
 
 
 static mut VSTREET_STATE: Option<VstreetState> = None;
@@ -34,6 +35,8 @@ enum LiquidityEvent {
     Error(String),
     TotalBorrowedModified{borrowed:u128},
     AvailableRewardsPoolModified{pool:u128},
+    DepositedVara{amount:u128},
+    WithdrawnVara{amount:u128},
 }
 
 // #[derive(Encode, Decode, TypeInfo)]
@@ -151,6 +154,13 @@ where VftClient: Vft, {
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         user_info.rewards_usdc.to_string()
+    }
+
+    //Service's query user info
+    pub fn user_info(&self, user: ActorId) -> String {
+        let state = self.state_ref();
+        let user_info = state.users.get(&user).unwrap();
+        format!("User Info: {:?}", user_info)
     }
 
     //Service's query all users
@@ -277,7 +287,81 @@ where VftClient: Vft, {
         format!("New Liquidity Withdrawn: {:?}", amount_withdrawn)
     }
 
-    fn create_new_user(timestamp: u128) -> UserInfo {
+   
+    //Deposit Vara as Collateral
+    pub async fn deposit_collateral(&mut self) -> String {
+      
+        let value = msg::value();
+        let caller = msg::source();
+
+        if value == 0 {
+           self.notify_on(LiquidityEvent::Error("No value sent".to_string()))
+                .expect("Notification Error");
+            return "No value sent".to_string();
+        }
+
+
+        let state_mut = self.state_mut();
+
+
+
+        // Update user collateral
+        let current_timestamp = exec::block_timestamp() as u128;
+        let user_info = state_mut.users
+            .entry(msg::source())
+            .or_insert_with(|| Self::create_new_user(current_timestamp));
+
+        user_info.balance_vara = user_info.balance_vara.saturating_add(value);
+
+        let amount = value / ONE_TVARA;
+
+        // Notify the deposit event
+        self.notify_on(LiquidityEvent::DepositedVara { amount: amount})
+            .expect("Notification Error");
+
+        format!("Deposited Vara as Collateral: {:?}", value)
+    }
+
+    //Withdraw Vara as Collateral
+    pub async fn withdraw_collateral(&mut self, amount: u128) -> String {
+
+    
+        let state_mut = self.state_mut();
+
+        let current_timestamp = exec::block_timestamp() as u128;
+
+        let user_info = state_mut.users.get_mut(&msg::source()).unwrap();
+
+        let amount_vara = amount * ONE_TVARA;
+
+        // Check if amount is valid
+        if amount_vara == 0 || amount_vara > user_info.balance_vara {
+            self.notify_on(LiquidityEvent::Error("Invalid Amount".to_string()))
+                .expect("Notification Error");
+            return "Invalid Amount".to_string();
+        }
+
+        msg::send(
+            msg::source(),
+            LiquidityEvent::WithdrawnVara { amount: amount }, 
+            amount_vara
+        )
+        .expect("Error sending varas");
+
+        // Update balance and rewards
+        user_info.balance_vara = user_info.balance_vara.saturating_sub(amount_vara);
+
+        let amount_withdrawn = amount;
+
+        // Notify the withdraw event
+        self.notify_on(LiquidityEvent::WithdrawnVara{ amount: amount_withdrawn})
+            .expect("Notification Error");
+
+        format!("Withdrawn Vara as Collateral: {:?}", amount)
+    }
+
+     // Create new user
+     fn create_new_user(timestamp: u128) -> UserInfo {
         UserInfo {
             balance: 0,
             rewards: 0,
