@@ -74,8 +74,9 @@ where VftClient: Vft, {
         dev_fee: u128,
         interest_rate: u128,
         apr: u128,
+        ltv: u128,
+        vara_price: u128,
 
-      
     ) {
         unsafe {
             VSTREET_STATE = Some(
@@ -93,6 +94,8 @@ where VftClient: Vft, {
                     dev_fee,
                     interest_rate,
                     apr,
+                    ltv,
+                    vara_price,
                    
                 }
             );
@@ -106,6 +109,8 @@ where VftClient: Vft, {
             vft_client
         }
     }
+
+    //Private methods
 
      // ## Change vft contract id
     // Only the contract owner can perform this action
@@ -126,6 +131,41 @@ where VftClient: Vft, {
         let new_vft_contract_id = state.vft_contract_id.unwrap();
         format!("New VFT Contract ID set: {:?}", new_vft_contract_id)
         
+    }
+
+    //Change LTV
+    // Only the contract owner can perform this action
+    // LTV is a percentage value represented here in double digit format (e.g. 85% = 85)
+    pub fn set_ltv(&mut self, ltv: u128) -> String {
+        let state = self.state_mut();
+
+        if msg::source() != state.owner {
+            self.notify_on(LiquidityEvent::Error("Only the contract owner can perform this action".to_string()))
+                .expect("Notification Error");
+                 return "Only the contract owner can perform this action".to_string();
+        }
+
+        state.ltv = ltv;
+
+        format!("New LTV set: {:?}", ltv)
+    }
+
+    //Change Vara Price
+    // Only the contract owner can perform this action
+    pub fn set_vara_price(&mut self, vara_price: u128) -> String {
+        let state = self.state_mut();
+
+        if msg::source() != state.owner {
+            self.notify_on(LiquidityEvent::Error("Only the contract owner can perform this action".to_string()))
+                .expect("Notification Error");
+                 return "Only the contract owner can perform this action".to_string();
+        }
+
+        state.vara_price = vara_price;
+        
+        self.update_cv_and_mla_for_all_users();
+
+        format!("New Vara Price set: {:?}", vara_price)
     }
 
     //Querys
@@ -198,7 +238,7 @@ where VftClient: Vft, {
         unsafe { state.unwrap_unchecked() }
     }
     
-
+    //Public methods
     // DepositLiquidty method
     pub async fn deposit(&mut self, amount: u128) -> String {
         debug!("Depositing funds");
@@ -313,6 +353,10 @@ where VftClient: Vft, {
 
         user_info.balance_vara = user_info.balance_vara.saturating_add(value);
 
+        //Update CV and MLA
+        self.calculate_cv(caller);
+        self.calculate_mla(caller);
+
         let amount = value / ONE_TVARA;
 
         // Notify the deposit event
@@ -325,7 +369,7 @@ where VftClient: Vft, {
     //Withdraw Vara as Collateral
     pub async fn withdraw_collateral(&mut self, amount: u128) -> String {
 
-    
+        let caller = msg::source();
         let state_mut = self.state_mut();
 
         let current_timestamp = exec::block_timestamp() as u128;
@@ -351,6 +395,10 @@ where VftClient: Vft, {
         // Update balance and rewards
         user_info.balance_vara = user_info.balance_vara.saturating_sub(amount_vara);
 
+        //Update CV and MLA
+        self.calculate_cv(caller);
+        self.calculate_mla(caller);
+
         let amount_withdrawn = amount;
 
         // Notify the withdraw event
@@ -360,6 +408,53 @@ where VftClient: Vft, {
         format!("Withdrawn Vara as Collateral: {:?}", amount)
     }
 
+    async fn withdraw_rewards(&mut self, user: ActorId) -> Result<(), String> {
+        let state_mut = self.state_mut();
+        state_mut.apr = self.calculate_apr();
+
+        let current_timestamp = exec::block_timestamp() as u128;
+
+        let user_info = if let Some(user_info) = state_mut.users.get_mut(&user) {
+            user_info
+        } else {
+            self.notify_on(LiquidityEvent::Error("User not found".to_string()))
+                .expect("Notification Error");
+            return Err("User not found".to_string());
+        };
+
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        let rewards_to_withdraw = user_info.rewards.saturating_sub(user_info.rewards_withdrawn);
+
+        if rewards_to_withdraw == 0 || rewards_to_withdraw > state_mut.available_rewards_pool {
+            self.notify_on(LiquidityEvent::Error("Invalid amount".to_string()))
+                .expect("Notification Error");
+                 return Err("Invalid amount".to_string());
+        }
+
+        user_info.rewards = user_info.rewards.saturating_sub(rewards_to_withdraw);
+        user_info.rewards_withdrawn = user_info.rewards_withdrawn.saturating_add(rewards_to_withdraw);
+        user_info.rewards_usdc = user_info.rewards_usdc.saturating_sub(user_info.rewards_usdc);
+        user_info.rewards_usdc_withdrawn = user_info.rewards_usdc_withdrawn.saturating_add(user_info.rewards_usdc);
+
+        state_mut.total_rewards_distributed = state_mut.total_rewards_distributed.saturating_add(rewards_to_withdraw);
+
+        self.transfer_tokens(
+            exec::program_id(),
+            msg::source(),
+            rewards_to_withdraw / DECIMALS_FACTOR
+        ).await.expect("Transfer tokens failed during the rewards withdrawal");
+
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        
+        // Notify the WithdrawRewards event
+        let amount: u128 = rewards_to_withdraw / DECIMALS_FACTOR;
+        self.notify_on(LiquidityEvent::WithdrawRewards { amount_withdrawn : amount })
+                .expect("Notification Error");
+
+        Ok(())
+    }
+
+    //Internal methods
      // Create new user
      fn create_new_user(timestamp: u128) -> UserInfo {
         UserInfo {
@@ -371,6 +466,8 @@ where VftClient: Vft, {
             rewards_usdc: 0,
             rewards_usdc_withdrawn: 0,
             balance_vara: 0,
+            mla: 0,
+            cv: 0,
         }
     }
 
@@ -462,50 +559,69 @@ where VftClient: Vft, {
             user_info.last_updated = current_timestamp;
         }
     }
-
-    async fn withdraw_rewards(&mut self, user: ActorId) -> Result<(), String> {
+    
+    //Calculate Collateral Value
+    // This functions need to be running every time vara price changes or user balance vara changes
+    fn calculate_cv(&mut self, user: ActorId) -> String {
         let state_mut = self.state_mut();
-        state_mut.apr = self.calculate_apr();
+        let user_info = state_mut.users.get_mut(&user).unwrap();
+        let vara_price = state_mut.vara_price;
 
-        let current_timestamp = exec::block_timestamp() as u128;
+        let tvaras = user_info.balance_vara / ONE_TVARA;
 
-        let user_info = if let Some(user_info) = state_mut.users.get_mut(&user) {
-            user_info
-        } else {
-            self.notify_on(LiquidityEvent::Error("User not found".to_string()))
-                .expect("Notification Error");
-            return Err("User not found".to_string());
-        };
+        let cv = tvaras * vara_price;
+        user_info.cv = cv;
 
-        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
-        let rewards_to_withdraw = user_info.rewards.saturating_sub(user_info.rewards_withdrawn);
-
-        if rewards_to_withdraw == 0 || rewards_to_withdraw > state_mut.available_rewards_pool {
-            self.notify_on(LiquidityEvent::Error("Invalid amount".to_string()))
-                .expect("Notification Error");
-                 return Err("Invalid amount".to_string());
-        }
-
-        user_info.rewards = user_info.rewards.saturating_sub(rewards_to_withdraw);
-        user_info.rewards_withdrawn = user_info.rewards_withdrawn.saturating_add(rewards_to_withdraw);
-        user_info.rewards_usdc = user_info.rewards_usdc.saturating_sub(user_info.rewards_usdc);
-        user_info.rewards_usdc_withdrawn = user_info.rewards_usdc_withdrawn.saturating_add(user_info.rewards_usdc);
-
-        state_mut.total_rewards_distributed = state_mut.total_rewards_distributed.saturating_add(rewards_to_withdraw);
-
-        self.transfer_tokens(
-            exec::program_id(),
-            msg::source(),
-            rewards_to_withdraw / DECIMALS_FACTOR
-        ).await.expect("Transfer tokens failed during the rewards withdrawal");
-
-        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
-        
-        // Notify the WithdrawRewards event
-        let amount: u128 = rewards_to_withdraw / DECIMALS_FACTOR;
-        self.notify_on(LiquidityEvent::WithdrawRewards { amount_withdrawn : amount })
-                .expect("Notification Error");
-
-        Ok(())
+        format!("CV: {:?}", cv)
     }
+
+    //Calculate Maximum Loan Amount
+    fn calculate_mla(&mut self, user: ActorId) -> String {
+        let state_mut = self.state_mut();
+        let user_info = state_mut.users.get_mut(&user).unwrap();
+
+        let mla = (user_info.cv * state_mut.ltv) / 100;
+        user_info.mla = mla;
+
+        format!("MLA: {:?}", mla)
+    }
+
+    fn update_cv_and_mla_for_all_users(&mut self) {
+        let state_mut = self.state_mut();
+
+        for user in state_mut.users.keys().cloned().collect::<Vec<_>>() {
+            let user_info = state_mut.users.get(&user).unwrap();
+            if user_info.balance_vara >= ONE_TVARA {
+                self.calculate_cv(user);
+                self.calculate_mla(user);
+            }
+        }
+    }
+
+
+    //Liquidation
+    // pub fn liquidation(&mut self, user: ActorId) -> String {
+    //     let state_mut = self.state_mut();
+    //     let user_info = state_mut.users.get_mut(&user).unwrap();
+
+    //     let cv = user_info.balance_vara - user_info.mla;
+
+    //     if cv < 0 {
+    //         let amount = user_info.mla - user_info.balance_vara;
+    //         self.transfer_tokens(
+    //             exec::program_id(),
+    //             msg::source(),
+    //             amount
+    //         ).expect("Transfer tokens failed during the liquidation");
+
+    //         user_info.balance_vara = 0;
+    //         user_info.mla = 0;
+    //         user_info.cv = 0;
+
+    //         format!("Liquidation successful: {:?}", amount)
+    //     } else {
+    //         format!("No liquidation needed")
+    //     }
+    // }
+
 }

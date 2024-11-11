@@ -37,7 +37,7 @@ impl VstreetProgram {
             Some(vft_contract_id),
              0, 0, 0, 0, 
              BTreeMap::new(), 
-             0, 0, 0, 0, 0, 0,);
+             0, 0, 0, 0, 0, 0, 0, 0);
 
         Self
     }

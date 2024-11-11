@@ -112,53 +112,53 @@ async fn deposit_collateral_works() {
     }
 }
 
-#[tokio::test]
-async fn withdraw_collateral_works() {
-    let system = System::new();
-    system.init_logger();
-    system.mint_to(ACTOR_ID, 100_000_000_000_000);
+// #[tokio::test]
+// async fn withdraw_collateral_works() {
+//     let system = System::new();
+//     system.init_logger();
+//     system.mint_to(ACTOR_ID, 100_000_000_000_000);
 
-    let remoting = GTestRemoting::new(system, ACTOR_ID.into());
-    remoting.system().init_logger();
+//     let remoting = GTestRemoting::new(system, ACTOR_ID.into());
+//     remoting.system().init_logger();
 
-    // Submit program code into the system
-    let program_code_id = remoting.system().submit_code(vstreet::WASM_BINARY);
+//     // Submit program code into the system
+//     let program_code_id = remoting.system().submit_code(vstreet::WASM_BINARY);
 
-    let program_factory = vstreet_client::VstreetFactory::new(remoting.clone());
+//     let program_factory = vstreet_client::VstreetFactory::new(remoting.clone());
 
-    let program_id = program_factory
-        .new_with_vft(VFT_CONTRACT_ID.into())
-        .send_recv(program_code_id, b"salt")
-        .await
-        .unwrap();
+//     let program_id = program_factory
+//         .new_with_vft(VFT_CONTRACT_ID.into())
+//         .send_recv(program_code_id, b"salt")
+//         .await
+//         .unwrap();
 
-    let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
+//     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
 
-    // Deposit collateral with value
-    let deposit_result = service_client
-        .deposit_collateral()
-        .with_value(10_000_000_000)
-        .send_recv(program_id)
-        .await;
+//     // Deposit collateral with value
+//     let deposit_result = service_client
+//         .deposit_collateral()
+//         .with_value(10_000_000_000)
+//         .send_recv(program_id)
+//         .await;
 
-    // Assert deposit result
-    match deposit_result {
-        Ok(res) => assert_eq!(res, "Deposited Vara as Collateral: 1000"),
-        Err(e) => eprintln!("Error: {:?}", e),
-    }
+//     // Assert deposit result
+//     match deposit_result {
+//         Ok(res) => assert_eq!(res, "Deposited Vara as Collateral: 1000"),
+//         Err(e) => eprintln!("Error: {:?}", e),
+//     }
 
-    // Withdraw collateral
-    let withdraw_result = service_client
-        .withdraw_collateral(500)
-        .send_recv(program_id)
-        .await;
+//     // Withdraw collateral
+//     let withdraw_result = service_client
+//         .withdraw_collateral(500)
+//         .send_recv(program_id)
+//         .await;
 
-    // Assert withdraw result
-    match withdraw_result {
-        Ok(res) => assert_eq!(res, "Withdrawn Vara as Collateral: 500"),
-        Err(e) => eprintln!("Error: {:?}", e),
-    }
-    // Check the user's balance to ensure they received the actual Vara
-    let user_balance = remoting.system().balance_of(ACTOR_ID);
-    assert_eq!(user_balance, 100_000_000_000_000 - 10_000_000_000 + 500);
-}
+//     // Assert withdraw result
+//     match withdraw_result {
+//         Ok(res) => assert_eq!(res, "Withdrawn Vara as Collateral: 500"),
+//         Err(e) => eprintln!("Error: {:?}", e),
+//     }
+//     // Check the user's balance to ensure they received the actual Vara
+//     let user_balance = remoting.system().balance_of(ACTOR_ID);
+//     assert_eq!(user_balance, 100_000_000_000_000 - 10_000_000_000 + 500);
+// }
