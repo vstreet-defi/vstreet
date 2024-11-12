@@ -21,15 +21,7 @@ const ModalBurgerMenu = ({ isOpen, items, selectedTab }: any) => {
   };
   const renderFlag = (item: string) => {
     if (item !== DappTab.Home && isDapp) {
-      return (
-        <Flag
-          text={
-            item === DappTab.Markets || item === DappTab.Borrow
-              ? "Coming Soon"
-              : "New"
-          }
-        />
-      );
+      return <Flag text={item === DappTab.Markets ? "Coming Soon" : "New"} />;
     }
     return null;
   };

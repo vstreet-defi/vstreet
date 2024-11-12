@@ -37,16 +37,24 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab") as DappTab | null;
-    setActiveTab(tab || DappTab.Supply.toLowerCase());
-  }, [location.search]);
+    if (isDapp && !tab) {
+      navigate("/dapp?tab=supply", { replace: true });
+    } else {
+      setActiveTab((tab || DappTab.Supply).toLowerCase());
+    }
+  }, [location.search, navigate, isDapp]);
 
   const dappTabActions: Record<DappTab, () => void> = {
     [DappTab.Home]: () => {
       navigate("/");
       setActiveTab(null);
     },
-    [DappTab.Borrow]: () => {},
+    [DappTab.Borrow]: () => {
+      navigate("/dapp?tab=borrow");
+      setActiveTab(DappTab.Borrow.toLowerCase());
+    },
     [DappTab.Supply]: () => {
+      navigate("/dapp?tab=supply");
       setActiveTab(DappTab.Supply.toLowerCase());
     },
     [DappTab.Markets]: () => {},
@@ -73,15 +81,7 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
 
   const renderFlag = (item: string) => {
     if (item !== DappTab.Home && isDapp) {
-      return (
-        <Flag
-          text={
-            item === DappTab.Markets || item === DappTab.Borrow
-              ? "Coming Soon"
-              : "New"
-          }
-        />
-      );
+      return <Flag text={item === DappTab.Markets ? "Coming Soon" : "New"} />;
     }
     return null;
   };
@@ -128,7 +128,12 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
 
   return (
     <header>
-      <img className="NavBar-Logo" src={Logo} alt="Logo" onClick={() => navigate("/")} />
+      <img
+        className="NavBar-Logo"
+        src={Logo}
+        alt="Logo"
+        onClick={() => navigate("/")}
+      />
       {renderContent()}
     </header>
   );
