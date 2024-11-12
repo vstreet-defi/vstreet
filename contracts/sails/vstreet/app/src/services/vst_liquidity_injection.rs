@@ -599,29 +599,4 @@ where VftClient: Vft, {
     }
 
 
-    //Liquidation
-    // pub fn liquidation(&mut self, user: ActorId) -> String {
-    //     let state_mut = self.state_mut();
-    //     let user_info = state_mut.users.get_mut(&user).unwrap();
-
-    //     let cv = user_info.balance_vara - user_info.mla;
-
-    //     if cv < 0 {
-    //         let amount = user_info.mla - user_info.balance_vara;
-    //         self.transfer_tokens(
-    //             exec::program_id(),
-    //             msg::source(),
-    //             amount
-    //         ).expect("Transfer tokens failed during the liquidation");
-
-    //         user_info.balance_vara = 0;
-    //         user_info.mla = 0;
-    //         user_info.cv = 0;
-
-    //         format!("Liquidation successful: {:?}", amount)
-    //     } else {
-    //         format!("No liquidation needed")
-    //     }
-    // }
-
 }
