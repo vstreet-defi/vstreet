@@ -37,15 +37,17 @@ impl VstreetProgram {
             Some(vft_contract_id),
              0, 0, 0, 0, 
              BTreeMap::new(), 
-             0, 0, 0, 0, 0, 0);
+             0, 0, 0, 0, 0, 0, 0, 0);
+
         Self
     }
 
-    // Exposed service
+    // Expose liquidity Injection service
     #[route("LiquidityInjectionService")]
     pub fn vstreet(&self)-> LiquidityInjectionService<VftClient<GStdRemoting>>
     {
         let vft_client = VftClient::new(GStdRemoting);
         LiquidityInjectionService::new(vft_client)
     }
+
 }

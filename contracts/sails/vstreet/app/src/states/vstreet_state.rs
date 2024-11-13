@@ -16,6 +16,10 @@ pub struct UserInfo {
     pub balance_usdc: u128,
     pub rewards_usdc: u128,
     pub rewards_usdc_withdrawn: u128,
+    pub balance_vara: u128,
+    pub mla: u128,
+    pub cv: u128,
+
 }
 
 #[derive(Clone)]
@@ -33,4 +37,6 @@ pub struct VstreetState {
     pub dev_fee: u128,
     pub interest_rate: u128,
     pub apr: u128,
+    pub ltv: u128,
+    pub vara_price: u128,
 }
