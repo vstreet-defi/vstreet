@@ -1,4 +1,5 @@
 import DappTemplate from "components/templates/Dapp";
+import React, { useEffect, useState } from "react";
 import ApiLoader from "components/atoms/ApiLoader";
 import { useApi, useAccount } from "@gear-js/react-hooks";
 import Header, { DappTab } from "components/templates/Header/Header";
@@ -18,6 +19,34 @@ function DappPage() {
   // const { isApiReady } = useApi();
   // const { isAccountReady } = useAccount();
   // const isAppReady = isApiReady && isAccountReady;
+
+  //https://prod.spline.design/Nam5w76DquhQTXJ0/scene.splinecode
+
+  //Splice escene large
+  //https://prod.spline.design/HuxD1L0ZMBZZ6p81/scene.splinecode
+
+  const [sceneUrl, setSceneUrl] = useState(
+    "https://prod.spline.design/HuxD1L0ZMBZZ6p81/scene.splinecode"
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth <= 600) {
+        setSceneUrl(
+          "https://prod.spline.design/Nam5w76DquhQTXJ0/scene.splinecode"
+        );
+      } else {
+        setSceneUrl(
+          "https://prod.spline.design/HuxD1L0ZMBZZ6p81/scene.splinecode"
+        );
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    handleResize(); // Call once to set initial state
+
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   //Polkadot Extension Wallet-Hook by PSYLABS
   const {
@@ -51,7 +80,7 @@ function DappPage() {
               <DappTemplate
                 bannerComponent={
                   <div className="background-container">
-                    <Spline scene="https://prod.spline.design/Nam5w76DquhQTXJ0/scene.splinecode" />
+                    <Spline scene={sceneUrl} />
                     <div
                       className="content"
                       style={{
