@@ -10,7 +10,9 @@ import { AlertModalProvider } from "contexts/alertContext";
 import StakingInfo from "components/organisms/StakingInfo/StakingInfo";
 import { LiquidityProvider } from "contexts/stateContext";
 import { useWallet } from "../../contexts/accountContext";
-
+import Spline from "@splinetool/react-spline";
+import "./Dapp.scss";
+import { position } from "@chakra-ui/react";
 
 function DappPage() {
   // const { isApiReady } = useApi();
@@ -48,10 +50,21 @@ function DappPage() {
               />
               <DappTemplate
                 bannerComponent={
-                  <>
-                    <AlertModal />
-                    <TotalLiquidityPool />
-                  </>
+                  <div className="background-container">
+                    <Spline scene="https://prod.spline.design/Nam5w76DquhQTXJ0/scene.splinecode" />
+                    <div
+                      className="content"
+                      style={{
+                        position: "absolute",
+                        top: "40%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                      }}
+                    >
+                      <AlertModal />
+                      <TotalLiquidityPool />
+                    </div>
+                  </div>
                 }
                 leftSectionComponent={
                   <>
