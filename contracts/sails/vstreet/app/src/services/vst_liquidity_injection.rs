@@ -37,6 +37,7 @@ enum LiquidityEvent {
     AvailableRewardsPoolModified{pool:u128},
     DepositedVara{amount:u128},
     WithdrawnVara{amount:u128},
+    LoanTaken{amount:u128},
 }
 
 // #[derive(Encode, Decode, TypeInfo)]
@@ -468,6 +469,9 @@ where VftClient: Vft, {
             balance_vara: 0,
             mla: 0,
             cv: 0,
+            loan_amount: 0,
+            loan_amount_usdc: 0,
+            is_loan_active: false,
         }
     }
 
@@ -596,6 +600,44 @@ where VftClient: Vft, {
                 self.calculate_mla(user);
             }
         }
+    }
+
+    //Take Loan
+    pub async fn take_loan(&mut self, amount: u128) -> String {
+        let state_mut = self.state_mut();
+        let user_info = state_mut.users.get_mut(&msg::source()).unwrap();
+
+        let mla = user_info.mla;
+        let loan_amount = user_info.loan_amount;
+        let future_loan_amount = loan_amount.saturating_add(amount * DECIMALS_FACTOR);
+
+        if amount == 0 || future_loan_amount > mla {
+            self.notify_on(LiquidityEvent::Error("Invalid Amount".to_string()))
+                .expect("Notification Error");
+            return "Invalid Amount".to_string();
+        }
+
+        // Transfer tokens from contract to user
+        let result = self.transfer_tokens(exec::program_id(), msg::source(), amount).await;
+
+        // Check if transfer was successful
+        if let Err(_) = result {
+            self.notify_on(LiquidityEvent::Error("Error in VFT Transfer call".to_string()))
+                .expect("Notification Error");
+            return "Error in VFT Transfer call".to_string();
+        }
+
+        // Update loan amount and total borrowed
+        user_info.is_loan_active = true;
+        user_info.loan_amount = user_info.loan_amount.saturating_add(amount * DECIMALS_FACTOR);
+        user_info.loan_amount_usdc = user_info.loan_amount / DECIMALS_FACTOR;
+        state_mut.total_borrowed = state_mut.total_borrowed.saturating_add(amount * DECIMALS_FACTOR);
+
+
+        self.notify_on(LiquidityEvent::LoanTaken{ amount : amount})
+                .expect("Notification Error");
+
+        format!("New Loan Taken: {:?}", amount)
     }
 
 

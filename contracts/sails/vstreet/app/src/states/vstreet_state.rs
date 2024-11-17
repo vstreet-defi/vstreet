@@ -19,6 +19,9 @@ pub struct UserInfo {
     pub balance_vara: u128,
     pub mla: u128,
     pub cv: u128,
+    pub loan_amount: u128,
+    pub loan_amount_usdc: u128,
+    pub is_loan_active: bool,
 
 }
 
