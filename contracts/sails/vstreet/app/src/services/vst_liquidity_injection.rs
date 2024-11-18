@@ -241,6 +241,8 @@ where VftClient: Vft, {
     //Public methods
     // DepositLiquidty method
     pub async fn deposit(&mut self, amount: u128) -> String {
+        self.update_all_rewards();
+
         debug!("Depositing funds");
         if amount == 0 {
             self.notify_on(LiquidityEvent::Error("Zero Amount".to_string()) )
@@ -287,6 +289,8 @@ where VftClient: Vft, {
 
     // WithdrawLiquidity method
     pub async fn withdraw_liquidity(&mut self, amount: u128) -> String {
+        self.update_all_rewards();
+
         let state_mut = self.state_mut();
 
         state_mut.apr = self.calculate_apr();
@@ -498,6 +502,8 @@ where VftClient: Vft, {
     }
 
     pub async fn modify_total_borrowed(&mut self, amount: u128) -> Result<(), String> {
+        self.update_all_rewards();
+
         let state_mut = self.state_mut();
         state_mut.total_borrowed = amount * DECIMALS_FACTOR;
         state_mut.apr = self.calculate_apr();
@@ -511,6 +517,8 @@ where VftClient: Vft, {
     }
 
     pub async fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<(), String> {
+        self.update_all_rewards();
+
         let state_mut = self.state_mut();
         state_mut.available_rewards_pool = amount * DECIMALS_FACTOR;
 
