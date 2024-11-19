@@ -19,7 +19,7 @@ pub struct UserInfo {
     pub balance_vara: u128,
     pub mla: u128,
     pub cv: u128,
-
+    pub available_to_withdraw_vara: u128,
 }
 
 #[derive(Clone)]
