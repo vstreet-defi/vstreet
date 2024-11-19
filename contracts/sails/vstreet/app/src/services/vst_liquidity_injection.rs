@@ -190,6 +190,17 @@ where VftClient: Vft, {
         user_info.balance_usdc.to_string()
     }
 
+    //Service's query user-available-collateral
+    pub fn user_available_to_withdraw(&self, user: ActorId, collateral: String) -> String {
+        let state = self.state_ref();
+        let user_info = state.users.get(&user).unwrap();
+
+        match collateral.as_str() {
+            "VARA" => user_info.available_to_withdraw_vara.to_string(),
+            _ => "INVALID COLLATERAL".to_string(),
+        }
+    }
+
     //Service's query user-rewards
     pub fn user_rewards(&self, user: ActorId) -> String {
         let state = self.state_ref();
@@ -242,6 +253,9 @@ where VftClient: Vft, {
     //Public methods
     // DepositLiquidty method
     pub async fn deposit(&mut self, amount: u128) -> String {
+        self.update_all_rewards();
+        self.update_all_collateral_available_to_withdraw();
+
         debug!("Depositing funds");
         if amount == 0 {
             self.notify_on(LiquidityEvent::Error("Zero Amount".to_string()) )
@@ -288,6 +302,9 @@ where VftClient: Vft, {
 
     // WithdrawLiquidity method
     pub async fn withdraw_liquidity(&mut self, amount: u128) -> String {
+        self.update_all_rewards();
+        self.update_all_collateral_available_to_withdraw();
+
         let state_mut = self.state_mut();
 
         state_mut.apr = self.calculate_apr();
@@ -373,14 +390,20 @@ where VftClient: Vft, {
         let caller = msg::source();
         let state_mut = self.state_mut();
 
-        let current_timestamp = exec::block_timestamp() as u128;
+        //let current_timestamp = exec::block_timestamp() as u128;
 
-        let user_info = state_mut.users.get_mut(&msg::source()).unwrap();
+        let user_info = if let Some(user_info) = state_mut.users.get_mut(&user) {
+                user_info
+            } else {
+                self.notify_on(LiquidityEvent::Error("User not found".to_string()))
+                    .expect("Notification Error");
+                return Err("User not found".to_string());
+            };
 
         let amount_vara = amount * ONE_TVARA;
 
         // Check if amount is valid
-        if amount_vara == 0 || amount_vara > user_info.balance_vara {
+        if amount_vara == 0 || amount_vara > user_info.available_to_withdraw_vara {
             self.notify_on(LiquidityEvent::Error("Invalid Amount".to_string()))
                 .expect("Notification Error");
             return "Invalid Amount".to_string();
@@ -409,52 +432,6 @@ where VftClient: Vft, {
         format!("Withdrawn Vara as Collateral: {:?}", amount)
     }
 
-    async fn withdraw_rewards(&mut self, user: ActorId) -> Result<(), String> {
-        let state_mut = self.state_mut();
-        state_mut.apr = self.calculate_apr();
-
-        let current_timestamp = exec::block_timestamp() as u128;
-
-        let user_info = if let Some(user_info) = state_mut.users.get_mut(&user) {
-            user_info
-        } else {
-            self.notify_on(LiquidityEvent::Error("User not found".to_string()))
-                .expect("Notification Error");
-            return Err("User not found".to_string());
-        };
-
-        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
-        let rewards_to_withdraw = user_info.rewards.saturating_sub(user_info.rewards_withdrawn);
-
-        if rewards_to_withdraw == 0 || rewards_to_withdraw > state_mut.available_rewards_pool {
-            self.notify_on(LiquidityEvent::Error("Invalid amount".to_string()))
-                .expect("Notification Error");
-                 return Err("Invalid amount".to_string());
-        }
-
-        user_info.rewards = user_info.rewards.saturating_sub(rewards_to_withdraw);
-        user_info.rewards_withdrawn = user_info.rewards_withdrawn.saturating_add(rewards_to_withdraw);
-        user_info.rewards_usdc = user_info.rewards_usdc.saturating_sub(user_info.rewards_usdc);
-        user_info.rewards_usdc_withdrawn = user_info.rewards_usdc_withdrawn.saturating_add(user_info.rewards_usdc);
-
-        state_mut.total_rewards_distributed = state_mut.total_rewards_distributed.saturating_add(rewards_to_withdraw);
-
-        self.transfer_tokens(
-            exec::program_id(),
-            msg::source(),
-            rewards_to_withdraw / DECIMALS_FACTOR
-        ).await.expect("Transfer tokens failed during the rewards withdrawal");
-
-        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
-        
-        // Notify the WithdrawRewards event
-        let amount: u128 = rewards_to_withdraw / DECIMALS_FACTOR;
-        self.notify_on(LiquidityEvent::WithdrawRewards { amount_withdrawn : amount })
-                .expect("Notification Error");
-
-        Ok(())
-    }
-
     //Internal methods
      // Create new user
      fn create_new_user(timestamp: u128) -> UserInfo {
@@ -469,6 +446,7 @@ where VftClient: Vft, {
             balance_vara: 0,
             mla: 0,
             cv: 0,
+            available_to_withdraw_vara: 0,
             loan_amount: 0,
             loan_amount_usdc: 0,
             is_loan_active: false,
@@ -502,6 +480,9 @@ where VftClient: Vft, {
     }
 
     pub async fn modify_total_borrowed(&mut self, amount: u128) -> Result<(), String> {
+        self.update_all_rewards();
+        self.update_all_collateral_available_to_withdraw();
+
         let state_mut = self.state_mut();
         state_mut.total_borrowed = amount * DECIMALS_FACTOR;
         state_mut.apr = self.calculate_apr();
@@ -515,6 +496,9 @@ where VftClient: Vft, {
     }
 
     pub async fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<(), String> {
+        self.update_all_rewards();
+        self.update_all_collateral_available_to_withdraw();
+
         let state_mut = self.state_mut();
         state_mut.available_rewards_pool = amount * DECIMALS_FACTOR;
 
@@ -562,6 +546,24 @@ where VftClient: Vft, {
             user_info.rewards_usdc = user_info.rewards / DECIMALS_FACTOR;
             user_info.last_updated = current_timestamp;
         }
+    }
+
+    // Update all user's collateral available to withdraw.
+    pub fn update_all_collateral_available_to_withdraw(&mut self) {
+        let state_mut = self.state_mut();
+
+        for user_info in state_mut.users.values_mut() {
+            Self::update_user_available_to_withdraw_vara(user_info);
+        }
+    }
+
+    // Calculate Collateral Available to Withdraw
+    fn update_user_available_to_withdraw_vara(user_info: &mut UserInfo) {
+        //ToDo: Calculate using borrowed.
+        let available = user_info.balance_vara * 30 / 100;
+        debug!("Calculated available: {}", available);
+
+        user_info.available_to_withdraw_vara = user_info.available_to_withdraw_vara.saturating_add(available);
     }
     
     //Calculate Collateral Value
@@ -639,6 +641,52 @@ where VftClient: Vft, {
 
         format!("New Loan Taken: {:?}", amount)
     }
+  
+  pub async fn withdraw_rewards(&mut self, user: ActorId) -> Result<(), String> {
+        self.update_all_rewards();
+        self.update_all_collateral_available_to_withdraw();
+        let state_mut = self.state_mut();
+        state_mut.apr = self.calculate_apr();
 
+        let current_timestamp = exec::block_timestamp() as u128;
 
+        let user_info = if let Some(user_info) = state_mut.users.get_mut(&user) {
+            user_info
+        } else {
+            self.notify_on(LiquidityEvent::Error("User not found".to_string()))
+                .expect("Notification Error");
+            return Err("User not found".to_string());
+        };
+
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        let rewards_to_withdraw = user_info.rewards.saturating_sub(user_info.rewards_withdrawn);
+
+        if rewards_to_withdraw == 0 || rewards_to_withdraw > state_mut.available_rewards_pool {
+            self.notify_on(LiquidityEvent::Error("Invalid amount".to_string()))
+                .expect("Notification Error");
+                 return Err("Invalid amount".to_string());
+        }
+
+        user_info.rewards = user_info.rewards.saturating_sub(rewards_to_withdraw);
+        user_info.rewards_withdrawn = user_info.rewards_withdrawn.saturating_add(rewards_to_withdraw);
+        user_info.rewards_usdc = user_info.rewards_usdc.saturating_sub(user_info.rewards_usdc);
+        user_info.rewards_usdc_withdrawn = user_info.rewards_usdc_withdrawn.saturating_add(user_info.rewards_usdc);
+
+        state_mut.total_rewards_distributed = state_mut.total_rewards_distributed.saturating_add(rewards_to_withdraw);
+
+        self.transfer_tokens(
+            exec::program_id(),
+            msg::source(),
+            rewards_to_withdraw / DECIMALS_FACTOR
+        ).await.expect("Transfer tokens failed during the rewards withdrawal");
+
+        Self::update_user_rewards(user_info, current_timestamp, state_mut.interest_rate);
+        
+        // Notify the WithdrawRewards event
+        let amount: u128 = rewards_to_withdraw / DECIMALS_FACTOR;
+        self.notify_on(LiquidityEvent::WithdrawRewards { amount_withdrawn : amount })
+                .expect("Notification Error");
+
+        Ok(())
+    }
 }
