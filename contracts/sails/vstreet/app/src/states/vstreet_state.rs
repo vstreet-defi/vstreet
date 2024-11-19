@@ -20,6 +20,9 @@ pub struct UserInfo {
     pub mla: u128,
     pub cv: u128,
     pub available_to_withdraw_vara: u128,
+    pub loan_amount: u128,
+    pub loan_amount_usdc: u128,
+    pub is_loan_active: bool,
 }
 
 #[derive(Clone)]
