@@ -14,7 +14,7 @@ pub const RISK_MULTIPLIER: u128 = 40000; // 0.04 * DECIMALS_FACTOR
 pub enum FTAction {
     Mint(u128),
     Burn(u128),
-    Transfer {
+    TransferFrom {
         from: ActorId,
         to: ActorId,
         amount: u128,
@@ -259,7 +259,7 @@ impl LiquidityPool {
         }
     }
     async fn transfer_tokens(token_address: &ActorId, from: ActorId, to: ActorId, amount: u128) -> Result<(), Error> {
-        let payload = FTAction::Transfer { from, to, amount };
+        let payload = FTAction::TransferFrom { from, to, amount };
         let result = msg::send_for_reply_as(*token_address, payload, 0, 0)
             .map_err(|_| Error::TransferFailed)?
             .await

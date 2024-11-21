@@ -1,7 +1,6 @@
 import BasicInput from "components/molecules/Basic-Input/BasicInput";
 import TokenSelectorBorrow from "components/atoms/Token-Selector-Borrow/TokenSelectorBorrow";
 import styles from "./Card.module.scss";
-import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 import { useEffect, useState } from "react";
@@ -33,7 +32,7 @@ function FundsCard({ buttonLabel }: props) {
 
   useEffect(() => {
     if (account) {
-      getBalanceVUSD(api, account.address, setBalance, setFullState);
+      // getBalanceVUSD(api, account.address, setBalance, setFullState);
       getStakingInfo(
         api,
         account.decodedAddress,

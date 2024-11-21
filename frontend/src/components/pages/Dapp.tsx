@@ -1,7 +1,5 @@
 import DappTemplate from "components/templates/Dapp";
-import ApiLoader from "components/atoms/ApiLoader";
 import CollateralAndBorrowBanner from "components/atoms/CollateralAndBorrowBanner/CollateralAndBorrowBanner";
-import { useApi, useAccount } from "@gear-js/react-hooks";
 import Header, { DappTab } from "components/templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
 import { AlertModal } from "components/molecules/alert-modal/AlertModal";
@@ -13,7 +11,7 @@ import { LiquidityProvider } from "contexts/stateContext";
 import { useLocation } from "react-router-dom";
 import LoanInfo from "components/organisms/LoanInfo/LoanInfo";
 import { FundsManagerBorrow } from "components/organisms/FundsManagerBorrow/FundsManagerBorrow";
-import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
+import { useWallet } from "../../contexts/accountContext";
 
 function DappPage() {
   const location = useLocation();
@@ -21,9 +19,16 @@ function DappPage() {
   const tab = searchParams.get("tab");
   const isSupplyTab = tab === DappTab.Supply.toLowerCase();
   const isBorrowTab = tab === DappTab.Borrow.toLowerCase();
-  const { isApiReady } = useApi();
-  const { isAccountReady } = useAccount();
-  const isAppReady = isApiReady && isAccountReady;
+
+  //Polkadot Extension Wallet-Hook by PSYLABS
+  const {
+    allAccounts,
+    selectedAccount,
+    handleConnectWallet,
+    handleSelectAccount,
+    formatAccount,
+  } = useWallet();
+
   const navBarItems = [
     DappTab.Home,
     DappTab.Supply,
@@ -31,11 +36,13 @@ function DappPage() {
     DappTab.Markets,
   ];
 
+  const isAccountReady = allAccounts.length > 0;
+
   return (
     <>
       <LiquidityProvider>
         <AlertModalProvider>
-          {isAppReady ? (
+          {
             <>
               <Header
                 isAccountVisible={isAccountReady}
@@ -61,9 +68,7 @@ function DappPage() {
                 }
               />
             </>
-          ) : (
-            <ApiLoader />
-          )}
+          }
         </AlertModalProvider>
       </LiquidityProvider>
     </>

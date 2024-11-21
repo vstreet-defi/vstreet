@@ -16,6 +16,7 @@ import {
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
 import { useLiquidityData } from "contexts/stateContext";
+import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 
 const formatWithCommas = (number: number) => number.toLocaleString();
 
@@ -121,16 +122,17 @@ interface InfoRowProps {
   label: string;
   value: string;
   icon?: React.ReactNode;
+  valueStyle?: React.CSSProperties;
 }
 
 const InfoRow = React.forwardRef<HTMLDivElement, InfoRowProps>(
-  ({ label, value, icon }, ref) => (
+  ({ label, value, icon, valueStyle }, ref) => (
     <div className="Flex" ref={ref}>
       <div style={{ display: "flex" }}>
         <p>{label}</p>
         {icon}
       </div>
-      <p>{value}</p>
+      <p style={valueStyle}>{value}</p>
     </div>
   )
 );
@@ -198,6 +200,8 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
 
   const { apr } = liquidityData;
 
+  const greenTextStyle: React.CSSProperties = { color: "green" };
+
   return (
     <div>
       <div className="BasicCard">
@@ -261,18 +265,22 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
               alt="Info Icon"
             />
           }
+          valueStyle={greenTextStyle}
         />
-        <InfoRow label="Status" value={`Low Risk`} />
-        <InfoRow label="Daily Loan Interest" value={`2.5%`} />
+        <InfoRow
+          label="Status"
+          value={`Low Risk`}
+          valueStyle={greenTextStyle}
+        />
+        <InfoRow
+          label="Daily Loan Interest"
+          value={`2.5%`}
+          valueStyle={greenTextStyle}
+        />
         <div
           className={`ButtonFlex ${rewardsUsdc > 0 ? "" : "disabled"}`}
           onClick={() => handleClick("Claim")}
-        >
-          <ButtonGradientBorder
-            text="Claim"
-            isDisabled={rewardsUsdc <= 0 || isLoading}
-          />
-        </div>
+        ></div>
       </div>
     </div>
   );
