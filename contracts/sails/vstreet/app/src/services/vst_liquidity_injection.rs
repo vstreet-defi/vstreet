@@ -166,6 +166,10 @@ where VftClient: Vft, {
         
         self.update_cv_and_mla_for_all_users();
 
+        //update ltv for all borrowers
+        
+        self.liquidate_all_loans();
+
         format!("New Vara Price set: {:?}", vara_price)
     }
 
@@ -405,7 +409,7 @@ where VftClient: Vft, {
         let amount_vara = amount * ONE_TVARA;
 
         // Check if amount is valid
-        if amount_vara == 0 || amount_vara > user_info.available_to_withdraw_vara {
+        if amount_vara == 0 || amount_vara >= user_info.available_to_withdraw_vara {
             self.notify_on(LiquidityEvent::Error("Invalid Amount".to_string()))
                 .expect("Notification Error");
                 return sails_rs::Err("Invalid Amount".to_string());
@@ -418,15 +422,24 @@ where VftClient: Vft, {
         )
         .expect("Error sending varas");
 
+        
         // Update balance 
         user_info.balance_vara = user_info.balance_vara.saturating_sub(amount_vara);
-
-        // Calculate available to withdraw vara
-        Self::update_user_available_to_withdraw_vara(user_info);
 
         //Update CV and MLA
         self.calculate_cv(caller);
         self.calculate_mla(caller);
+
+        self.update_user_ltv(caller);
+       
+        // Calculate available to withdraw vara
+        Self::update_user_available_to_withdraw_vara(user_info);
+
+    
+        self.liquidate_user_loan(caller).await;
+       
+
+        
 
         let amount_withdrawn = amount;
 
@@ -722,6 +735,49 @@ where VftClient: Vft, {
         let amount: u128 = rewards_to_withdraw / DECIMALS_FACTOR;
         self.notify_on(LiquidityEvent::WithdrawRewards { amount_withdrawn : amount })
                 .expect("Notification Error");
+
+        Ok(())
+    }
+
+    //Liquidate Loan
+    async fn liquidate_user_loan(&mut self, user: ActorId) -> Result<(), String> {
+        let state_mut = self.state_mut();
+        let user_info = state_mut.users.get_mut(&user).unwrap();
+
+        let loan_amount = user_info.loan_amount;
+        let balance_vara = user_info.balance_vara;
+      
+
+        let locked = (balance_vara * user_info.ltv) / 100;
+
+        if user_info.ltv >= state_mut.ltv {
+
+            user_info.balance_vara = user_info.balance_vara.saturating_sub(locked);
+            user_info.is_loan_active = false;
+            user_info.loan_amount = 0;
+            user_info.loan_amount_usdc = 0;
+            self.update_user_ltv(user);
+            state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(loan_amount);
+            Self::update_user_available_to_withdraw_vara(user_info);
+
+        }
+
+            Ok(())     
+
+        
+    }
+
+    //Liquidate all loans
+    
+    async fn liquidate_all_loans(&mut self) -> Result<(), String> {
+        let state_mut = self.state_mut();
+
+        for user in state_mut.users.keys().cloned().collect::<Vec<_>>() {
+            let user_info = state_mut.users.get(&user).unwrap();
+            if user_info.is_loan_active == true {
+                self.liquidate_user_loan(user).await;
+            } 
+        }
 
         Ok(())
     }
