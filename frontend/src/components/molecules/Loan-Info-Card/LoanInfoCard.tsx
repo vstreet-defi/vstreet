@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { useAccount, useApi } from "@gear-js/react-hooks";
 import { GearApi } from "@gear-js/api";
-import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
+
 import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
@@ -16,7 +16,6 @@ import {
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
 import { useLiquidityData } from "contexts/stateContext";
-import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 
 const formatWithCommas = (number: number) => number.toLocaleString();
 
