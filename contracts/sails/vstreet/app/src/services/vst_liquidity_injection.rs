@@ -153,7 +153,7 @@ where VftClient: Vft, {
 
     //Change Vara Price
     // Only the contract owner can perform this action
-    pub fn set_vara_price(&mut self, vara_price: u128) -> String {
+    pub async fn set_vara_price(&mut self, vara_price: u128) -> String {
         let state = self.state_mut();
 
         if msg::source() != state.owner {
@@ -164,11 +164,13 @@ where VftClient: Vft, {
 
         state.vara_price = vara_price;
         
+        //Todo: Check if needed async call
         self.update_cv_and_mla_for_all_users();
 
         //update ltv for all borrowers
+        self.update_all_ltv().await;
         
-        self.liquidate_all_loans();
+        self.liquidate_all_loans().await;
 
         format!("New Vara Price set: {:?}", vara_price)
     }
@@ -739,6 +741,19 @@ where VftClient: Vft, {
         Ok(())
     }
 
+    //Update all user's ltv
+    async fn update_all_ltv(&mut self) {
+        let state_mut = self.state_mut();
+
+        for user in state_mut.users.keys().cloned().collect::<Vec<_>>() {
+                let user_info = state_mut.users.get(&user).unwrap();
+                if user_info.is_loan_active == true {
+                self.update_user_ltv(user);
+                }
+        }
+    }
+
+
     //Liquidate Loan
     async fn liquidate_user_loan(&mut self, user: ActorId) -> Result<(), String> {
         let state_mut = self.state_mut();
@@ -747,33 +762,34 @@ where VftClient: Vft, {
         let loan_amount = user_info.loan_amount;
         let balance_vara = user_info.balance_vara;
       
-
         let locked = (balance_vara * user_info.ltv) / 100;
 
+    //Condition to liquidate loan
         if user_info.ltv >= state_mut.ltv {
 
+        //Set user loan status to false and reset all loan info values
             user_info.balance_vara = user_info.balance_vara.saturating_sub(locked);
             user_info.is_loan_active = false;
             user_info.loan_amount = 0;
             user_info.loan_amount_usdc = 0;
             self.update_user_ltv(user);
+            self.calculate_cv(user);
+            self.calculate_mla(user);
             state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(loan_amount);
             Self::update_user_available_to_withdraw_vara(user_info);
 
         }
 
-            Ok(())     
-
-        
+            Ok(())      
     }
 
     //Liquidate all loans
-    
     async fn liquidate_all_loans(&mut self) -> Result<(), String> {
         let state_mut = self.state_mut();
 
         for user in state_mut.users.keys().cloned().collect::<Vec<_>>() {
             let user_info = state_mut.users.get(&user).unwrap();
+            //check if user has an active loan
             if user_info.is_loan_active == true {
                 self.liquidate_user_loan(user).await;
             } 
