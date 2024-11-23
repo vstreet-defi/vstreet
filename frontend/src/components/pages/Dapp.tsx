@@ -1,6 +1,5 @@
 import DappTemplate from "components/templates/Dapp";
-import ApiLoader from "components/atoms/ApiLoader";
-import { useApi, useAccount } from "@gear-js/react-hooks";
+import CollateralAndBorrowBanner from "components/atoms/CollateralAndBorrowBanner/CollateralAndBorrowBanner";
 import Header, { DappTab } from "components/templates/Header/Header";
 import { isMobileDevice } from "utils/isMobile";
 import { AlertModal } from "components/molecules/alert-modal/AlertModal";
@@ -9,13 +8,17 @@ import TotalLiquidityPool from "components/atoms/TotalLiquidityPool/TotalLiquidi
 import { AlertModalProvider } from "contexts/alertContext";
 import StakingInfo from "components/organisms/StakingInfo/StakingInfo";
 import { LiquidityProvider } from "contexts/stateContext";
+import { useLocation } from "react-router-dom";
+import LoanInfo from "components/organisms/LoanInfo/LoanInfo";
+import { FundsManagerBorrow } from "components/organisms/FundsManagerBorrow/FundsManagerBorrow";
 import { useWallet } from "../../contexts/accountContext";
 
-
 function DappPage() {
-  // const { isApiReady } = useApi();
-  // const { isAccountReady } = useAccount();
-  // const isAppReady = isApiReady && isAccountReady;
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const tab = searchParams.get("tab");
+  const isSupplyTab = tab === DappTab.Supply.toLowerCase();
+  const isBorrowTab = tab === DappTab.Borrow.toLowerCase();
 
   //Polkadot Extension Wallet-Hook by PSYLABS
   const {
@@ -50,18 +53,18 @@ function DappPage() {
                 bannerComponent={
                   <>
                     <AlertModal />
-                    <TotalLiquidityPool />
+                    {isSupplyTab ? (
+                      <TotalLiquidityPool />
+                    ) : (
+                      <CollateralAndBorrowBanner />
+                    )}
                   </>
                 }
                 leftSectionComponent={
-                  <>
-                    <FundsManager />
-                  </>
+                  <>{isSupplyTab ? <FundsManager /> : <FundsManagerBorrow />}</>
                 }
                 rightSectionComponent={
-                  <>
-                    <StakingInfo />
-                  </>
+                  <>{isSupplyTab ? <StakingInfo /> : <LoanInfo />}</>
                 }
               />
             </>

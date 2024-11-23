@@ -88,3 +88,46 @@
   padding: 2rem;
   border-radius: 1em;
 }
+
+.ContainerBorrow {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  margin-top: 1rem;
+  margin-left: 3rem;
+  align-items: center;
+  width: 30rem;
+  margin: auto;
+
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
+
+  @media screen and (max-width: 480px) {
+    width: 22rem;
+    margin-left: 0rem;
+    margin-top: 1rem;
+  }
+}
+
+.BasicCardBorrow {
+  position: relative;
+  margin-top: 1rem;
+  margin-left: 3rem;
+  align-self: center;
+  font-family: "Roboto Mono", monospace;
+  color: #ffffff;
+  font-size: 15px;
+  width: 29rem;
+  padding-right: 1.5rem;
+  padding-left: 1rem;
+  @media (max-width: 768px) {
+    margin-left: 0;
+  }
+
+  @media screen and (max-width: 480px) {
+    width: 22rem;
+    margin-left: 0rem;
+    margin-top: 1rem;
+  }
+}
