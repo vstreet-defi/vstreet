@@ -20,7 +20,7 @@ async fn contract_owner_works() {
     let program_factory = vstreet_client::VstreetFactory::new(remoting.clone());
 
     let program_id = program_factory
-        .new_with_vft(VFT_CONTRACT_ID.into()) // Call program's constructor (see app/src/lib.rs:29)
+        .new_with_vft(VFT_CONTRACT_ID.into(), 70) // Call program's constructor (see app/src/lib.rs:29)
         .send_recv(program_code_id, b"salt")
         .await
         .unwrap();
@@ -56,7 +56,7 @@ async fn set_vft_contract_id_works() {
     let program_factory = vstreet_client::VstreetFactory::new(remoting.clone());
 
     let program_id = program_factory
-        .new_with_vft(VFT_CONTRACT_ID.into()) // Call program's constructor (see app/src/lib.rs:29)
+        .new_with_vft(VFT_CONTRACT_ID.into(), 70) // Call program's constructor (see app/src/lib.rs:29)
         .send_recv(program_code_id, b"salt")
         .await
         .unwrap();
@@ -91,7 +91,7 @@ async fn deposit_collateral_works() {
     let program_factory = vstreet_client::VstreetFactory::new(remoting.clone());
 
     let program_id = program_factory
-        .new_with_vft(VFT_CONTRACT_ID.into())
+        .new_with_vft(VFT_CONTRACT_ID.into(), 70)
         .send_recv(program_code_id, b"salt")
         .await
         .unwrap();
