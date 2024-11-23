@@ -38,6 +38,7 @@ enum LiquidityEvent {
     DepositedVara{amount:u128},
     WithdrawnVara{amount:u128},
     LoanTaken{amount:u128},
+    LoanPayed{amount:u128},
 }
 
 // #[derive(Encode, Decode, TypeInfo)]
@@ -392,12 +393,12 @@ where VftClient: Vft, {
 
         //let current_timestamp = exec::block_timestamp() as u128;
 
-        let user_info = if let Some(user_info) = state_mut.users.get_mut(&user) {
+        let user_info = if let Some(user_info) = state_mut.users.get_mut(&caller) {
                 user_info
             } else {
                 self.notify_on(LiquidityEvent::Error("User not found".to_string()))
                     .expect("Notification Error");
-                return Err("User not found".to_string());
+                return "User not found".to_string();
             };
 
         let amount_vara = amount * ONE_TVARA;
@@ -640,6 +641,79 @@ where VftClient: Vft, {
                 .expect("Notification Error");
 
         format!("New Loan Taken: {:?}", amount)
+    }
+
+    //Pay All Loan
+    pub async fn pay_all_loan(&mut self) -> String {
+        let state_mut = self.state_mut();
+        let user_info = state_mut.users.get_mut(&msg::source()).unwrap();
+
+        let loan_amount = user_info.loan_amount;
+
+        if loan_amount == 0 {
+            self.notify_on(LiquidityEvent::Error("Invalid Amount".to_string()))
+                .expect("Notification Error");
+            return "Invalid Amount".to_string();
+        }
+
+        // Transfer tokens from user to contract
+        let result = self.transfer_tokens(msg::source(), exec::program_id(), loan_amount).await;
+
+        // Check if transfer was successful
+        if let Err(_) = result {
+            self.notify_on(LiquidityEvent::Error("Error in VFT Transfer call".to_string()))
+                .expect("Notification Error");
+            return "Error in VFT Transfer call".to_string();
+        }
+
+        // Update loan amount and total borrowed
+        user_info.is_loan_active = false;
+        user_info.loan_amount = 0;
+        user_info.loan_amount_usdc = 0;
+        state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(loan_amount * DECIMALS_FACTOR);
+
+        self.notify_on(LiquidityEvent::LoanPayed{amount : loan_amount})
+                .expect("Notification Error");
+
+        format!("New Loan Payed: {:?}", loan_amount)
+    }
+
+    //Pay Loan
+    pub async fn pay_loan(&mut self, amount: u128) -> String {
+        let state_mut = self.state_mut();
+        let user_info = state_mut.users.get_mut(&msg::source()).unwrap();
+
+        let loan_amount = user_info.loan_amount;
+
+        if amount == 0 || amount > loan_amount {
+            self.notify_on(LiquidityEvent::Error("Invalid Amount".to_string()))
+                .expect("Notification Error");
+            return "Invalid Amount".to_string();
+        }
+
+        // Transfer tokens from user to contract
+        let result = self.transfer_tokens(msg::source(), exec::program_id(), amount).await;
+
+        // Check if transfer was successful
+        if let Err(_) = result {
+            self.notify_on(LiquidityEvent::Error("Error in VFT Transfer call".to_string()))
+                .expect("Notification Error");
+            return "Error in VFT Transfer call".to_string();
+        }
+
+        // Update loan amount and total borrowed
+        user_info.loan_amount = user_info.loan_amount.saturating_sub(amount);
+        user_info.loan_amount_usdc = user_info.loan_amount.saturating_sub(amount * DECIMALS_FACTOR);
+        state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(amount * DECIMALS_FACTOR);
+
+        if(user_info.loan_amount == 0) {
+            user_info.is_loan_active = false;
+        }
+        
+        self.notify_on(LiquidityEvent::LoanPayed{amount : amount})
+                .expect("Notification Error");
+
+        format!("New Loan Payed: {:?}", amount)
     }
   
   pub async fn withdraw_rewards(&mut self, user: ActorId) -> Result<(), String> {
