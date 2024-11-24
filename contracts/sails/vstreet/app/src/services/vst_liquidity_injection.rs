@@ -405,7 +405,7 @@ where VftClient: Vft, {
             } else {
                 self.notify_on(LiquidityEvent::Error("User not found".to_string()))
                     .expect("Notification Error");
-                return "User not found".to_string();
+                return sails_rs::Err("User not found".to_string());
             };
 
         let amount_vara = amount * ONE_TVARA;
@@ -655,7 +655,7 @@ where VftClient: Vft, {
 
         let mla = user_info.mla;
         let loan_amount = user_info.loan_amount;
-        let future_loan_amount = loan_amount.saturating_add(amount * DECIMALS_FACTOR);
+        let future_loan_amount = loan_amount.saturating_add(amount);
 
         if amount == 0 || future_loan_amount > mla {
             self.notify_on(LiquidityEvent::Error("Invalid Amount".to_string()))
@@ -675,7 +675,7 @@ where VftClient: Vft, {
 
         // Update loan status and total borrowed
         user_info.is_loan_active = true;
-        user_info.loan_amount = user_info.loan_amount.saturating_add(amount * DECIMALS_FACTOR);
+        user_info.loan_amount = user_info.loan_amount.saturating_add(amount);
         user_info.loan_amount_usdc = user_info.loan_amount / DECIMALS_FACTOR;
         self.update_user_ltv(caller);
         state_mut.total_borrowed = state_mut.total_borrowed.saturating_add(amount * DECIMALS_FACTOR);
@@ -728,6 +728,7 @@ where VftClient: Vft, {
         let user_info = state_mut.users.get_mut(&msg::source()).unwrap();
 
         let loan_amount = user_info.loan_amount;
+        let amount_usdc = amount * DECIMALS_FACTOR;
 
         if amount == 0 || amount > loan_amount {
             self.notify_on(LiquidityEvent::Error("Invalid Amount".to_string()))
@@ -747,7 +748,8 @@ where VftClient: Vft, {
 
         // Update loan amount and total borrowed
         user_info.loan_amount = user_info.loan_amount.saturating_sub(amount);
-        user_info.loan_amount_usdc = user_info.loan_amount.saturating_sub(amount * DECIMALS_FACTOR);
+        user_info.loan_amount_usdc = user_info.loan_amount_usdc.saturating_sub(amount_usdc);
+        self.update_user_ltv(msg::source());
         state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(amount * DECIMALS_FACTOR);
 
         if(user_info.loan_amount == 0) {
