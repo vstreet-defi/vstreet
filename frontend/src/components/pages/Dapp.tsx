@@ -26,6 +26,7 @@ function DappPage() {
   const isSupplyTab = tab === DappTab.Supply.toLowerCase();
   const isBorrowTab = tab === DappTab.Borrow.toLowerCase();
 
+  //Splice escene small
   //https://prod.spline.design/Nam5w76DquhQTXJ0/scene.splinecode
 
   //Splice escene large
