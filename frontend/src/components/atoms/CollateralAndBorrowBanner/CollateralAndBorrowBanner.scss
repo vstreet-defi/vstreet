@@ -1,0 +1,70 @@
+.BannerContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  box-sizing: border-box;
+  width: 100vw;
+  text-align: center;
+  max-width: 1200px;
+
+  @media (min-width: 768px) {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .BannerLeft,
+  .BannerCenter,
+  .BannerRight {
+    font-family: "Roboto Mono";
+    font-weight: lighter;
+    color: #4fff4b;
+  }
+
+  .BannerLeft {
+    font-size: 1.8rem;
+
+    @media (min-width: 768px) {
+      font-size: 2rem;
+      text-align: left;
+    }
+  }
+
+  .BannerCenter {
+    font-size: 1.8rem;
+
+    @media (min-width: 768px) {
+      font-size: 2rem;
+      margin-top: 0;
+    }
+  }
+
+  .BannerRight {
+    font-size: 2rem;
+    text-align: right;
+
+    @media (min-width: 768px) {
+      font-size: 2.5rem;
+      margin-top: 2rem;
+    }
+  }
+
+  .Highlight {
+    font-weight: bold;
+    background: linear-gradient(to left, #00ffc4, #4fff4b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-style: italic;
+  }
+}
+
+.HighlightCollateral {
+  font-weight: bold;
+  color: #4fff4b;
+  font-size: 2rem;
+
+  @media (min-width: 768px) {
+    font-size: 2.5rem;
+  }
+}

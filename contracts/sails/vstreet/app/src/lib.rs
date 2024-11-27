@@ -31,13 +31,13 @@ pub struct VstreetProgram;
 impl VstreetProgram {
     
     // Program's constructor
-    pub fn new_with_vft(vft_contract_id: ActorId) -> Self {
+    pub fn new_with_vft(vft_contract_id: ActorId, ltv: u128) -> Self {
         LiquidityInjectionService::<VftClient<GStdRemoting>>::seed(
             msg::source(), 
             Some(vft_contract_id),
              0, 0, 0, 0, 
              BTreeMap::new(), 
-             0, 0, 0, 0, 0, 0, 0, 0);
+             0, 0, 0, 0, 0, 0, ltv, 0);
 
         Self
     }
