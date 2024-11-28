@@ -13,6 +13,10 @@ pub mod clients;
 pub mod states;
 pub mod services;
 
+pub const BASE_RATE: u128 = 1_000_000; // 1% * DECIMALS_FACTOR
+pub const RISK_MULTIPLIER: u128 = 1_200_000; // 1.2% * DECIMALS_FACTOR
+pub const DEV_FEE: u128 = 1_500_000; // 1.5% * DECIMALS_FACTOR
+
 
 //Import the Liquidity Injection LiquidityInjectionService from the services module
 use services::vst_liquidity_injection::LiquidityInjectionService;
@@ -37,7 +41,7 @@ impl VstreetProgram {
             Some(vft_contract_id),
              0, 0, 0, 0, 
              BTreeMap::new(), 
-             0, 0, 0, 0, 0, 0, ltv, 0);
+              BASE_RATE, RISK_MULTIPLIER, 0, DEV_FEE, 0, 0, ltv, 0);
 
         Self
     }
