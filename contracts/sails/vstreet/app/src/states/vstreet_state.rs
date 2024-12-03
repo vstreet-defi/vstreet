@@ -1,7 +1,6 @@
 use core::fmt::Debug;
 use sails_rs::{
     collections::BTreeMap,
-    gstd::{msg, service},
     prelude::*,
 };
 
@@ -27,7 +26,7 @@ pub struct UserInfo {
     pub ltv: u128,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Encode, TypeInfo)]
 pub struct VstreetState {
     pub owner: ActorId,
     pub vft_contract_id: Option<ActorId>,
