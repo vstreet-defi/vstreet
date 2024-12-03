@@ -8,8 +8,7 @@ import { useAccount, useApi } from "@gear-js/react-hooks";
 import {
   FullState,
   FullStateVST,
-  getBalanceVUSD,
-  getStakingInfo,
+  getBalanceVUSD, 
 } from "smart-contracts-tools";
 
 type props = {
@@ -33,14 +32,14 @@ function FundsCard({ buttonLabel }: props) {
   useEffect(() => {
     if (account) {
       // getBalanceVUSD(api, account.address, setBalance, setFullState);
-      getStakingInfo(
-        api,
-        account.decodedAddress,
-        setDepositedBalance,
-        setFullState
-      );
+      // getStakingInfo(
+      //   api,
+      //   account.decodedAddress,
+      //   setDepositedBalance,
+      //   setFullState
+      // );
 
-      console.log(account.decodedAddress);
+      // console.log(account.decodedAddress);
     }
   }, [account, api]);
   return (

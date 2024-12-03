@@ -9,6 +9,7 @@ import { FullStateVST } from "smart-contracts-tools";
 import { decodedVstreetMeta, vstreetProgramID } from "utils/smartPrograms";
 import { formatNumber } from "utils";
 import { useApi } from "@gear-js/react-hooks";
+import { getVstreetState } from "smart-contracts-tools";
 
 interface LiquidityContextProps {
   apr: number;

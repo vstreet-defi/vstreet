@@ -11,7 +11,7 @@ import { GearApi } from "@gear-js/api";
 import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
-  getStakingInfo,
+  // getStakingInfo,
   withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
@@ -74,15 +74,15 @@ const useStakingInfo = (api: GearApi | undefined, account: any) => {
   const [fullState, setFullState] = useState<any | undefined>({});
 
   useEffect(() => {
-    if (api && account) {
-      getStakingInfo(
-        api,
-        account.decodedAddress,
-        setDepositedBalance,
-        setFullState,
-        setRewardsUsdc
-      );
-    }
+    // if (api && account) {
+    //   getStakingInfo(
+    //     api,
+    //     account.decodedAddress,
+    //     setDepositedBalance,
+    //     setFullState,
+    //     setRewardsUsdc
+    //   );
+    // }
   }, [api, account]);
 
   return { depositedBalance, rewardsUsdc };
