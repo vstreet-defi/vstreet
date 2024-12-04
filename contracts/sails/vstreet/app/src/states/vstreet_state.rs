@@ -12,7 +12,8 @@ pub struct UserInfo {
     pub balance: u128,
     pub rewards: u128,
     pub rewards_withdrawn: u128,
-    pub last_updated: u128,
+    pub liquidity_last_updated: u128,
+    pub borrow_last_updated: u128,
     pub balance_usdc: u128,
     pub rewards_usdc: u128,
     pub rewards_usdc_withdrawn: u128,
@@ -44,3 +45,4 @@ pub struct VstreetState {
     pub ltv: u128,
     pub vara_price: u128,
 }
+
