@@ -6,39 +6,44 @@ import { GearApi } from "@gear-js/api";
 import { idlVSTREET } from "utils/smartPrograms";
 import { vstreetProgramID } from "utils/smartPrograms";
 
-interface LiquidityData {
-  APR: number;
-  AvailableRewardsPool: number;
-  BaseRate: number;
-  DevFee: number;
-  InterestRate: number;
-  RiskMultiplier: number;
-  TotalBorrowed: number;
-  TotalDeposited: number;
-  UtilizationFactor: number;
+interface UserInfo {
+  Balance: number;
+  Rewards: number;
+  RewardsWithdrawn: number;
+  LiquidityLastUpdated: number;
+  BorrowLastUpdated: number;
+  BalanceUSDC: number;
+  RewardsUSDC: number;
+  RewardsWithdrawnUSDC: number;
+  BalanceVara: number;
+  MLA: number;
+  CV: number;
+  AvailableToWithdrawnVara: number;
+  LoanAmount: number;
+  LoanAmountUSDC: number;
+  IsLoanActive: boolean;
+  LTV: number;
 }
 
-interface LiquidityContextProps {
-  liquidityData: LiquidityData | null;
+interface UserInfoContextProps {
+  userInfo: UserInfo | null;
 }
 
-const LiquidityContext = createContext<LiquidityContextProps | undefined>(
+const UserInfoContext = createContext<UserInfoContextProps | undefined>(
   undefined
 );
 
-interface LiquidityProviderProps {
+interface UserInfoProviderProps {
   children: React.ReactNode;
 }
 
-export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
+export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
   children,
 }) => {
-  const [liquidityData, setLiquidityData] = useState<LiquidityData | null>(
-    null
-  );
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
   useEffect(() => {
-    const getLiquidityData = async () => {
+    const getUserInfo = async () => {
       //Parse IDL (Metadata) of the contract
       const parser = await SailsIdlParser.new();
       const sails = new Sails(parser);
@@ -55,13 +60,16 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
       //In sails-js, you need to query from an account, we use the contract address as the account called bob
       const bob =
         "0xfe0a346d8e240f29ff67679b83506e92542d41d87b2a6f947c4261e58881a167";
+      //For testing purposes, we are using a hardcoded address, but this should be the user's address
+      const userAddress = "0x1234567890123456789012345678901234567890";
 
       //Call the ContractInfo query, this calls are made automatically from the IDL file
       const result =
-        await sails.services.LiquidityInjectionService.queries.ContractInfo(
+        await sails.services.LiquidityInjectionService.queries.UserInfo(
           bob,
           undefined,
-          undefined
+          undefined,
+          userAddress
         );
 
       const contractInfo = result as string;
@@ -82,36 +90,22 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
 
       const parsedData = parseDataString(contractInfo);
       console.log("Parsed Data:", parsedData);
-
-      //Map the parsed data to the LiquidityData interface
-      const liquidityData: LiquidityData = {
-        APR: parsedData.APR,
-        AvailableRewardsPool: parsedData.AvailableRewardsPool,
-        BaseRate: parsedData.BaseRate,
-        DevFee: parsedData.DevFee,
-        InterestRate: parsedData.InterestRate,
-        RiskMultiplier: parsedData.RiskMultiplier,
-        TotalBorrowed: parsedData.TotalBorrowed,
-        TotalDeposited: parsedData.TotalDeposited,
-        UtilizationFactor: parsedData.UtilizationFactor,
-      };
-      setLiquidityData(liquidityData);
     };
 
-    getLiquidityData();
+    getUserInfo();
   }, []);
 
   return (
-    <LiquidityContext.Provider value={{ liquidityData }}>
+    <UserInfoContext.Provider value={{ userInfo }}>
       {children}
-    </LiquidityContext.Provider>
+    </UserInfoContext.Provider>
   );
 };
 
-export const useLiquidity = () => {
-  const context = useContext(LiquidityContext);
+export const useUserInfo = () => {
+  const context = useContext(UserInfoContext);
   if (context === undefined) {
-    throw new Error("useLiquidity must be used within a LiquidityProvider");
+    throw new Error("useUserInfo must be used within a UserInfoProvider");
   }
   return context;
 };
