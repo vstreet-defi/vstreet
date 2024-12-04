@@ -49,12 +49,12 @@ function FundsCard({ buttonLabel }: props) {
       //call sails get balance
       getVFTBalance(api, hexAddress, setBalance);
 
-      getStakingInfo(
-        api,
-        account.decodedAddress,
-        setDepositedBalance,
-        setFullState
-      );
+      // getStakingInfo(
+      //   api,
+      //   account.decodedAddress,
+      //   setDepositedBalance,
+      //   setFullState
+      // );
 
       console.log("gear decoded address", account.decodedAddress);
       console.log("hex address", hexAddress);

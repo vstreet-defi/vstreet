@@ -15,7 +15,7 @@ import {
   withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
-import { useLiquidityData } from "contexts/stateContext";
+import { useLiquidity } from "contexts/stateContext";
 
 const formatWithCommas = (number: number) => number.toLocaleString();
 
@@ -145,7 +145,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
   const { api } = useApi();
   const { account, accounts } = useAccount();
   const alertModalContext = useContext(AlertModalContext);
-  const liquidityData = useLiquidityData();
+  // const liquidityData = useLiquidityData();
 
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -193,11 +193,11 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
     }
   };
 
-  if (!liquidityData) {
-    return <div>Error: Liquidity data not available</div>;
-  }
+  // if (!liquidityData) {
+  //   return <div>Error: Liquidity data not available</div>;
+  // }
 
-  const { apr } = liquidityData;
+  // const { apr } = liquidityData;
 
   const greenTextStyle: React.CSSProperties = { color: "green" };
 
@@ -231,7 +231,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
         />
         <InfoRow
           label="Current Loan/Debt"
-          value={`$${apr} vUSD`}
+          value={`$${0} vUSD`}
           icon={
             <img
               onClick={() => setShowMessage((prev) => !prev)}
