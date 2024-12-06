@@ -8,8 +8,8 @@ use sails_rs::{
 
 use crate::clients::extended_vft_client::traits::Vft;
 use crate::services::vst_liquidity_injection::LiquidityInjectionService;
-//use crate::services::vst_liquidity_injection::LiquidityEvent;
 use crate::services::vst_liquidity_injection::DECIMALS_FACTOR;
+use crate::services::utils::EventNotifier;
 
 // Public methods
 
@@ -27,7 +27,7 @@ where
     let user_info = if let Some(user_info) = state_mut.users.get_mut(&caller) {
         user_info
     } else {
-        service.notify_error_event("User not found".to_string()).await;
+        service.notify_error("User not found".to_string());
         return Err("User not found".to_string());
     };
 
@@ -36,7 +36,7 @@ where
     let future_loan_amount = loan_amount.saturating_add(amount * DECIMALS_FACTOR);
 
     if amount == 0 || future_loan_amount > mla {
-        service.notify_error_event("Invalid Amount".to_string()).await;
+        service.notify_error("Invalid Amount".to_string());
         return sails_rs::Err("Invalid Amount".to_string());
     }
 
@@ -45,7 +45,7 @@ where
 
     // Check if transfer was successful
     if let Err(_) = result {
-        service.notify_error_event("Error in VFT Transfer call".to_string()).await;
+        service.notify_error("Error in VFT Transfer call".to_string());
         return sails_rs::Err("Error in VFT Transfer call".to_string());
     }
 
@@ -59,7 +59,7 @@ where
 
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
 
-    //service.notify_event(LiquidityEvent::LoanTaken{ amount : amount}).await;
+    service.notify_loan_taken(amount);
 
     Ok(())
 }
@@ -67,7 +67,7 @@ where
 //Pay All Loan
 pub async fn pay_all_loan<VftClient>(
     service: &mut LiquidityInjectionService<VftClient>
-) -> String
+) -> Result<(), String>
 where
     VftClient: Vft,
 {
@@ -77,8 +77,8 @@ where
     let loan_amount = user_info.loan_amount / DECIMALS_FACTOR;
 
     if loan_amount == 0 {
-        service.notify_error_event("Invalid Amount".to_string()).await;
-        return "Invalid Amount".to_string();
+        service.notify_error("Invalid Amount".to_string());
+        return sails_rs::Err("Invalid Amount".to_string());
     }
 
     // Transfer tokens from user to contract
@@ -86,8 +86,8 @@ where
 
     // Check if transfer was successful
     if let Err(_) = result {
-        service.notify_error_event("Error in VFT Transfer call".to_string()).await;
-        return "Error in VFT Transfer call".to_string();
+        service.notify_error("Error in VFT Transfer call".to_string());
+        return sails_rs::Err("Error in VFT Transfer call".to_string());
     }
 
     // Update loan amount and total borrowed
@@ -98,16 +98,16 @@ where
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
     state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(loan_amount * DECIMALS_FACTOR);
 
-    //service.notify_event(LiquidityEvent::LoanPayed{amount : loan_amount}).await;
+    service.notify_loan_payed(loan_amount);
 
-    format!("New Loan Payed: {:?}", loan_amount)
+    Ok(())
 }
 
 //Pay Loan
 pub async fn pay_loan<VftClient>(
     service: &mut LiquidityInjectionService<VftClient>,
     amount: u128
-) -> String
+) -> Result<(), String>
 where
     VftClient: Vft,
 {
@@ -117,8 +117,8 @@ where
     let loan_amount = user_info.loan_amount_usdc;
 
     if amount == 0 || amount > loan_amount {
-        service.notify_error_event("Invalid Amount".to_string()).await;
-        return "Invalid Amount".to_string();
+        service.notify_error("Invalid Amount".to_string());
+        return sails_rs::Err("Invalid Amount".to_string());
     }
 
     // Transfer tokens from user to contract
@@ -126,8 +126,8 @@ where
 
     // Check if transfer was successful
     if let Err(_) = result {
-        service.notify_error_event("Error in VFT Transfer call".to_string()).await;
-        return "Error in VFT Transfer call".to_string();
+        service.notify_error("Error in VFT Transfer call".to_string());
+        return sails_rs::Err("Error in VFT Transfer call".to_string());
     }
 
     // Update loan amount and total borrowed
@@ -141,7 +141,7 @@ where
         user_info.is_loan_active = false;
     }
     
-    //service.notify_event(LiquidityEvent::LoanPayed{amount : amount}).await;
+    service.notify_loan_payed(amount);
 
-    format!("New Loan Payed: {:?}", amount)
+    Ok(())
 }

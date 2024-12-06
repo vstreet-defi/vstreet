@@ -13,6 +13,7 @@ use crate::clients::extended_vft_client::traits::Vft;
 use crate::states::vstreet_state::VstreetState;
 use crate::states::vstreet_state::UserInfo;
 use crate::services::{supply, borrow};
+use crate::services::utils::EventNotifier;
 
 pub const DECIMALS_FACTOR: u128 = 10_u128.pow(6);
 pub const YEAR_IN_SECONDS: u128 = 31_536_000; // 365 * 24 * 60 * 60
@@ -52,12 +53,65 @@ pub struct LiquidityInjectionService<VftClient>{
     pub vft_client: VftClient
 }
 
-/*
-#[derive(Decode, Encode, TypeInfo)]
-pub struct Notification<T> {
-    pub event: T,
+impl<VftClient> EventNotifier for LiquidityInjectionService<VftClient>
+where
+    VftClient: Vft,
+{
+    fn notify_deposit(&mut self, amount: u128) {
+        self.notify_on(LiquidityEvent::Deposit { amount })
+            .expect("Notification Error");
+    }
+
+    fn notify_vft_seted(&mut self, actor_id: ActorId) {
+        self.notify_on(LiquidityEvent::VFTseted(actor_id))
+            .expect("Notification Error");
+    }
+
+    fn notify_withdraw_liquidity(&mut self, amount: u128) {
+        self.notify_on(LiquidityEvent::WithdrawLiquidity { amount })
+            .expect("Notification Error");
+    }
+
+    fn notify_withdraw_rewards(&mut self, amount_withdrawn: u128) {
+        self.notify_on(LiquidityEvent::WithdrawRewards { amount_withdrawn })
+            .expect("Notification Error");
+    }
+
+    fn notify_error(&mut self, message: String) {
+        self.notify_on(LiquidityEvent::Error(message))
+            .expect("Notification Error");
+    }
+
+    fn notify_total_borrowed_modified(&mut self, borrowed: u128) {
+        self.notify_on(LiquidityEvent::TotalBorrowedModified { borrowed })
+            .expect("Notification Error");
+    }
+
+    fn notify_available_rewards_pool_modified(&mut self, pool: u128) {
+        self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool })
+            .expect("Notification Error");
+    }
+
+    fn notify_deposited_vara(&mut self, amount: u128) {
+        self.notify_on(LiquidityEvent::DepositedVara { amount })
+            .expect("Notification Error");
+    }
+
+    fn notify_withdrawn_vara(&mut self, amount: u128) {
+        self.notify_on(LiquidityEvent::WithdrawnVara { amount })
+            .expect("Notification Error");
+    }
+
+    fn notify_loan_taken(&mut self, amount: u128) {
+        self.notify_on(LiquidityEvent::LoanTaken { amount })
+            .expect("Notification Error");
+    }
+
+    fn notify_loan_payed(&mut self, amount: u128) {
+        self.notify_on(LiquidityEvent::LoanPayed { amount })
+            .expect("Notification Error");
+    }
 }
-*/
 
 #[sails_rs::service(events = LiquidityEvent)]
 impl<VftClient> LiquidityInjectionService<VftClient> 
@@ -131,7 +185,6 @@ where VftClient: Vft, {
 
         let new_vft_contract_id = state.vft_contract_id.unwrap();
         format!("New VFT Contract ID set: {:?}", new_vft_contract_id)
-        
     }
 
     //Change LTV
@@ -318,18 +371,6 @@ where VftClient: Vft, {
             ltv: 0,
         }
     }
-    
-    /*
-    pub async fn notify_event(&mut self, notification: Notification<LiquidityEvent>) {
-        self.notify_on(notification.event).expect("Notification Error");
-    }
-    */
-
-    // Notify Error Event
-    pub async fn notify_error_event(&mut self, text: String) {
-        self.notify_on(LiquidityEvent::Error(text))
-                .expect("Notification Error");
-    }
 
     //Transfer tokens
     pub async fn transfer_tokens(&mut self, from: ActorId, to: ActorId, amount: u128) -> Result<(), String> {
@@ -424,7 +465,6 @@ where VftClient: Vft, {
         if user_info.is_loan_active == false {
             user_info.available_to_withdraw_vara = user_info.balance_vara;
         }else{
-             //ToDo: Calculate using borrowed.
             let locked = (user_info.balance_vara * user_info.ltv) / 100;
             let available = user_info.balance_vara.saturating_sub(locked);
             debug!("Calculated available: {}", available);
@@ -526,7 +566,7 @@ where VftClient: Vft, {
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
         let loan_amount = user_info.loan_amount;
-        let interest_rate = state_mut.interest_rate;
+        let interest_rate = self.calculate_interest_rate();
         let current_timestamp = exec::block_timestamp() as u128;
         let time_diff_seconds = (current_timestamp - user_info.borrow_last_updated) / 1000;
 
@@ -536,6 +576,21 @@ where VftClient: Vft, {
         user_info.borrow_last_updated= current_timestamp;
 
         format!("Loan Interest Rate Amount: {:?}", interest_rate_amount)
+    }
+
+    //Calculate Loan Interest Rate Amount for all users
+    pub fn calculate_all_loan_interest_rate_amounts(&mut self) -> Result<(), String> {
+        let state_mut = self.state_mut();
+
+        for user in state_mut.users.keys().cloned().collect::<Vec<_>>() {
+            let user_info = state_mut.users.get(&user).unwrap();
+            //check if user has an active loan
+            if user_info.is_loan_active == true {
+                let _ = self.calculate_loan_interest_rate_amount(user);
+            } 
+        }
+
+        Ok(())
     }
 
     //Liquidate Loan
@@ -582,11 +637,11 @@ where VftClient: Vft, {
 
     // Supply methods
 
-    pub async fn deposit_liquidity(&mut self, amount: u128) -> String {
+    pub async fn deposit_liquidity(&mut self, amount: u128) -> Result<(), String> {
         supply::deposit_liquidity(self, amount).await
     }
 
-    pub async fn withdraw_liquidity(&mut self, amount: u128) -> String {
+    pub async fn withdraw_liquidity(&mut self, amount: u128) -> Result<(), String> {
         supply::withdraw_liquidity(self, amount).await
     }
 
@@ -594,7 +649,7 @@ where VftClient: Vft, {
         supply::withdraw_rewards(self).await
     }
 
-    pub async fn deposit_collateral(&mut self) -> String {
+    pub async fn deposit_collateral(&mut self) -> Result<(), String> {
         supply::deposit_collateral(self).await
     }
 
@@ -608,11 +663,11 @@ where VftClient: Vft, {
         borrow::take_loan(self, amount).await
     }
 
-    pub async fn pay_all_loan(&mut self) -> String {
+    pub async fn pay_all_loan(&mut self) -> Result<(), String> {
         borrow::pay_all_loan(self).await
     }
 
-    pub async fn pay_loan(&mut self, amount: u128) -> String {
+    pub async fn pay_loan(&mut self, amount: u128) -> Result<(), String> {
         borrow::pay_loan(self, amount).await
     }
 }
