@@ -24,10 +24,6 @@ use services::vst_liquidity_injection::LiquidityInjectionService;
 //Import the VftClient from the clients module
 use clients::extended_vft_client::Vft as VftClient;
 
-//Import the VstreetState from the states module
-use crate::states::vstreet_state::VstreetState;
-
-
 #[derive(Default)]
 pub struct VstreetProgram;
 

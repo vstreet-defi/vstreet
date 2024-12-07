@@ -107,8 +107,9 @@ async fn deposit_collateral_works() {
 
     // Assert manually to avoid having to unwrap
     match result {
-        Ok(res) => assert_eq!(res, "deposit_liquidityed Vara as Collateral: 1000"),
-        Err(e) => eprintln!("Error: {:?}", e),
+        Ok(Ok(())) => (),
+        Ok(Err(e)) => panic!("Inner error: {:?}", e),
+        Err(e) => eprintln!("Outer error: {:?}", e),
     }
 }
 
@@ -142,8 +143,9 @@ async fn withdraw_rewards_works() {
 
     // Assert deposit_liquidity result
     match deposit_liquidity_result {
-        Ok(res) => assert_eq!(res, "New Liquidity deposit_liquidity: 10000000000"),
-        Err(e) => eprintln!("Error: {:?}", e),
+        Ok(Ok(())) => (),
+        Ok(Err(e)) => panic!("Inner error: {:?}", e),
+        Err(e) => eprintln!("Outer error: {:?}", e),
     }
 
     // Withdraw rewards
@@ -189,8 +191,9 @@ async fn user_rewards_works() {
 
     // Assert deposit_liquidity result
     match deposit_liquidity_result {
-        Ok(res) => assert_eq!(res, "New Liquidity deposit_liquidity: 10000000000"),
-        Err(e) => eprintln!("Error: {:?}", e),
+        Ok(Ok(())) => (),
+        Ok(Err(e)) => panic!("Inner error: {:?}", e),
+        Err(e) => eprintln!("Outer error: {:?}", e),
     }
 
     // Check user rewards
