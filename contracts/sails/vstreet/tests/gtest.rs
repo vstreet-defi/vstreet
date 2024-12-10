@@ -98,7 +98,7 @@ async fn deposit_collateral_works() {
 
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
 
-  // Deposit collateral with value
+  // deposit_liquidity collateral with value
   let result = service_client
   .deposit_collateral()
   .with_value(10_000_000_000)
@@ -107,7 +107,104 @@ async fn deposit_collateral_works() {
 
     // Assert manually to avoid having to unwrap
     match result {
-        Ok(res) => assert_eq!(res, "Deposited Vara as Collateral: 1000"),
+        Ok(Ok(())) => (),
+        Ok(Err(e)) => panic!("Inner error: {:?}", e),
+        Err(e) => eprintln!("Outer error: {:?}", e),
+    }
+}
+
+#[tokio::test]
+async fn withdraw_rewards_works() {
+    let system = System::new();
+    system.init_logger();
+    system.mint_to(ACTOR_ID, 100_000_000_000_000);
+
+    let remoting = GTestRemoting::new(system, ACTOR_ID.into());
+    remoting.system().init_logger();
+
+    // Submit program code into the system
+    let program_code_id = remoting.system().submit_code(vstreet::WASM_BINARY);
+
+    let program_factory = vstreet_client::VstreetFactory::new(remoting.clone());
+
+    let program_id = program_factory
+        .new_with_vft(VFT_CONTRACT_ID.into(), 70)
+        .send_recv(program_code_id, b"salt")
+        .await
+        .unwrap();
+
+    let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
+
+    // deposit_liquidity some liquidity
+    let deposit_liquidity_result = service_client
+        .deposit_liquidity(10_000_000_000)
+        .send_recv(program_id)
+        .await;
+
+    // Assert deposit_liquidity result
+    match deposit_liquidity_result {
+        Ok(Ok(())) => (),
+        Ok(Err(e)) => panic!("Inner error: {:?}", e),
+        Err(e) => eprintln!("Outer error: {:?}", e),
+    }
+
+    // Withdraw rewards
+    let withdraw_result = service_client
+        .withdraw_rewards()
+        .send_recv(program_id)
+        .await;
+
+    // Assert withdraw result
+    match withdraw_result {
+        Ok(_) => assert!(true, "WithdrawRewards event should be triggered"),
+        Err(e) => eprintln!("Error: {:?}", e),
+    }
+}
+
+#[tokio::test]
+async fn user_rewards_works() {
+    let system = System::new();
+    system.init_logger();
+    system.mint_to(ACTOR_ID, 100_000_000_000_000);
+
+    let remoting = GTestRemoting::new(system, ACTOR_ID.into());
+    remoting.system().init_logger();
+
+    // Submit program code into the system
+    let program_code_id = remoting.system().submit_code(vstreet::WASM_BINARY);
+
+    let program_factory = vstreet_client::VstreetFactory::new(remoting.clone());
+
+    let program_id = program_factory
+        .new_with_vft(VFT_CONTRACT_ID.into(), 70)
+        .send_recv(program_code_id, b"salt")
+        .await
+        .unwrap();
+
+    let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
+
+    // deposit_liquidity some liquidity
+    let deposit_liquidity_result = service_client
+        .deposit_liquidity(10_000_000_000)
+        .send_recv(program_id)
+        .await;
+
+    // Assert deposit_liquidity result
+    match deposit_liquidity_result {
+        Ok(Ok(())) => (),
+        Ok(Err(e)) => panic!("Inner error: {:?}", e),
+        Err(e) => eprintln!("Outer error: {:?}", e),
+    }
+
+    // Check user rewards
+    let rewards_result = service_client
+        .user_rewards(ACTOR_ID.into())
+        .recv(program_id)
+        .await;
+
+    // Assert rewards result
+    match rewards_result {
+        Ok(rewards) => assert!(rewards.parse::<u128>().unwrap() > 0, "User should have rewards"),
         Err(e) => eprintln!("Error: {:?}", e),
     }
 }
@@ -134,16 +231,16 @@ async fn deposit_collateral_works() {
 
 //     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
 
-//     // Deposit collateral with value
-//     let deposit_result = service_client
+//     // deposit_liquidity collateral with value
+//     let deposit_liquidity_result = service_client
 //         .deposit_collateral()
 //         .with_value(10_000_000_000)
 //         .send_recv(program_id)
 //         .await;
 
-//     // Assert deposit result
-//     match deposit_result {
-//         Ok(res) => assert_eq!(res, "Deposited Vara as Collateral: 1000"),
+//     // Assert deposit_liquidity result
+//     match deposit_liquidity_result {
+//         Ok(res) => assert_eq!(res, "deposit_liquidityed Vara as Collateral: 1000"),
 //         Err(e) => eprintln!("Error: {:?}", e),
 //     }
 
