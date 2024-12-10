@@ -57,7 +57,7 @@ function BorrowCard() {
           onInputChange={handleInputChange}
           balance={depositedBalance}
         />
-        <div style={{ display: "flex", gap: "6rem", marginTop: "10px" }}>
+        <div style={{ display: "flex", gap: "6rem", marginTop: "20px" }}>
           <ButtonGradientBorder text="Borrow" isDisabled={true} />
           <ButtonGradientBorder text="Re-Pay" isDisabled={true} />
         </div>

@@ -2,7 +2,7 @@ import BasicInput from "components/molecules/Basic-Input/BasicInput";
 import TokenSelectorBorrow from "components/atoms/Token-Selector-Borrow/TokenSelectorBorrow";
 import styles from "./Card.module.scss";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
-import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
+import ButtonGradFillBorrow from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 import { useEffect, useState } from "react";
 import { useAccount, useApi } from "@gear-js/react-hooks";
 import {
@@ -16,7 +16,7 @@ type props = {
   buttonLabel: string;
 };
 
-function FundsCard({ buttonLabel }: props) {
+function FundsCardBorrow({ buttonLabel }: props) {
   const [inputValue, setInputValue] = useState("");
   const [balance, setBalance] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
@@ -57,7 +57,7 @@ function FundsCard({ buttonLabel }: props) {
           onInputChange={handleInputChange}
           balance={isDepositCard() ? balance : depositedBalance}
         />
-        <ButtonGradFill
+        <ButtonGradFillBorrow
           amount={inputValue}
           label={buttonLabel}
           balance={isDepositCard() ? balance : depositedBalance}
@@ -67,4 +67,4 @@ function FundsCard({ buttonLabel }: props) {
   );
 }
 
-export { FundsCard };
+export { FundsCardBorrow };

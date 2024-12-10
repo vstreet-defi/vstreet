@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { FundsCard } from "../../molecules/cards/FundsCardBorrow";
+import { FundsCardBorrow } from "../../molecules/cards/FundsCardBorrow";
 
 const TABS = {
   DEPOSIT: "Deposit",
@@ -28,7 +28,7 @@ function FundsManagerBorrow() {
           </button>
         ))}
       </div>
-      <FundsCard
+      <FundsCardBorrow
         buttonLabel={
           selectedTab === TABS.DEPOSIT ? TABS.DEPOSIT : TABS.WITHDRAW
         }
