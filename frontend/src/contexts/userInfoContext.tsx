@@ -42,6 +42,10 @@ export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
 }) => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
+  //THIS IS AN IDEA OF HOW TO MANAGE USER INFO IN A CONTEXT,
+  //MISSING LOGIC TO DYNAMICALLY UPDATE THE USER INFO BASED ON THE ACCOUNT SELECTED
+  //AND IMPLEMENTATION OF THE USER INFO IN THE UI (USER INFO PROVIDER)
+  //---->------>------->
   useEffect(() => {
     const getUserInfo = async () => {
       //Parse IDL (Metadata) of the contract
@@ -57,13 +61,13 @@ export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
         providerAddress: "wss://testnet.vara.network",
       });
       sails.setApi(gearApi);
-      //In sails-js, you need to query from an account, we use the contract address as the account called bob
+      //In sails-js, you need to query from an account, we use the contract owner address as the account called bob
       const bob =
         "0xfe0a346d8e240f29ff67679b83506e92542d41d87b2a6f947c4261e58881a167";
       //For testing purposes, we are using a hardcoded address, but this should be the user's address
       const userAddress = "0x1234567890123456789012345678901234567890";
 
-      //Call the ContractInfo query, this calls are made automatically from the IDL file
+      //Call the UserInfo query, this calls are generated automatically from the IDL file
       const result =
         await sails.services.LiquidityInjectionService.queries.UserInfo(
           bob,
@@ -89,7 +93,7 @@ export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
       };
 
       const parsedData = parseDataString(contractInfo);
-      console.log("Parsed Data:", parsedData);
+      console.log("User Info Parsed Data:", parsedData);
     };
 
     getUserInfo();

@@ -52,7 +52,7 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
         providerAddress: "wss://testnet.vara.network",
       });
       sails.setApi(gearApi);
-      //In sails-js, you need to query from an account, we use the contract address as the account called bob
+      //In sails-js, you need to query from an account, we use the contract owner address as the account called bob
       const bob =
         "0xfe0a346d8e240f29ff67679b83506e92542d41d87b2a6f947c4261e58881a167";
 
@@ -81,7 +81,7 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
       };
 
       const parsedData = parseDataString(contractInfo);
-      console.log("Parsed Data:", parsedData);
+      console.log("Contract Info Parsed Data:", parsedData);
 
       //Map the parsed data to the LiquidityData interface
       const liquidityData: LiquidityData = {

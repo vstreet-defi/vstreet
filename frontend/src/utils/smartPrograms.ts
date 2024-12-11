@@ -1,6 +1,6 @@
 import { ProgramMetadata } from "@gear-js/api";
 
-//Last Refactored Contract missing APR and Deposits
+//Last Refactored Contract missing APR and Deposits (needed to deposit and borrow first to get APR)
 // "0x0e16095ec8aa2d4a32a881b74da54f6b0db407951597ca9b74a135a88a758c49"
 
 //Working Contract with APR
