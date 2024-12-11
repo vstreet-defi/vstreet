@@ -15,7 +15,6 @@ import {
   withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
-import { useLiquidityData } from "contexts/stateContext";
 
 const formatWithCommas = (number: number) => number.toLocaleString();
 
@@ -75,13 +74,14 @@ const useStakingInfo = (api: GearApi | undefined, account: any) => {
 
   useEffect(() => {
     if (api && account) {
-      getStakingInfo(
-        api,
-        account.decodedAddress,
-        setDepositedBalance,
-        setFullState,
-        setRewardsUsdc
-      );
+      // getStakingInfo(
+      //   api,
+      //   account.decodedAddress,
+      //   setDepositedBalance,
+      //   setFullState,
+      //   setRewardsUsdc
+      // );
+      console.log("gear decoded address", account.decodedAddress);
     }
   }, [api, account]);
 
@@ -144,7 +144,6 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   const { api } = useApi();
   const { account, accounts } = useAccount();
   const alertModalContext = useContext(AlertModalContext);
-  const liquidityData = useLiquidityData();
 
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -192,12 +191,6 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
     }
   };
 
-  if (!liquidityData) {
-    return <div>Error: Liquidity data not available</div>;
-  }
-
-  const { apr } = liquidityData;
-
   return (
     <div>
       <div className="BasicCard">
@@ -226,7 +219,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
           }
           ref={wrapperRef}
         />
-        <InfoRow label="APR" value={`${apr}%`} />
+        <InfoRow label="APR" value={`${0}%`} />
         <div
           className={`ButtonFlex ${rewardsUsdc > 0 ? "" : "disabled"}`}
           onClick={() => handleClick("Claim")}

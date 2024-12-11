@@ -12,6 +12,7 @@ import {
   decodedVstreetMeta,
   decodedFungibleTokenMeta,
   idlVFT,
+  idlVSTREET,
 } from "../utils/smartPrograms";
 
 export interface FullState {
@@ -232,6 +233,35 @@ export async function withdrawRewardsTransaction(
     account,
     accounts
   );
+}
+
+//Query Liquidit Pool State
+export const getVstreetState = async (
+  api: GearApi,
+  setFullState: (contractInfo:string) => void
+) => {
+  const parser = await SailsIdlParser.new();
+  const sails = new Sails(parser);
+
+  sails.parseIdl(idlVSTREET);
+  sails.setProgramId(vstreetProgramID);
+
+  
+    try {
+      const gearApi = await GearApi.create({
+        providerAddress: "wss://testnet.vara.network",
+      });
+      sails.setApi(gearApi);
+      const bob = "0xfe0a346d8e240f29ff67679b83506e92542d41d87b2a6f947c4261e58881a167";
+      // functionArg1, functionArg2 are the arguments of the query function from the IDL file
+      const result = await sails.services.LiquidityInjectionService.queries.ContractInfo(bob, undefined, undefined);
+      const contractInfo = result as string;
+      console.log(contractInfo);
+      setFullState(contractInfo);
+
+  }catch (error) {
+    console.error("Error calling ContractInfo:", error);
+  }
 }
 
 export const getVFTBalance = async (

@@ -11,11 +11,11 @@ import { GearApi } from "@gear-js/api";
 import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
-  getStakingInfo,
+  // getStakingInfo,
   withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
-import { useLiquidityData } from "contexts/stateContext";
+import { useLiquidity } from "contexts/stateContext";
 
 const formatWithCommas = (number: number) => number.toLocaleString();
 
@@ -74,15 +74,15 @@ const useStakingInfo = (api: GearApi | undefined, account: any) => {
   const [fullState, setFullState] = useState<any | undefined>({});
 
   useEffect(() => {
-    if (api && account) {
-      getStakingInfo(
-        api,
-        account.decodedAddress,
-        setDepositedBalance,
-        setFullState,
-        setRewardsUsdc
-      );
-    }
+    // if (api && account) {
+    //   getStakingInfo(
+    //     api,
+    //     account.decodedAddress,
+    //     setDepositedBalance,
+    //     setFullState,
+    //     setRewardsUsdc
+    //   );
+    // }
   }, [api, account]);
 
   return { depositedBalance, rewardsUsdc };
@@ -146,7 +146,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
   const { api } = useApi();
   const { account, accounts } = useAccount();
   const alertModalContext = useContext(AlertModalContext);
-  const liquidityData = useLiquidityData();
+  // const liquidityData = useLiquidityData();
 
   const [activeTooltip, setActiveTooltip] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -194,11 +194,11 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
     }
   };
 
-  if (!liquidityData) {
-    return <div>Error: Liquidity data not available</div>;
-  }
+  // if (!liquidityData) {
+  //   return <div>Error: Liquidity data not available</div>;
+  // }
 
-  const { apr } = liquidityData;
+  // const { apr } = liquidityData;
 
   const greenTextStyle: React.CSSProperties = { color: "green" };
 
@@ -245,7 +245,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
         />
         <InfoRow
           label="Current Loan/Debt"
-          value={`$${apr} vUSD`}
+          value={`$${0} vUSD`}
           icon={
             <img
               onClick={() =>

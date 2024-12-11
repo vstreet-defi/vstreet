@@ -39,12 +39,12 @@ function BorrowCard() {
   useEffect(() => {
     if (selectedAccount && account) {
       getVFTBalance(api, hexAddress, setBalance);
-      getStakingInfo(
-        api,
-        account.decodedAddress,
-        setDepositedBalance,
-        setFullState
-      );
+      // getStakingInfo(
+      //   api,
+      //   account.decodedAddress,
+      //   setDepositedBalance,
+      //   setFullState
+      // );
     }
   }, [selectedAccount, account, api]);
 
