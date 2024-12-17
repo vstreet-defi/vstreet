@@ -297,10 +297,10 @@ export const getVFTBalance = async (
     }
   }
 
-  if (!accountAddress) {
-    setBalance(0);
-    throw new Error("No account address");
-  }
+  // if (!accountAddress) {
+  //   setBalance(0);
+  //   throw new Error("No account address");
+  // }
 };
 
 export const getBalanceVUSD = async (

@@ -68,3 +68,72 @@
   background-size: contain;
   background-image: url("../../../assets/images/icons/Tooltip.svg");
 }
+
+.custom-tooltip-borrow {
+  position: absolute;
+  right: 2.8rem;
+  top: -4.5rem;
+  color: #fff;
+  text-align: center;
+  font-family: Montserrat, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  padding-top: 2.4rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  letter-spacing: 0.5px;
+  height: 9rem;
+  width: 14rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-image: url("../../../assets/images/icons/Tooltip.svg");
+}
+
+.custom-tooltip-debt {
+  position: absolute;
+  right: 4rem;
+  top: -2rem;
+  color: #fff;
+  text-align: center;
+  font-family: Montserrat, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  padding-top: 3rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  letter-spacing: 0.5px;
+  height: 9rem;
+  width: 14rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-image: url("../../../assets/images/icons/Tooltip.svg");
+}
+
+.custom-tooltip-loanToValue {
+  position: absolute;
+  right: 6rem;
+  top: 0.5rem;
+  color: #fff;
+  text-align: center;
+  font-family: Montserrat, sans-serif;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: normal;
+  padding-top: 2.5rem;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  letter-spacing: 0.5px;
+  height: 9rem;
+  width: 14rem;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+  background-image: url("../../../assets/images/icons/Tooltip.svg");
+}

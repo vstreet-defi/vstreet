@@ -23,7 +23,7 @@ function UserLockedBalances() {
   const [syntheticLocked, setSyntheticLocked] = useState();
 
   useEffect(() => {
-    if (account?.address) {
+    if (account && account.address) {
       setWalletAddress(account.address);
       setWalletDecoded(decodeAddress(account.address));
     }

@@ -109,10 +109,11 @@ const useOutsideClick = (
 // Components
 interface TooltipProps {
   message: string;
+  className: string;
 }
 
-const Tooltip: React.FC<TooltipProps> = ({ message }) => (
-  <div className="custom-tooltip">
+const Tooltip: React.FC<TooltipProps> = ({ message, className }) => (
+  <div className={className}>
     <p>{message}</p>
   </div>
 );
@@ -147,12 +148,12 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
   const alertModalContext = useContext(AlertModalContext);
   // const liquidityData = useLiquidityData();
 
-  const [showMessage, setShowMessage] = useState<boolean>(false);
+  const [activeTooltip, setActiveTooltip] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
   const { depositedBalance, rewardsUsdc } = useStakingInfo(api, account);
-  useOutsideClick(wrapperRef, () => setShowMessage(false));
+  useOutsideClick(wrapperRef, () => setActiveTooltip(""));
 
   const handleClaim = useCallback(async () => {
     const withdrawRewardsMessage = createWithdrawRewardsMessage();
@@ -201,11 +202,22 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
 
   const greenTextStyle: React.CSSProperties = { color: "green" };
 
+  const tooltipMessages: Record<string, string> = {
+    borrow:
+      "Indicates the maximum amount that can be borrowed based on the collateral and the platform's LTV ratio",
+    debt: "Displays the total borrowed amount, including accrued interest.",
+    loanToValue:
+      "Represents the ratio of the loan amount to the value of the collateral, expressed as a percentage",
+  };
+
   return (
     <div>
       <div className="BasicCard">
-        {showMessage && (
-          <Tooltip message="We allow 1 Reward Withdraw per day." />
+        {activeTooltip !== "" && (
+          <Tooltip
+            message={tooltipMessages[activeTooltip]}
+            className={`custom-tooltip-${activeTooltip}`}
+          />
         )}
         <InfoRow
           label="Total Collateral Deposited"
@@ -216,7 +228,9 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
           value={`$${formatWithCommas(rewardsUsdc ?? 0)} vUSD`}
           icon={
             <img
-              onClick={() => setShowMessage((prev) => !prev)}
+              onClick={() =>
+                setActiveTooltip((prev) => (prev === "borrow" ? "" : "borrow"))
+              }
               style={{
                 width: "1rem",
                 height: "1rem",
@@ -234,7 +248,9 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
           value={`$${0} vUSD`}
           icon={
             <img
-              onClick={() => setShowMessage((prev) => !prev)}
+              onClick={() =>
+                setActiveTooltip((prev) => (prev === "" ? "debt" : ""))
+              }
               style={{
                 width: "1rem",
                 height: "1rem",
@@ -253,7 +269,9 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
           value={`10%`}
           icon={
             <img
-              onClick={() => setShowMessage((prev) => !prev)}
+              onClick={() =>
+                setActiveTooltip((prev) => (prev === "" ? "loanToValue" : ""))
+              }
               style={{
                 width: "1rem",
                 height: "1rem",
