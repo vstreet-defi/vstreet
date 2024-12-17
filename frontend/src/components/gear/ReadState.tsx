@@ -14,7 +14,7 @@ function ReadState() {
   const [walletAddress, setWalletAddress] = useState<string | null>(null);
 
   useEffect(() => {
-    if (account?.address) {
+    if (account && account.address) {
       setWalletAddress(account.address);
       setWalletDecoded(decodeAddress(account.address));
     }

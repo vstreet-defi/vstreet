@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import DisplayWallet from "components/organisms/Wallet/DisplayWallet";
+import { DisplayWallet } from "components/organisms/Wallet/DisplayWallet";
 import Flag from "../../atoms/Flag/Flag";
 import Logo from "../../../assets/images/icons/vStreet-Navbar-Color-White.png";
 import styles from "../../molecules/wallet/Wallet.module.scss";
