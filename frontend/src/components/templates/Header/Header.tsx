@@ -10,6 +10,7 @@ export enum DappTab {
   Home = "Home",
   Supply = "Supply",
   Borrow = "Borrow",
+  Faucet = "Faucet",
   Markets = "Markets",
 }
 
@@ -32,17 +33,23 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isTablet = window.innerWidth < 822;
-  const isDapp = location.pathname !== "/";
+  const isDapp = location.pathname.startsWith("/dapp");
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab") as DappTab | null;
+
     if (isDapp && !tab) {
       navigate("/dapp?tab=supply", { replace: true });
-    } else {
+      setActiveTab(DappTab.Supply.toLowerCase());
+    } else if (isDapp) {
       setActiveTab((tab || DappTab.Supply).toLowerCase());
+    } else if (location.pathname === "/faucet") {
+      setActiveTab(DappTab.Faucet.toLowerCase());
+    } else {
+      setActiveTab(null); // Resetear en otras rutas
     }
-  }, [location.search, navigate, isDapp]);
+  }, [location.search, location.pathname, navigate, isDapp]);
 
   const dappTabActions: Record<DappTab, () => void> = {
     [DappTab.Home]: () => {
@@ -56,6 +63,10 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
     [DappTab.Supply]: () => {
       navigate("/dapp?tab=supply");
       setActiveTab(DappTab.Supply.toLowerCase());
+    },
+    [DappTab.Faucet]: () => {
+      navigate("/faucet");
+      setActiveTab(DappTab.Faucet.toLowerCase());
     },
     [DappTab.Markets]: () => {},
   };
@@ -80,7 +91,7 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   };
 
   const renderFlag = (item: string) => {
-    if (item !== DappTab.Home && isDapp) {
+    if (item !== DappTab.Home && (isDapp || location.pathname === "/faucet")) {
       return <Flag text={item === DappTab.Markets ? "Coming Soon" : "New"} />;
     }
     return null;
@@ -92,7 +103,10 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
         {renderFlag(item)}
         <button
           className={`item${
-            item.toLowerCase() === activeTab && isDapp ? "-active" : ""
+            item.toLowerCase() === activeTab &&
+            (isDapp || location.pathname === "/faucet")
+              ? "-active"
+              : ""
           }`}
           onClick={() => handleClick(item)}
         >
@@ -109,7 +123,9 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
     return (
       <>
         <div className="items-container">{renderItems()}</div>
-        {isAccountVisible || location.pathname === "/dapp" ? (
+        {isAccountVisible ||
+        location.pathname === "/dapp" ||
+        location.pathname === "/faucet" ? (
           <DisplayWallet />
         ) : (
           <button
