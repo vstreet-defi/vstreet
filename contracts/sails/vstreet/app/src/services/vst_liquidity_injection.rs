@@ -261,6 +261,24 @@ where VftClient: Vft, {
         format!("New LTV set: {:?}", ltv)
     }
 
+    pub async fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        self.update_all_rewards();
+        self.update_all_collateral_available_to_withdraw();
+
+        let state_mut = self.state_mut();
+        let decimals_factor = self.get_decimals_factor();
+        state_mut.available_rewards_pool = amount * decimals_factor;
+
+        // Notify the AvailableRewardsPoolModified event
+        let new_rewards_pool: u128 = amount * decimals_factor;
+        self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
+                .expect("Notification Error");
+
+        Ok(())
+    }
+
     // Config Setters
 
     pub fn set_decimals_factor(&mut self, new_value: u128) -> Result<(), String> {
@@ -536,22 +554,6 @@ where VftClient: Vft, {
             return Err("Operation was not performed".to_string());
         }
     
-        Ok(())
-    }
-
-    pub async fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<(), String> {
-        self.update_all_rewards();
-        self.update_all_collateral_available_to_withdraw();
-
-        let state_mut = self.state_mut();
-        let decimals_factor = self.get_decimals_factor();
-        state_mut.available_rewards_pool = amount * decimals_factor;
-
-        // Notify the AvailableRewardsPoolModified event
-        let new_rewards_pool: u128 = amount * decimals_factor;
-        self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
-                .expect("Notification Error");
-
         Ok(())
     }
 
