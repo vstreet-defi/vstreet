@@ -5,11 +5,7 @@ import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFillBorrow from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 import { useEffect, useState } from "react";
 import { useAccount, useApi } from "@gear-js/react-hooks";
-import {
-  FullState,
-  FullStateVST,
-  getBalanceVUSD, 
-} from "smart-contracts-tools";
+import { FullState, FullStateVST } from "smart-contracts-tools";
 
 type props = {
   buttonLabel: string;
@@ -38,7 +34,6 @@ function FundsCardBorrow({ buttonLabel }: props) {
       //   setDepositedBalance,
       //   setFullState
       // );
-
       // console.log(account.decodedAddress);
     }
   }, [account, api]);

@@ -9,14 +9,25 @@ import { useAccount, useApi } from "@gear-js/react-hooks";
 import { GearApi } from "@gear-js/api";
 import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border";
 import InfoIcon from "assets/images/icons/info_Icon.png";
+import { useWallet } from "contexts/accountContext";
 import {
   createWithdrawRewardsMessage,
-  getStakingInfo,
   withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
+import { getUserInfo } from "smart-contracts-tools";
+import { UserInfo } from "smart-contracts-tools";
+import { useLiquidity } from "contexts/stateContext";
 
-const formatWithCommas = (number: number) => number.toLocaleString();
+const formatWithCommas = (number: number) => {
+  const decimalsFactor = 1000000;
+  const formattedNumber = number / decimalsFactor;
+  return formattedNumber.toLocaleString();
+};
+
+const formatApr = (apr: number): string => {
+  return (apr / 1000000).toFixed(2);
+};
 
 type TransactionFunction = (
   api: GearApi,
@@ -65,27 +76,6 @@ const handleTransaction = async (
   if (alertModalContext?.hideAlertModal) {
     setTimeout(() => alertModalContext.hideAlertModal(), 2000);
   }
-};
-
-const useStakingInfo = (api: GearApi | undefined, account: any) => {
-  const [depositedBalance, setDepositedBalance] = useState<number | null>(null);
-  const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
-  const [fullState, setFullState] = useState<any | undefined>({});
-
-  useEffect(() => {
-    if (api && account) {
-      // getStakingInfo(
-      //   api,
-      //   account.decodedAddress,
-      //   setDepositedBalance,
-      //   setFullState,
-      //   setRewardsUsdc
-      // );
-      console.log("gear decoded address", account.decodedAddress);
-    }
-  }, [api, account]);
-
-  return { depositedBalance, rewardsUsdc };
 };
 
 const useOutsideClick = (
@@ -144,12 +134,27 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   const { api } = useApi();
   const { account, accounts } = useAccount();
   const alertModalContext = useContext(AlertModalContext);
+  const { liquidityData } = useLiquidity();
 
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const { depositedBalance, rewardsUsdc } = useStakingInfo(api, account);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+
+  const { selectedAccount, hexAddress } = useWallet();
+
+  useEffect(() => {
+    const getUserData = async () => {
+      if (selectedAccount) {
+        console.log("hexAddress", hexAddress);
+        getUserInfo(hexAddress, setUserInfo);
+      }
+    };
+    getUserData();
+  }, [api, account, selectedAccount, hexAddress]);
+
+  // const { depositedBalance, rewardsUsdc } = useStakingInfo(api, account);
   useOutsideClick(wrapperRef, () => setShowMessage(false));
 
   const handleClaim = useCallback(async () => {
@@ -199,11 +204,11 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
         )}
         <InfoRow
           label="Total Deposited"
-          value={`$${formatWithCommas(depositedBalance ?? 0)} vUSD`}
+          value={`$${formatWithCommas(userInfo?.balance ?? 0)} vUSD`}
         />
         <InfoRow
           label="Total Earned"
-          value={`$${formatWithCommas(rewardsUsdc ?? 0)} vUSD`}
+          value={`$${formatWithCommas(userInfo?.rewards ?? 0)} vUSD`}
           icon={
             <img
               onClick={() => setShowMessage((prev) => !prev)}
@@ -219,14 +224,17 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
           }
           ref={wrapperRef}
         />
-        <InfoRow label="APR" value={`${0}%`} />
+        <InfoRow
+          label="APR"
+          value={liquidityData ? formatApr(liquidityData.APR) : "loading"}
+        />
         <div
-          className={`ButtonFlex ${rewardsUsdc > 0 ? "" : "disabled"}`}
+          className={`ButtonFlex ${"disabled"}`}
           onClick={() => handleClick("Claim")}
         >
           <ButtonGradientBorder
             text="Claim"
-            isDisabled={rewardsUsdc <= 0 || isLoading}
+            // isDisabled={rewardsUsdc <= 0 || isLoading}
           />
         </div>
       </div>

@@ -5,12 +5,7 @@ import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Bu
 import { useEffect, useState } from "react";
 import { useAccount, useApi } from "@gear-js/react-hooks";
 import { GearApi } from "@gear-js/api";
-import {
-  FullState,
-  FullStateVST,
-  getVFTBalance,
-  getStakingInfo,
-} from "smart-contracts-tools";
+import { FullState, FullStateVST, getVFTBalance } from "smart-contracts-tools";
 
 // Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
@@ -38,7 +33,7 @@ function BorrowCard() {
 
   useEffect(() => {
     if (selectedAccount && account) {
-      getVFTBalance(api, hexAddress, setBalance);
+      getVFTBalance(hexAddress, setBalance);
       // getStakingInfo(
       //   api,
       //   account.decodedAddress,

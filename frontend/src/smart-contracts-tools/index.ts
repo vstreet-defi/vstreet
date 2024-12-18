@@ -24,6 +24,25 @@ export interface FullStateVST {
 }
 const gasLimit = 89981924500;
 
+//New User Info Interface
+export interface UserInfo {
+  balance: number;
+  rewards: number;
+  rewards_withdrawn: number;
+  liquidity_last_updated: number;
+  borrow_last_updated: number;
+  available_to_withdraw_vara: number;
+  balance_usdc: number; // Add this line
+  balance_vara: number;
+  is_loan_active: boolean;
+  loan_amount: number;
+  loan_amount_usdc: number;
+  ltv: number;
+  mla: number;
+  rewards_usdc: number;
+  rewards_usdc_withdrawn: number;
+}
+
 export function createApproveMessage(amount: string): MessageSendOptions {
   return {
     destination: fungibleTokenProgramID,
@@ -235,10 +254,12 @@ export async function withdrawRewardsTransaction(
   );
 }
 
-//Query Liquidit Pool State
+//SAILS FUNCTIONS START HERE --
+
+//Query Liquidit Pool State, this is only for example new one used in Total Liquidity is in stateContext.tsx
 export const getVstreetState = async (
   api: GearApi,
-  setFullState: (contractInfo:string) => void
+  setFullState: (contractInfo: string) => void
 ) => {
   const parser = await SailsIdlParser.new();
   const sails = new Sails(parser);
@@ -246,26 +267,29 @@ export const getVstreetState = async (
   sails.parseIdl(idlVSTREET);
   sails.setProgramId(vstreetProgramID);
 
-  
-    try {
-      const gearApi = await GearApi.create({
-        providerAddress: "wss://testnet.vara.network",
-      });
-      sails.setApi(gearApi);
-      const bob = "0xfe0a346d8e240f29ff67679b83506e92542d41d87b2a6f947c4261e58881a167";
-      // functionArg1, functionArg2 are the arguments of the query function from the IDL file
-      const result = await sails.services.LiquidityInjectionService.queries.ContractInfo(bob, undefined, undefined);
-      const contractInfo = result as string;
-      console.log(contractInfo);
-      setFullState(contractInfo);
-
-  }catch (error) {
+  try {
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+    sails.setApi(gearApi);
+    const bob =
+      "0xfe0a346d8e240f29ff67679b83506e92542d41d87b2a6f947c4261e58881a167";
+    // functionArg1, functionArg2 are the arguments of the query function from the IDL file
+    const result =
+      await sails.services.LiquidityInjectionService.queries.ContractInfo(
+        bob,
+        undefined,
+        undefined
+      );
+    const contractInfo = result as string;
+    console.log(contractInfo);
+    setFullState(contractInfo);
+  } catch (error) {
     console.error("Error calling ContractInfo:", error);
   }
-}
+};
 
 export const getVFTBalance = async (
-  api: GearApi,
   accountAddress: string,
   setBalance: (balance: number) => void
 ) => {
@@ -291,120 +315,55 @@ export const getVFTBalance = async (
       );
       const balance = result as number;
       setBalance(balance);
-      console.log(result);
     } catch (error) {
       console.error("Error calling BalanceOf:", error);
     }
   }
-
-  // if (!accountAddress) {
-  //   setBalance(0);
-  //   throw new Error("No account address");
-  // }
 };
 
-export const getBalanceVUSD = async (
-  api: GearApi,
+export const getUserInfo = async (
   accountAddress: string,
-  setBalance: (balance: number) => void,
-  setFullState: (state: FullState) => void
+  setUserInfo: (UserInfo: UserInfo) => void
 ) => {
-  try {
-    const result = await api.programState.read(
-      {
-        programId: fungibleTokenProgramID,
-        payload: undefined,
-      },
-      decodedFungibleTokenMeta
-    );
-    const rawState: unknown = result.toJSON();
+  const parser = await SailsIdlParser.new();
+  const sails = new Sails(parser);
 
-    if (
-      typeof rawState === "object" &&
-      rawState !== null &&
-      "balances" in rawState
-    ) {
-      const fullState = rawState as FullState;
-      setFullState(fullState);
+  sails.parseIdl(idlVSTREET);
 
-      const localBalances = fullState.balances || [];
-      let accountFound = false;
-      const account = localBalances.find(
-        ([address]: [string, number]) =>
-          encodeAddress(address) === accountAddress
-      );
+  sails.setProgramId(vstreetProgramID);
 
-      if (account) {
-        const [, balance] = account;
-        setBalance(balance || 0);
-        accountFound = true;
-      }
+  if (accountAddress) {
+    try {
+      const gearApi = await GearApi.create({
+        providerAddress: "wss://testnet.vara.network",
+      });
+      sails.setApi(gearApi);
+      // functionArg1, functionArg2 are the arguments of the query function from the IDL file
+      const result =
+        await sails.services.LiquidityInjectionService.queries.UserInfo(
+          accountAddress,
+          undefined,
+          undefined,
+          accountAddress
+        );
+      const userInfo = result as string;
+      // Convert the data string to a JSON-compatible format and parse it
+      const parseUserInfo = (dataString: string): UserInfo => {
+        // Remove all characters before the first '{' and trim the string
+        const cleanedString = dataString
+          .substring(dataString.indexOf("{"))
+          .trim();
+        // Replace single quotes with double quotes and remove any trailing commas
+        const jsonString = cleanedString
+          .replace(/(\w+):/g, '"$1":')
+          .replace(/'/g, '"');
+        return JSON.parse(jsonString);
+      };
 
-      if (!accountFound) {
-        setBalance(0);
-      }
-    } else {
-      throw new Error("Unexpected fullState format");
+      const parsedData = parseUserInfo(userInfo);
+      setUserInfo(parsedData);
+    } catch (error) {
+      console.error("Error calling BalanceOf:", error);
     }
-  } catch (error: any) {
-    throw new Error(`Error: ${error}`);
-  }
-};
-
-export const getStakingInfo = async (
-  api: GearApi,
-  accountAddress: string,
-  setDepositedBalance: (balance: any) => void,
-  setFullState: (state: FullStateVST) => void,
-  setRewardsUsdc?: (rewards: any) => void
-) => {
-  try {
-    const result = await api.programState.read(
-      {
-        programId: vstreetProgramID,
-        payload: undefined,
-      },
-      decodedVstreetMeta
-    );
-    const rawState: unknown = result.toJSON();
-
-    const fullState = rawState as FullStateVST;
-    setFullState(fullState);
-
-    const userAddress = accountAddress;
-    if (userAddress && fullState.users && fullState?.users[userAddress]) {
-      setDepositedBalance(fullState?.users[userAddress].balanceUsdc);
-      if (setRewardsUsdc)
-        setRewardsUsdc(fullState?.users[userAddress].rewardsUsdc);
-    } else {
-      console.log("User not found or no balanceUsdc available");
-      setDepositedBalance(0);
-      if (setRewardsUsdc) setRewardsUsdc(0);
-    }
-  } catch (error: any) {
-    throw new Error(`Error: ${error}`);
-  }
-};
-
-export const getAPR = async (
-  api: GearApi,
-  setApr: (apr: number) => void,
-  setFullState: (state: FullStateVST) => void
-) => {
-  try {
-    const result = await api.programState.read(
-      {
-        programId: vstreetProgramID,
-        payload: undefined,
-      },
-      decodedVstreetMeta
-    );
-    const rawState: unknown = result.toJSON();
-
-    const fullState = rawState as FullStateVST;
-    setFullState(fullState);
-    if (fullState.apr) setApr(fullState.apr / 10000);
-  } catch (error: any) {
-    throw new Error(`Error: ${error}`);
   }
 };

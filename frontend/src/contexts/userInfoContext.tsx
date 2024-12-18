@@ -5,6 +5,7 @@ import { SailsIdlParser } from "sails-js-parser";
 import { GearApi } from "@gear-js/api";
 import { idlVSTREET } from "utils/smartPrograms";
 import { vstreetProgramID } from "utils/smartPrograms";
+import { useWallet } from "contexts/accountContext";
 
 interface UserInfo {
   Balance: number;
@@ -48,52 +49,52 @@ export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
   //---->------>------->
   useEffect(() => {
     const getUserInfo = async () => {
+      const { allAccounts, selectedAccount, isWalletConnected, hexAddress } =
+        useWallet();
       //Parse IDL (Metadata) of the contract
       const parser = await SailsIdlParser.new();
       const sails = new Sails(parser);
+
       sails.parseIdl(idlVSTREET);
 
-      //Set the program ID
       sails.setProgramId(vstreetProgramID);
 
-      //Create a new API instance
-      const gearApi = await GearApi.create({
-        providerAddress: "wss://testnet.vara.network",
-      });
-      sails.setApi(gearApi);
-      //In sails-js, you need to query from an account, we use the contract owner address as the account called bob
-      const bob =
-        "0xfe0a346d8e240f29ff67679b83506e92542d41d87b2a6f947c4261e58881a167";
-      //For testing purposes, we are using a hardcoded address, but this should be the user's address
-      const userAddress = "0x1234567890123456789012345678901234567890";
+      if (hexAddress) {
+        try {
+          const gearApi = await GearApi.create({
+            providerAddress: "wss://testnet.vara.network",
+          });
+          sails.setApi(gearApi);
+          // functionArg1, functionArg2 are the arguments of the query function from the IDL file
+          const result =
+            await sails.services.LiquidityInjectionService.queries.UserInfo(
+              hexAddress,
+              undefined,
+              undefined,
+              hexAddress
+            );
+          const userInfo = result as string;
 
-      //Call the UserInfo query, this calls are generated automatically from the IDL file
-      const result =
-        await sails.services.LiquidityInjectionService.queries.UserInfo(
-          bob,
-          undefined,
-          undefined,
-          userAddress
-        );
+          //Parse the data string into an object
+          const parseDataString = (dataString: string) => {
+            const dataObject: { [key: string]: number } = {};
+            const pairs = dataString.split(",");
 
-      const contractInfo = result as string;
+            pairs.forEach((pair) => {
+              const [key, value] = pair.split(":").map((item) => item.trim());
+              const normalizedKey = key.replace(/\s+/g, "");
+              dataObject[normalizedKey] = Number(value);
+            });
 
-      //Parse the data string into an object
-      const parseDataString = (dataString: string) => {
-        const dataObject: { [key: string]: number } = {};
-        const pairs = dataString.split(",");
+            return dataObject;
+          };
 
-        pairs.forEach((pair) => {
-          const [key, value] = pair.split(":").map((item) => item.trim());
-          const normalizedKey = key.replace(/\s+/g, "");
-          dataObject[normalizedKey] = Number(value);
-        });
-
-        return dataObject;
-      };
-
-      const parsedData = parseDataString(contractInfo);
-      console.log("User Info Parsed Data:", parsedData);
+          const parsedData = parseDataString(userInfo);
+          console.log("User Info Parsed Data:", parsedData);
+        } catch (error) {
+          console.error("Error getting user info:", error);
+        }
+      }
     };
 
     getUserInfo();

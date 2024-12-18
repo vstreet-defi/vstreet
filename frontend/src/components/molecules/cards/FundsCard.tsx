@@ -5,18 +5,14 @@ import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 import { useEffect, useState } from "react";
 import { useApi } from "@gear-js/react-hooks";
-import { decodeAddress } from "@gear-js/api";
 import {
   FullState,
   FullStateVST,
+  getUserInfo,
   getVFTBalance,
-  getStakingInfo,
 } from "smart-contracts-tools";
 import { useWallet } from "contexts/accountContext";
-
-//Sails-js Impotrts
-import { Sails } from "sails-js";
-import { SailsIdlParser } from "sails-js-parser";
+import { UserInfo } from "smart-contracts-tools";
 
 type props = {
   buttonLabel: string;
@@ -26,10 +22,10 @@ function FundsCard({ buttonLabel }: props) {
   const [inputValue, setInputValue] = useState("");
   const [balance, setBalance] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
-  const [fullState, setFullState] = useState<FullStateVST | FullState>();
+  const [userInfo, setUserInfo] = useState<UserInfo>();
+
   const { api } = useApi();
-  const { allAccounts, selectedAccount, isWalletConnected, hexAddress } =
-    useWallet();
+  const { selectedAccount, hexAddress } = useWallet();
 
   const isDepositCard = () => {
     return buttonLabel === "Deposit";
@@ -41,16 +37,19 @@ function FundsCard({ buttonLabel }: props) {
   useEffect(() => {
     if (selectedAccount) {
       //call sails get balance
-      getVFTBalance(api, hexAddress, setBalance);
-
-      getStakingInfo(
-        api,
-        decodeAddress(selectedAccount),
-        setDepositedBalance,
-        setFullState
-      );
+      getVFTBalance(hexAddress, setBalance);
+      getUserInfo(hexAddress, setUserInfo);
     }
   }, [selectedAccount, api]);
+
+  useEffect(() => {
+    if (userInfo) {
+      console.log("userInfo:", userInfo);
+      console.log("userInfo.balance_usdc:", userInfo.balance_usdc);
+      setDepositedBalance(userInfo.balance_usdc ?? 0);
+      console.log("depositedBalance:", userInfo.balance_usdc ?? 0);
+    }
+  }, [userInfo]);
 
   return (
     <div className={styles.Container}>
