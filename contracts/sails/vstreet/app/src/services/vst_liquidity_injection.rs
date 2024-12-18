@@ -10,16 +10,14 @@ use sails_rs::{
 use sails_rs::collections::BTreeMap;
 
 use crate::clients::extended_vft_client::traits::Vft;
-use crate::states::vstreet_state::VstreetState;
-use crate::states::vstreet_state::UserInfo;
+use crate::states::vstreet_state::{VstreetState, UserInfo, Config};
 use crate::services::{supply, borrow};
-use crate::services::utils::EventNotifier;
-
-pub const DECIMALS_FACTOR: u128 = 10_u128.pow(6);
-pub const YEAR_IN_SECONDS: u128 = 31_536_000; // 365 * 24 * 60 * 60
-pub const BASE_RATE: u128 = 10000; // 0.01 * DECIMALS_FACTOR
-pub const RISK_MULTIPLIER: u128 = 40000; // 0.04 * DECIMALS_FACTOR
-pub const ONE_TVARA: u128 = 1_000_000_000_000; // Value of one TVara and Vara
+use crate::services::utils::{
+    EventNotifier,
+    ERROR_INSUFFICIENT_ADMIN_PRIVILEGES,
+    ERROR_ADMIN_ALREADY_EXISTS,
+    ERROR_ADMIN_DOESNT_EXIST
+};
 
 static mut VSTREET_STATE: Option<VstreetState> = None;
 
@@ -50,7 +48,8 @@ pub enum LiquidityEvent {
 // }
 
 pub struct LiquidityInjectionService<VftClient>{
-    pub vft_client: VftClient
+    pub vft_client: VftClient,
+    pub config: Config
 }
 
 impl<VftClient> EventNotifier for LiquidityInjectionService<VftClient>
@@ -119,64 +118,127 @@ where VftClient: Vft, {
     // Service's constructor
     pub fn seed(
         owner: ActorId,
+        admins: Vec<ActorId>,
         vft_contract_id: Option<ActorId>,
         total_deposited: u128,
         total_borrowed: u128,
         available_rewards_pool: u128,
         total_rewards_distributed: u128,
         users: BTreeMap<ActorId, UserInfo>,
-        base_rate: u128,
-        risk_multiplier: u128,
         utilization_factor: u128,
-        dev_fee: u128,
         interest_rate: u128,
         apr: u128,
         ltv: u128,
-        vara_price: u128,
     ) {
         unsafe {
             VSTREET_STATE = Some(
                 VstreetState {
                     owner,
+                    admins,
                     vft_contract_id,
                     total_deposited,
                     total_borrowed,
                     available_rewards_pool,
                     total_rewards_distributed,
                     users,
-                    base_rate,
-                    risk_multiplier,
                     utilization_factor,
-                    dev_fee,
                     interest_rate,
                     apr,
                     ltv,
-                    vara_price,
                 }
             );
         };
     }
 
     pub fn new(
-        vft_client: VftClient
+        vft_client: VftClient,
+        config: Config
     ) -> Self {
         Self {
-            vft_client
+            vft_client,
+            config
         }
     }
 
-    //Private methods
+    // Admin Management methods
 
-    // ## Change vft contract id
-    // Only the contract owner can perform this action
-    pub fn set_vft_contract_id(&mut self, vft_contract_id: ActorId) -> String {
+    fn ensure_admin(&mut self) -> Result<(), String> {
         let state = self.state_mut();
 
-        if msg::source() != state.owner {
-            self.notify_on(LiquidityEvent::Error("Only the contract owner can perform this action".to_string()))
+        if !state.admins.contains(&msg::source()) {
+            let error_message = ERROR_INSUFFICIENT_ADMIN_PRIVILEGES.to_string();
+
+            self.notify_on(LiquidityEvent::Error(error_message.clone()))
                 .expect("Notification Error");
-                 return "Only the contract owner can perform this action".to_string();
+            
+            return Err(error_message);
         }
+
+        Ok(())
+    }
+
+    fn ensure_admin_ref(&self) -> Result<(), String> {
+        let state = self.state_ref();
+
+        if !state.admins.contains(&msg::source()) {
+            let error_message = ERROR_INSUFFICIENT_ADMIN_PRIVILEGES.to_string();
+
+            return Err(error_message)
+        }
+
+        Ok(())
+    }
+
+    fn ensure_admin_or_panic(&self) {
+        if let Err(error_message) = self.ensure_admin_ref() {
+            panic!("{}", error_message);
+        }
+    }
+
+    pub fn add_admin(&mut self, new_admin: ActorId) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        let state = self.state_mut();
+
+        if state.admins.contains(&new_admin) {
+            let error_message = ERROR_ADMIN_ALREADY_EXISTS.to_string();
+
+            self.notify_on(LiquidityEvent::Error(error_message.clone()))
+                .expect("Notification Error");
+            
+            return Err(error_message);
+        }
+
+        state.admins.push(new_admin);
+
+        Ok(())
+    }
+
+    pub fn remove_admin(&mut self, admin: ActorId) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        let state = self.state_mut();
+
+        if let Some(pos) = state.admins.iter().position(|x| *x == admin) {
+            state.admins.remove(pos);
+        } else {
+            let error_message = ERROR_ADMIN_DOESNT_EXIST.to_string();
+            self.notify_on(LiquidityEvent::Error(error_message.clone()))
+                .expect("Notification Error");
+            return Err(error_message)
+        }
+
+        Ok(())
+    }
+
+    // Private methods
+    // Only administrators of the contract can perform this actions.
+
+    // ## Change vft contract id
+    pub fn set_vft_contract_id(&mut self, vft_contract_id: ActorId) -> String {
+        self.ensure_admin_or_panic();
+
+        let state = self.state_mut();
 
         state.vft_contract_id = Some(vft_contract_id);
 
@@ -188,104 +250,190 @@ where VftClient: Vft, {
     }
 
     //Change LTV
-    // Only the contract owner can perform this action
     // LTV is a percentage value represented here in double digit format (e.g. 85% = 85)
     pub fn set_ltv(&mut self, ltv: u128) -> String {
-        let state = self.state_mut();
+        self.ensure_admin_or_panic();
 
-        if msg::source() != state.owner {
-            self.notify_on(LiquidityEvent::Error("Only the contract owner can perform this action".to_string()))
-                .expect("Notification Error");
-                 return "Only the contract owner can perform this action".to_string();
-        }
+        let state = self.state_mut();
 
         state.ltv = ltv;
 
         format!("New LTV set: {:?}", ltv)
     }
 
-    //Change Vara Price
-    // Only the contract owner can perform this action
-    pub async fn set_vara_price(&mut self, vara_price: u128) -> String {
-        let state = self.state_mut();
+    pub async fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<(), String> {
+        self.ensure_admin()?;
 
-        if msg::source() != state.owner {
-            self.notify_on(LiquidityEvent::Error("Only the contract owner can perform this action".to_string()))
+        self.update_all_rewards();
+        self.update_all_collateral_available_to_withdraw();
+
+        let state_mut = self.state_mut();
+        let decimals_factor = self.get_decimals_factor();
+        state_mut.available_rewards_pool = amount * decimals_factor;
+
+        // Notify the AvailableRewardsPoolModified event
+        let new_rewards_pool: u128 = amount * decimals_factor;
+        self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
                 .expect("Notification Error");
-                 return "Only the contract owner can perform this action".to_string();
-        }
 
-        state.vara_price = vara_price;
-        
-        //Todo: Check if needed async call
+        Ok(())
+    }
+
+    // Config Setters
+
+    pub fn set_decimals_factor(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        self.config.decimals_factor = new_value;
+        Ok(())
+    }
+
+    pub fn set_year_in_seconds(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        self.config.year_in_seconds = new_value;
+        Ok(())
+    }
+
+    pub fn set_base_rate(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        self.config.base_rate = new_value;
+        Ok(())
+    }
+
+    pub fn set_risk_multiplier(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        self.config.risk_multiplier = new_value;
+        Ok(())
+    }
+
+    pub fn set_one_tvara(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        self.config.one_tvara = new_value;
+        Ok(())
+    }
+
+    pub async fn set_vara_price(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
+
         self.update_cv_and_mla_for_all_users();
-
-        //update ltv for all borrowers
         self.update_all_ltv().await;
         
-        let _ = self.liquidate_all_loans().await;
+        let _ = self.liquidate_all_loans();
 
-        format!("New Vara Price set: {:?}", vara_price)
+        self.config.vara_price = new_value;
+        Ok(())
     }
 
-    //Change Base Rate
-    // Only the contract owner can perform this action
-    pub fn set_base_rate(&mut self, base_rate: u128) -> String {
-        let state = self.state_mut();
+    pub fn set_dev_fee(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
 
-        if msg::source() != state.owner {
-            self.notify_on(LiquidityEvent::Error("Only the contract owner can perform this action".to_string()))
-                .expect("Notification Error");
-                 return "Only the contract owner can perform this action".to_string();
-        }
-
-        state.base_rate = base_rate;
-
-        format!("New Base Rate set: {:?}", base_rate)
+        self.config.dev_fee = new_value;
+        Ok(())
     }
 
-    //Change Risk Multiplier
-    // Only the contract owner can perform this action
-    pub fn set_risk_multiplier(&mut self, risk_multiplier: u128) -> String {
-        let state = self.state_mut();
+    pub fn set_max_loan_amount(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
 
-        if msg::source() != state.owner {
-            self.notify_on(LiquidityEvent::Error("Only the contract owner can perform this action".to_string()))
-                .expect("Notification Error");
-                 return "Only the contract owner can perform this action".to_string();
-        }
-
-        state.risk_multiplier = risk_multiplier;
-
-        format!("New Risk Multiplier set: {:?}", risk_multiplier)
+        self.config.max_loan_amount = new_value;
+        Ok(())
     }
 
-    //Set Dev fee
-    // Only the contract owner can perform this action
-    pub fn set_dev_fee(&mut self, dev_fee: u128) -> String {
-        let state = self.state_mut();
+    pub fn set_max_collateral_withdraw(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
 
-        if msg::source() != state.owner {
-            self.notify_on(LiquidityEvent::Error("Only the contract owner can perform this action".to_string()))
-                .expect("Notification Error");
-                 return "Only the contract owner can perform this action".to_string();
-        }
+        self.config.max_collateral_withdraw = new_value;
+        Ok(())
+    }
 
-        state.dev_fee = dev_fee;
+    pub fn set_max_liquidity_deposit(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
 
-        format!("New Dev Fee set: {:?}", dev_fee)
+        self.config.max_liquidity_deposit = new_value;
+        Ok(())
+    }
+
+    pub fn set_max_liquidity_withdraw(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        self.config.max_liquidity_withdraw = new_value;
+        Ok(())
+    }
+
+    pub fn set_min_rewards_withdraw(&mut self, new_value: u128) -> Result<(), String> {
+        self.ensure_admin()?;
+
+        self.config.min_rewards_withdraw = new_value;
+        Ok(())
+    }
+
+    // Config Getters
+
+    pub fn get_decimals_factor(&self) -> u128 {
+        self.config.decimals_factor
+    }
+
+    pub fn get_year_in_seconds(&self) -> u128 {
+        self.config.year_in_seconds
+    }
+
+    pub fn get_base_rate(&self) -> u128 {
+        self.config.base_rate
+    }
+
+    pub fn get_risk_multiplier(&self) -> u128 {
+        self.config.risk_multiplier
+    }
+
+    pub fn get_one_tvara(&self) -> u128 {
+        self.config.one_tvara
+    }
+
+    pub fn get_vara_price(&self) -> u128 {
+        self.config.vara_price
+    }
+
+    pub fn get_dev_fee(&self) -> u128 {
+        self.config.dev_fee
+    }
+
+    pub fn get_max_loan_amount(&self) -> u128 {
+        self.config.max_loan_amount
+    }
+
+    pub fn get_max_collateral_withdraw(&self) -> u128 {
+        self.config.max_collateral_withdraw
+    }
+
+    pub fn get_max_liquidity_deposit(&self) -> u128 {
+        self.config.max_liquidity_deposit
+    }
+
+    pub fn get_max_liquidity_withdraw(&self) -> u128 {
+        self.config.max_liquidity_withdraw
+    }
+
+    pub fn get_min_rewards_withdraw(&self) -> u128 {
+        self.config.min_rewards_withdraw
     }
 
     // Queries
 
     // Service's query owner of the contract
     pub fn contract_owner(&self) -> String {
+        self.ensure_admin_or_panic();
+
         let state = self.state_ref();
         state.owner.to_string()
     } 
 
     //Service's query seted VFT of the contract
     pub fn vft_contract_id(&self) -> String {
+        self.ensure_admin_or_panic();
+
         let state = self.state_ref();
         let contract_id = state.vft_contract_id.unwrap();
         contract_id.to_string() 
@@ -293,6 +441,8 @@ where VftClient: Vft, {
 
     //Service's query user-balance
     pub fn user_balance(&self, user: ActorId) -> String {
+        self.ensure_admin_or_panic();
+
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         user_info.balance_usdc.to_string()
@@ -300,6 +450,8 @@ where VftClient: Vft, {
 
     //Service's query user-rewards
     pub fn user_rewards(&self, user: ActorId) -> String {
+        self.ensure_admin_or_panic();
+
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         user_info.rewards_usdc.to_string()
@@ -307,6 +459,8 @@ where VftClient: Vft, {
 
     //Service's query user info
     pub fn user_info(&self, user: ActorId) -> String {
+        self.ensure_admin_or_panic();
+
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         format!("User Info: {:?}", user_info)
@@ -314,6 +468,8 @@ where VftClient: Vft, {
 
     //Service's query all users
     pub fn all_users(&self) -> String {
+        self.ensure_admin_or_panic();
+
         let state = self.state_ref();
         let users = state.users.keys().map(|id| id.to_string()).collect::<Vec<_>>();
         users.join(", ")
@@ -321,16 +477,20 @@ where VftClient: Vft, {
 
     //Service's query APR , interest rate, dev fee, total borrowed, available rewards pool, base rate, risk multiplier, utilization factor
     pub fn contract_info(&self) -> String {
+        self.ensure_admin_or_panic();
+
         let state = self.state_ref();
         format!(
             "APR: {:?}, Interest Rate: {:?}, Dev Fee: {:?}, Total Deposited: {:?}, Total Borrowed: {:?}, Available Rewards Pool: {:?}, Base Rate: {:?}, Risk Multiplier: {:?}, Utilization Factor: {:?}", 
-            state.apr, state.interest_rate, state.dev_fee,state.total_deposited, state.total_borrowed, 
-            state.available_rewards_pool, state.base_rate, state.risk_multiplier, state.utilization_factor
+            state.apr, state.interest_rate, self.get_dev_fee(),state.total_deposited, state.total_borrowed, 
+            state.available_rewards_pool, self.get_base_rate(), self.get_risk_multiplier(), state.utilization_factor
         )
     }
 
     //Service's query total deposited
     pub fn total_deposited(&self) -> String {
+        self.ensure_admin_or_panic();
+
         let state = self.state_ref();
         state.total_deposited.to_string()
     }
@@ -397,45 +557,30 @@ where VftClient: Vft, {
         Ok(())
     }
 
-    pub async fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<(), String> {
-        self.update_all_rewards();
-        self.update_all_collateral_available_to_withdraw();
-
-        let state_mut = self.state_mut();
-        state_mut.available_rewards_pool = amount * DECIMALS_FACTOR;
-
-        // Notify the AvailableRewardsPoolModified event
-        let new_rewards_pool: u128 = amount * DECIMALS_FACTOR;
-        self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
-                .expect("Notification Error");
-
-        Ok(())
-    }
-
     // Lenders APR (INTEREST RATE)
     pub fn calculate_apr(&mut self) -> u128 {
         let state_mut = self.state_mut();
 
         self.calculate_utilization_factor();
 
-        state_mut.interest_rate = state_mut.base_rate.saturating_add(state_mut.utilization_factor * state_mut.risk_multiplier);
+        state_mut.interest_rate = self.get_base_rate().saturating_add(state_mut.utilization_factor * self.get_risk_multiplier());
 
         state_mut.interest_rate
     }
 
     // Update User Rewards
-    pub fn update_user_rewards(user_info: &mut UserInfo, interest_rate: u128) {
+    pub fn update_user_rewards(user_info: &mut UserInfo, interest_rate: u128, decimals_factor: u128, year_in_seconds: u128) {
         let current_timestamp = exec::block_timestamp() as u128;
 
         // Seconds in the 3 seconds Vara Blocks Elapsed since last update
         let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) * 3;
 
         if time_elapsed > 0 {
-            let interest_per_second = ((interest_rate * DECIMALS_FACTOR) / YEAR_IN_SECONDS) / DECIMALS_FACTOR as u128;
+            let interest_per_second = ((interest_rate * decimals_factor) / year_in_seconds) / decimals_factor as u128;
             let rewards = interest_per_second * time_elapsed;
             debug!("Calculated rewards: {}", rewards);
             user_info.rewards = user_info.rewards.saturating_add(rewards);
-            user_info.rewards_usdc = user_info.rewards / DECIMALS_FACTOR;
+            user_info.rewards_usdc = user_info.rewards / decimals_factor;
             user_info.liquidity_last_updated = current_timestamp;
         }
     }
@@ -446,7 +591,7 @@ where VftClient: Vft, {
 
         for user_info in state_mut.users.values_mut() {
             if user_info.balance > 0 {
-                Self::update_user_rewards(user_info, state_mut.interest_rate);
+                Self::update_user_rewards(user_info, state_mut.interest_rate, self.get_decimals_factor(), self.get_year_in_seconds());
             }
         }
     }
@@ -478,9 +623,9 @@ where VftClient: Vft, {
     pub fn calculate_cv(&mut self, user: ActorId) -> String {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
-        let vara_price = state_mut.vara_price;
+        let vara_price = self.get_vara_price();
 
-        let tvaras = user_info.balance_vara / ONE_TVARA;
+        let tvaras = user_info.balance_vara / self.get_one_tvara();
 
         let cv = tvaras * vara_price;
         user_info.cv = cv;
@@ -504,7 +649,7 @@ where VftClient: Vft, {
 
         for user in state_mut.users.keys().cloned().collect::<Vec<_>>() {
             let user_info = state_mut.users.get(&user).unwrap();
-            if user_info.balance_vara >= ONE_TVARA {
+            if user_info.balance_vara >= self.get_one_tvara() {
                 self.calculate_cv(user);
                 self.calculate_mla(user);
             }
@@ -538,13 +683,14 @@ where VftClient: Vft, {
 
         let total_deposited = state_mut.total_deposited;
         let total_borrowed = state_mut.total_borrowed;
+        let decimals_factor = self.get_decimals_factor();
 
         // Check if total_deposited or total_borrowed is zero
         if total_deposited == 0 || total_borrowed == 0 {
             return 0;
         }
 
-        let utilization_factor = (((total_borrowed * DECIMALS_FACTOR) / total_deposited) * 100) / DECIMALS_FACTOR;
+        let utilization_factor = (((total_borrowed * decimals_factor) / total_deposited) * 100) / decimals_factor;
         state_mut.utilization_factor = utilization_factor;
         return utilization_factor;
     }
@@ -553,9 +699,9 @@ where VftClient: Vft, {
     fn calculate_interest_rate(&mut self) -> u128 {
         let state_mut = self.state_mut();
         let utilization_factor = state_mut.utilization_factor;
-        let base_rate = state_mut.base_rate;
-        let risk_multiplier = state_mut.risk_multiplier;
-        let dev_fee = state_mut.dev_fee;
+        let base_rate = self.get_base_rate();
+        let risk_multiplier = self.get_risk_multiplier();
+        let dev_fee = self.get_dev_fee();
 
         base_rate.saturating_add(utilization_factor * risk_multiplier) * (1 + dev_fee)
     }
@@ -569,11 +715,12 @@ where VftClient: Vft, {
         let interest_rate = self.calculate_interest_rate();
         let current_timestamp = exec::block_timestamp() as u128;
         let time_diff_seconds = (current_timestamp - user_info.borrow_last_updated) / 1000;
+        let decimals_factor = self.get_decimals_factor();
 
-        let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds) / (YEAR_IN_SECONDS * DECIMALS_FACTOR);
+        let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds) / (self.get_year_in_seconds() * decimals_factor);
         user_info.loan_amount = user_info.loan_amount.saturating_add(interest_rate_amount);
-        user_info.loan_amount_usdc = user_info.loan_amount / DECIMALS_FACTOR;
-        user_info.borrow_last_updated= current_timestamp;
+        user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
+        user_info.borrow_last_updated = current_timestamp;
 
         format!("Loan Interest Rate Amount: {:?}", interest_rate_amount)
     }

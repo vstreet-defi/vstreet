@@ -8,8 +8,12 @@ use sails_rs::{
 
 use crate::clients::extended_vft_client::traits::Vft;
 use crate::services::vst_liquidity_injection::LiquidityInjectionService;
-use crate::services::vst_liquidity_injection::DECIMALS_FACTOR;
-use crate::services::utils::EventNotifier;
+use crate::services::utils::{
+    EventNotifier,
+    ERROR_TRANSFER_FAILED,
+    ERROR_INVALID_AMOUNT,
+    ERROR_USER_NOT_FOUND
+};
 
 // Public methods
 
@@ -23,38 +27,89 @@ where
 {
     let state_mut = service.state_mut();
     let caller = msg::source();
+    let decimals_factor = service.get_decimals_factor();
 
-    let user_info = if let Some(user_info) = state_mut.users.get_mut(&caller) {
-        user_info
-    } else {
-        service.notify_error("User not found".to_string());
-        return Err("User not found".to_string());
+    let user_info = match state_mut.users.get_mut(&caller) {
+        Some(user_info) => user_info,
+        None => {
+            let error_message = ERROR_USER_NOT_FOUND.to_string();
+            service.notify_error(error_message.clone());
+            return Err(error_message);
+        }
     };
 
     let mla = user_info.mla;
     let loan_amount = user_info.loan_amount;
-    let future_loan_amount = loan_amount.saturating_add(amount * DECIMALS_FACTOR);
 
-    if amount == 0 || future_loan_amount > mla {
-        service.notify_error("Invalid Amount".to_string());
-        return sails_rs::Err("Invalid Amount".to_string());
+    let scaled_amount = amount
+        .checked_mul(decimals_factor)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
+    let future_loan_amount = loan_amount
+        .checked_add(scaled_amount)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
+    if amount > service.get_max_loan_amount() || amount == 0 || future_loan_amount > mla {
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        return Err(error_message);
     }
 
     // Transfer tokens from contract to user
-    let result = service.transfer_tokens(exec::program_id(), msg::source(), amount).await;
+    let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
 
     // Check if transfer was successful
     if let Err(_) = result {
-        service.notify_error("Error in VFT Transfer call".to_string());
-        return sails_rs::Err("Error in VFT Transfer call".to_string());
+        let error_message = ERROR_TRANSFER_FAILED.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
     }
 
     // Update loan status and total borrowed
     user_info.is_loan_active = true;
-    user_info.loan_amount = user_info.loan_amount.saturating_add(amount * DECIMALS_FACTOR);
-    user_info.loan_amount_usdc = user_info.loan_amount / DECIMALS_FACTOR;
+    
+    user_info.loan_amount = user_info
+        .loan_amount
+        .checked_add(scaled_amount)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
+    if user_info.loan_amount % decimals_factor != 0 {
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        return Err(error_message);
+    }
+
+    user_info.loan_amount_usdc = user_info
+        .loan_amount
+        .checked_div(decimals_factor)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
+    state_mut.total_borrowed = state_mut
+        .total_borrowed
+        .checked_add(scaled_amount)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
     service.update_user_ltv(caller);
-    state_mut.total_borrowed = state_mut.total_borrowed.saturating_add(amount * DECIMALS_FACTOR);
     service.calculate_apr();
 
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
@@ -72,32 +127,75 @@ where
     VftClient: Vft,
 {
     let state_mut = service.state_mut();
-    let user_info = state_mut.users.get_mut(&msg::source()).unwrap();
+    let caller = msg::source();
+    let decimals_factor = service.get_decimals_factor();
 
-    let loan_amount = user_info.loan_amount / DECIMALS_FACTOR;
+    let user_info = match state_mut.users.get_mut(&caller) {
+        Some(user_info) => user_info,
+        None => {
+            let error_message = ERROR_USER_NOT_FOUND.to_string();
+            service.notify_error(error_message.clone());
+            return Err(error_message);
+        }
+    };
+
+    if user_info.loan_amount % decimals_factor != 0 {
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        return Err(error_message);
+    }
+
+    let loan_amount = user_info
+        .loan_amount
+        .checked_div(decimals_factor)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
 
     if loan_amount == 0 {
-        service.notify_error("Invalid Amount".to_string());
-        return sails_rs::Err("Invalid Amount".to_string());
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
     }
 
     // Transfer tokens from user to contract
-    let result = service.transfer_tokens(msg::source(), exec::program_id(), loan_amount).await;
+    let result = service.transfer_tokens(caller, exec::program_id(), loan_amount).await;
 
     // Check if transfer was successful
     if let Err(_) = result {
-        service.notify_error("Error in VFT Transfer call".to_string());
-        return sails_rs::Err("Error in VFT Transfer call".to_string());
+        let error_message = ERROR_TRANSFER_FAILED.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
     }
 
     // Update loan amount and total borrowed
     user_info.is_loan_active = false;
     user_info.loan_amount = 0;
     user_info.loan_amount_usdc = 0;
-    service.update_user_ltv(msg::source());
-    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
-    state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(loan_amount * DECIMALS_FACTOR);
 
+    state_mut.total_borrowed = state_mut
+        .total_borrowed
+        .checked_sub(
+            user_info
+                .loan_amount
+                .checked_mul(decimals_factor)
+                .ok_or_else(|| {
+                    let error_message = ERROR_INVALID_AMOUNT.to_string();
+                    service.notify_error(error_message.clone());
+                    error_message
+                })?,
+        )
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+    
+    service.update_user_ltv(caller);
+    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    
     service.notify_loan_payed(loan_amount);
 
     Ok(())
@@ -112,34 +210,84 @@ where
     VftClient: Vft,
 {
     let state_mut = service.state_mut();
-    let user_info = state_mut.users.get_mut(&msg::source()).unwrap();
+    let caller = msg::source();
+    let decimals_factor = service.get_decimals_factor();
+
+    let user_info = match state_mut.users.get_mut(&caller) {
+        Some(user_info) => user_info,
+        None => {
+            let error_message = ERROR_USER_NOT_FOUND.to_string();
+            service.notify_error(error_message.clone());
+            return Err(error_message);
+        }
+    };
 
     let loan_amount = user_info.loan_amount_usdc;
 
-    if amount == 0 || amount > loan_amount {
-        service.notify_error("Invalid Amount".to_string());
-        return sails_rs::Err("Invalid Amount".to_string());
+    if amount > service.get_max_loan_amount() || amount == 0 || amount > loan_amount {
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
     }
 
     // Transfer tokens from user to contract
-    let result = service.transfer_tokens(msg::source(), exec::program_id(), amount).await;
+    let result = service.transfer_tokens(caller, exec::program_id(), amount).await;
 
     // Check if transfer was successful
     if let Err(_) = result {
-        service.notify_error("Error in VFT Transfer call".to_string());
-        return sails_rs::Err("Error in VFT Transfer call".to_string());
+        let error_message = ERROR_TRANSFER_FAILED.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
     }
 
     // Update loan amount and total borrowed
-    user_info.loan_amount = user_info.loan_amount.saturating_sub(amount * DECIMALS_FACTOR);
-    user_info.loan_amount_usdc = user_info.loan_amount_usdc.saturating_sub(amount);
-    service.update_user_ltv(msg::source());
-    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
-    state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(amount * DECIMALS_FACTOR);
+    let scaled_amount = amount
+        .checked_mul(decimals_factor)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
+    if scaled_amount == 0 || scaled_amount > loan_amount {
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
+    }
+
+    user_info.loan_amount = user_info
+        .loan_amount
+        .checked_sub(scaled_amount)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
+    user_info.loan_amount_usdc = user_info
+        .loan_amount_usdc
+        .checked_sub(amount)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
+    state_mut.total_borrowed = state_mut
+        .total_borrowed
+        .checked_sub(scaled_amount)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
 
     if user_info.loan_amount == 0 {
         user_info.is_loan_active = false;
     }
+
+    service.update_user_ltv(caller);
+    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
     
     service.notify_loan_payed(amount);
 
