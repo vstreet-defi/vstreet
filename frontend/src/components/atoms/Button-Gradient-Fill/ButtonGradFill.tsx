@@ -68,9 +68,9 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
 
     const { signer } = await web3FromSource(accountWEB3.meta.source);
     //set the account signer
-    transaction.withAccount(accountWEB3.address, {
-      signer: signer,
-    });
+    // transaction.withAccount(accountWEB3.address, {
+    //   signer: signer,
+    // });
 
     // Set the value of the transaction
     transaction.withValue(BigInt(10 * 1e12));

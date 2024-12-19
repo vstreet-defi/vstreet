@@ -12,7 +12,7 @@ import InfoIcon from "assets/images/icons/info_Icon.png";
 import { useWallet } from "contexts/accountContext";
 import {
   createWithdrawRewardsMessage,
-  withdrawRewardsTransaction,
+  // withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
 import { getUserInfo } from "smart-contracts-tools";
@@ -157,44 +157,44 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   // const { depositedBalance, rewardsUsdc } = useStakingInfo(api, account);
   useOutsideClick(wrapperRef, () => setShowMessage(false));
 
-  const handleClaim = useCallback(async () => {
-    const withdrawRewardsMessage = createWithdrawRewardsMessage();
-    await handleTransaction(
-      [
-        {
-          message: withdrawRewardsMessage,
-          infoText:
-            "Claim rewards in progress. Please check your wallet to sign the transaction.",
-        },
-      ],
-      [withdrawRewardsTransaction],
-      api as GearApi,
-      account,
-      accounts,
-      alertModalContext,
-      setIsLoading
-    );
-  }, [api, account, accounts, alertModalContext]);
+  // const handleClaim = useCallback(async () => {
+  //   const withdrawRewardsMessage = createWithdrawRewardsMessage();
+  //   await handleTransaction(
+  //     [
+  //       {
+  //         message: withdrawRewardsMessage,
+  //         infoText:
+  //           "Claim rewards in progress. Please check your wallet to sign the transaction.",
+  //       },
+  //     ],
+  //     [withdrawRewardsTransaction],
+  //     api as GearApi,
+  //     account,
+  //     accounts,
+  //     alertModalContext,
+  //     setIsLoading
+  //   );
+  // }, [api, account, accounts, alertModalContext]);
 
-  const handleClick = async (actionKey: string) => {
-    setIsLoading(true);
-    try {
-      if (actionKey === "Claim") {
-        await handleClaim();
-      } else {
-        throw new Error("Invalid action");
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred.";
-      alertModalContext?.showErrorModal(errorMessage);
-      if (alertModalContext?.hideAlertModal) {
-        setTimeout(() => alertModalContext.hideAlertModal(), 3000);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  // const handleClick = async (actionKey: string) => {
+  //   setIsLoading(true);
+  //   try {
+  //     if (actionKey === "Claim") {
+  //       await handleClaim();
+  //     } else {
+  //       throw new Error("Invalid action");
+  //     }
+  //   } catch (error) {
+  //     const errorMessage =
+  //       error instanceof Error ? error.message : "An unknown error occurred.";
+  //     alertModalContext?.showErrorModal(errorMessage);
+  //     if (alertModalContext?.hideAlertModal) {
+  //       setTimeout(() => alertModalContext.hideAlertModal(), 3000);
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
 
   return (
     <div>
@@ -230,7 +230,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
         />
         <div
           className={`ButtonFlex ${"disabled"}`}
-          onClick={() => handleClick("Claim")}
+          // onClick={() => handleClick("Claim")}
         >
           <ButtonGradientBorder
             text="Claim"

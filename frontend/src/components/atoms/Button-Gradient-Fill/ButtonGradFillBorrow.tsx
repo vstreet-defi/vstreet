@@ -21,14 +21,12 @@ import {
   createApproveMessage,
   createDepositMessage,
   createWithdrawMessage,
-  approveTransaction,
-  depositTransaction,
-  withdrawTransaction,
 } from "smart-contracts-tools";
 import { Loader } from "components/molecules/alert-modal/AlertModal";
 import { GearApi } from "@gear-js/api";
 import { MessageSendOptions } from "@gear-js/api/types";
 import { Signer } from "@polkadot/types/types";
+import { Codec, CodecClass, IKeyringPair } from "@polkadot/types/types";
 
 interface ButtonProps {
   label: string;
@@ -65,98 +63,98 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleTransaction = async (
-    messages: { message: MessageSendOptions; infoText: string }[],
-    transactions: TransactionFunction[]
-  ) => {
-    for (let i = 0; i < messages.length; i++) {
-      const { message, infoText } = messages[i];
-      const transaction = transactions[i];
+  // const handleTransaction = async (
+  //   messages: { message: MessageSendOptions; infoText: string }[],
+  //   transactions: TransactionFunction[]
+  // ) => {
+  //   for (let i = 0; i < messages.length; i++) {
+  //     const { message, infoText } = messages[i];
+  //     const transaction = transactions[i];
 
-      alertModalContext?.showInfoModal(infoText);
+  //     alertModalContext?.showInfoModal(infoText);
 
-      try {
-        await transaction(
-          api as GearApi,
-          message,
-          account,
-          accounts,
-          i === messages.length - 1 ? setIsLoading : undefined
-        );
-      } catch (error) {
-        throw error;
-      }
-    }
+  //     try {
+  //       await transaction(
+  //         api as GearApi,
+  //         message,
+  //         account,
+  //         accounts,
+  //         i === messages.length - 1 ? setIsLoading : undefined
+  //       );
+  //     } catch (error) {
+  //       throw error;
+  //     }
+  //   }
 
-    alertModalContext?.showSuccessModal();
-    setTimeout(() => {
-      alertModalContext?.hideAlertModal();
-    }, 2000);
-  };
+  //   alertModalContext?.showSuccessModal();
+  //   setTimeout(() => {
+  //     alertModalContext?.hideAlertModal();
+  //   }, 2000);
+  // };
 
-  const handleApproveAndDeposit = async () => {
-    const approveMessage = createApproveMessage(amount);
-    const depositMessage = createDepositMessage(amount);
+  // const handleApproveAndDeposit = async () => {
+  //   const approveMessage = createApproveMessage(amount);
+  //   const depositMessage = createDepositMessage(amount);
 
-    await handleTransaction(
-      [
-        {
-          message: approveMessage,
-          infoText: "Approval requested. Please check your wallet.",
-        },
-        {
-          message: depositMessage,
-          infoText:
-            "Deposit in progress. Please check your wallet to sign the transaction.",
-        },
-      ],
-      [approveTransaction, depositTransaction]
-    );
-  };
+  //   await handleTransaction(
+  //     [
+  //       {
+  //         message: approveMessage,
+  //         infoText: "Approval requested. Please check your wallet.",
+  //       },
+  //       {
+  //         message: depositMessage,
+  //         infoText:
+  //           "Deposit in progress. Please check your wallet to sign the transaction.",
+  //       },
+  //     ],
+  //     [approveTransaction, depositTransaction]
+  //   );
+  // };
 
-  const handleWithdraw = async () => {
-    const withdrawMessage = createWithdrawMessage(amount);
+  // const handleWithdraw = async () => {
+  //   const withdrawMessage = createWithdrawMessage(amount);
 
-    await handleTransaction(
-      [
-        {
-          message: withdrawMessage,
-          infoText:
-            "Withdrawal in progress. Please check your wallet to sign the transaction.",
-        },
-      ],
-      [withdrawTransaction as TransactionFunction]
-    );
-  };
+  //   await handleTransaction(
+  //     [
+  //       {
+  //         message: withdrawMessage,
+  //         infoText:
+  //           "Withdrawal in progress. Please check your wallet to sign the transaction.",
+  //       },
+  //     ],
+  //     [withdrawTransaction as TransactionFunction]
+  //   );
+  // };
 
-  const actions: { [key: string]: () => Promise<void> } = {
-    Deposit: handleApproveAndDeposit,
-    Withdraw: handleWithdraw,
-  };
+  // const actions: { [key: string]: () => Promise<void> } = {
+  //   Deposit: handleApproveAndDeposit,
+  //   Withdraw: handleWithdraw,
+  // };
 
-  const handleClick = async () => {
-    setIsLoading(true);
+  // const handleClick = async () => {
+  //   setIsLoading(true);
 
-    const action = actions[label];
-    if (action) {
-      try {
-        await action();
-      } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "An unknown error occurred.";
-        alertModalContext?.showErrorModal(errorMessage);
-        setTimeout(() => {
-          alertModalContext?.hideAlertModal();
-        }, 3000);
-      }
-    } else {
-      alertModalContext?.showErrorModal("Invalid action");
-      setTimeout(() => {
-        alertModalContext?.hideAlertModal();
-      }, 3000);
-    }
-    setIsLoading(false);
-  };
+  //   const action = actions[label];
+  //   if (action) {
+  //     try {
+  //       await action();
+  //     } catch (error) {
+  //       const errorMessage =
+  //         error instanceof Error ? error.message : "An unknown error occurred.";
+  //       alertModalContext?.showErrorModal(errorMessage);
+  //       setTimeout(() => {
+  //         alertModalContext?.hideAlertModal();
+  //       }, 3000);
+  //     }
+  //   } else {
+  //     alertModalContext?.showErrorModal("Invalid action");
+  //     setTimeout(() => {
+  //       alertModalContext?.hideAlertModal();
+  //     }, 3000);
+  //   }
+  //   setIsLoading(false);
+  // };
 
   const handleSailsFunction = async () => {
     const parser = await SailsIdlParser.new();
@@ -201,7 +199,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       const { signer } = await web3FromSource(accountWEB.meta.source);
       //set the account signer
       transaction.withAccount(accountWEB.address, {
-        signer,
+        signer: signer as string | CodecClass<Codec, any[]> as Signer,
       });
 
       // Set the amount of collateral to deposit
