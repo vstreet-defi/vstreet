@@ -65,9 +65,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     // Create the transaction type
     const transaction =
       await sails.services.LiquidityInjectionService.functions.DepositCollateral();
+
+    const { signer } = await web3FromSource(accountWEB3.meta.source);
     //set the account signer
     transaction.withAccount(accountWEB3.address, {
-      signer: injector.signer,
+      signer: signer,
     });
 
     // Set the value of the transaction

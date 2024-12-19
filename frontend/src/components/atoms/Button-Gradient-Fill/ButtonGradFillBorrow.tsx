@@ -28,6 +28,7 @@ import {
 import { Loader } from "components/molecules/alert-modal/AlertModal";
 import { GearApi } from "@gear-js/api";
 import { MessageSendOptions } from "@gear-js/api/types";
+import { Signer } from "@polkadot/types/types";
 
 interface ButtonProps {
   label: string;
@@ -197,9 +198,10 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       // Create the transaction type
       const transaction =
         await sails.services.LiquidityInjectionService.functions.DepositCollateral();
+      const { signer } = await web3FromSource(accountWEB.meta.source);
       //set the account signer
       transaction.withAccount(accountWEB.address, {
-        signer: injector.signer,
+        signer,
       });
 
       // Set the amount of collateral to deposit
