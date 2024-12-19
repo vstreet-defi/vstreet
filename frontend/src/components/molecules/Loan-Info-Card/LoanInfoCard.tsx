@@ -19,13 +19,9 @@ import { useLiquidity } from "contexts/stateContext";
 import { useWallet } from "contexts/accountContext";
 import { getUserInfo } from "smart-contracts-tools";
 import { UserInfo } from "smart-contracts-tools";
+import { formatWithCommasVARA, formatWithCommasVUSD } from "utils/index";
 
-const formatWithCommasVARA = (number: number) => {
-  const decimalsFactor = 1000000000000;
-  const formattedNumber = number / decimalsFactor;
-  return formattedNumber.toLocaleString();
-};
-const formatWithCommasVUSD = (number: number) => {
+const formatDayliInterest = (number: number) => {
   const decimalsFactor = 1000000;
   const formattedNumber = number / decimalsFactor;
   return formattedNumber.toLocaleString();
@@ -146,7 +142,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
   const { api } = useApi();
   const { account, accounts } = useAccount();
   const alertModalContext = useContext(AlertModalContext);
-  // const liquidityData = useLiquidityData();
+  const liquidityData = useLiquidity();
 
   const [activeTooltip, setActiveTooltip] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -161,17 +157,11 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
 
   useEffect(() => {
     if (selectedAccount) {
-      //call sails getUserInfo
+      //sails call getUserInfo
       getUserInfo(hexAddress, setUserInfo);
       console.log("hexAddress", hexAddress);
     }
-  }, [selectedAccount, api]);
-
-  useEffect(() => {
-    if (userInfo) {
-      console.log("userInfo:", userInfo);
-    }
-  }, [userInfo]);
+  }, [selectedAccount, hexAddress]);
 
   useOutsideClick(wrapperRef, () => setActiveTooltip(""));
 
@@ -213,6 +203,8 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
       setIsLoading(false);
     }
   };
+
+  //Logic for LTV styles an Status
   const greenTextStyle: React.CSSProperties = { color: "green" };
   const yellowTextStyle: React.CSSProperties = { color: "yellow" };
   const redTextStyle: React.CSSProperties = { color: "red" };
@@ -234,12 +226,6 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
 
   const ltv = userInfo?.ltv || 0;
   const { style: ltvStyle, status: ltvStatus } = getLtvStyleAndStatus(ltv);
-
-  // if (!liquidityData) {
-  //   return <div>Error: Liquidity data not available</div>;
-  // }
-
-  // const { apr } = liquidityData;
 
   const tooltipMessages: Record<string, string> = {
     borrow:
@@ -284,7 +270,9 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
         />
         <InfoRow
           label="Current Loan/Debt"
-          value={`$${userInfo?.loan_amount_usdc} vUSD`}
+          value={`$${
+            userInfo?.loan_amount_usdc ? userInfo?.loan_amount_usdc : 0
+          } vUSD`}
           icon={
             <img
               onClick={() =>
@@ -326,7 +314,9 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
         <InfoRow label="Status" value={ltvStatus} valueStyle={ltvStyle} />
         <InfoRow
           label="Daily Loan Interest"
-          value={`2.5%`}
+          value={`${formatDayliInterest(
+            liquidityData?.liquidityData?.InterestRate ?? 0
+          )}%`}
           valueStyle={greenTextStyle}
         />
         <div

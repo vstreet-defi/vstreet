@@ -5,10 +5,13 @@ import { ButtonGradientBorder } from "components/atoms/Button-Gradient-Border/Bu
 import { useEffect, useState } from "react";
 import { useAccount, useApi } from "@gear-js/react-hooks";
 import { GearApi } from "@gear-js/api";
-import { FullState, FullStateVST, getVFTBalance } from "smart-contracts-tools";
+import { FullState, FullStateVST } from "smart-contracts-tools";
 
 // Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
+
+// Import getVFTBalance from smart-contracts-tools
+import { getVFTBalance } from "smart-contracts-tools";
 
 // Sails-js Imports
 import { Sails } from "sails-js";
@@ -20,10 +23,7 @@ type props = {
 
 function BorrowCard() {
   const [inputValue, setInputValue] = useState("");
-  const [balance, setBalance] = useState<number>(0);
-  const [depositedBalance, setDepositedBalance] = useState<number>(0);
-  const [fullState, setFullState] = useState<FullStateVST | FullState>();
-  const { api } = useApi();
+  const [balanceVFT, setBalanceVFT] = useState<number>(0);
   const { account } = useAccount();
   const { selectedAccount, hexAddress } = useWallet();
 
@@ -33,7 +33,7 @@ function BorrowCard() {
 
   useEffect(() => {
     if (selectedAccount && account) {
-      getVFTBalance(hexAddress, setBalance);
+      getVFTBalance(hexAddress, setBalanceVFT);
       // getStakingInfo(
       //   api,
       //   account.decodedAddress,
@@ -41,7 +41,7 @@ function BorrowCard() {
       //   setFullState
       // );
     }
-  }, [selectedAccount, account, api]);
+  }, [selectedAccount, account, hexAddress]);
 
   return (
     <div className={styles.ContainerBorrow}>
@@ -50,7 +50,7 @@ function BorrowCard() {
         <BasicInput
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={depositedBalance}
+          balance={balanceVFT}
         />
         <div style={{ display: "flex", gap: "6rem", marginTop: "20px" }}>
           <ButtonGradientBorder text="Borrow" isDisabled={true} />

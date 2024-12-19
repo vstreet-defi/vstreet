@@ -10,7 +10,12 @@ import { SailsIdlParser } from "sails-js-parser";
 //Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
 
-import { fungibleTokenProgramID, idlVFT } from "../../../utils/smartPrograms";
+import {
+  fungibleTokenProgramID,
+  idlVFT,
+  idlVSTREET,
+  vstreetProgramID,
+} from "../../../utils/smartPrograms";
 
 import {
   createApproveMessage,
@@ -48,7 +53,13 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   const alertModalContext = useContext(AlertModalContext);
 
   //Polkadot Extension Wallet-Hook by PSYLABS
-  const { selectedAccount, hexAddress, allAccounts, accountData } = useWallet();
+  const {
+    selectedAccount,
+    hexAddress,
+    allAccounts,
+    accountData,
+    handleSelectAccount,
+  } = useWallet();
   console.log("accountData", accountData);
 
   const [isLoading, setIsLoading] = useState(false);
@@ -150,9 +161,9 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     const parser = await SailsIdlParser.new();
     const sails = new Sails(parser);
 
-    sails.parseIdl(idlVFT);
+    sails.parseIdl(idlVSTREET);
 
-    sails.setProgramId(fungibleTokenProgramID);
+    sails.setProgramId(vstreetProgramID);
 
     // Retrieve selected account data
     const accountWEB = accountData;
@@ -167,6 +178,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     }
 
     const injector = await web3FromSource(accountWEB.meta.source);
+    console.log("button grad fill borrow", accountData);
 
     const gearApi = await GearApi.create({
       providerAddress: "wss://testnet.vara.network",
@@ -183,14 +195,15 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       return;
     } else {
       // Create the transaction type
-      const transaction = await sails.services.Vft.functions.Approve(
-        "0xae51577b0f30f25023da63d3ee254940f60930ad7ae2390eb31bbeab59a44bac",
-        amount
-      );
+      const transaction =
+        await sails.services.LiquidityInjectionService.functions.DepositCollateral();
       //set the account signer
       transaction.withAccount(accountWEB.address, {
         signer: injector.signer,
       });
+
+      // Set the amount of collateral to deposit
+      transaction.withValue(BigInt(10 * 1e12));
 
       // Calculate gas limit with default options
       await transaction.calculateGas();

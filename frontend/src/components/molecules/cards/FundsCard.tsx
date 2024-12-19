@@ -40,7 +40,7 @@ function FundsCard({ buttonLabel }: props) {
       getVFTBalance(hexAddress, setBalance);
       getUserInfo(hexAddress, setUserInfo);
     }
-  }, [selectedAccount, api]);
+  }, [selectedAccount, hexAddress, userInfo]);
 
   useEffect(() => {
     if (userInfo) {

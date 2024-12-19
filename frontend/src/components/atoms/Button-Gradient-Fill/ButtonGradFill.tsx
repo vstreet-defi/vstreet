@@ -10,7 +10,12 @@ import { SailsIdlParser } from "sails-js-parser";
 //Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
 
-import { fungibleTokenProgramID, idlVFT } from "../../../utils/smartPrograms";
+import {
+  fungibleTokenProgramID,
+  idlVFT,
+  idlVSTREET,
+  vstreetProgramID,
+} from "../../../utils/smartPrograms";
 
 import { Loader } from "components/molecules/alert-modal/AlertModal";
 import { GearApi } from "@gear-js/api";
@@ -25,7 +30,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   const { accounts } = useAccount();
   const alertModalContext = useContext(AlertModalContext);
 
-  const { accountData } = useWallet();
+  const { accountData, hexAddress, selectedAccount } = useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -33,15 +38,15 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     const parser = await SailsIdlParser.new();
     const sails = new Sails(parser);
 
-    sails.parseIdl(idlVFT);
+    sails.parseIdl(idlVSTREET);
 
-    sails.setProgramId(fungibleTokenProgramID);
+    sails.setProgramId(vstreetProgramID);
 
-    // Retrieve selected account data
-    const accountWEB = accountData;
+    const accountWEB3 = accountData;
+    console.log("accountWEB3", accountWEB3);
 
     // Check if accountWEB is null
-    if (!accountWEB) {
+    if (!accountWEB3) {
       alertModalContext?.showErrorModal("No account data found");
       setTimeout(() => {
         alertModalContext?.hideAlertModal();
@@ -49,7 +54,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       return;
     }
 
-    const injector = await web3FromSource(accountWEB.meta.source);
+    const injector = await web3FromSource(accountWEB3.meta.source);
 
     const gearApi = await GearApi.create({
       providerAddress: "wss://testnet.vara.network",
@@ -57,49 +62,41 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
 
     sails.setApi(gearApi);
 
-    //make an erorr modal if no account is found
-    if (accounts.length === 0) {
-      alertModalContext?.showErrorModal("No account found");
-      setTimeout(() => {
-        alertModalContext?.hideAlertModal();
-      }, 3000);
-      return;
-    } else {
-      // Create the transaction type
-      const transaction = await sails.services.Vft.functions.Approve(
-        "0xae51577b0f30f25023da63d3ee254940f60930ad7ae2390eb31bbeab59a44bac",
-        amount
-      );
-      //set the account signer
-      transaction.withAccount(accountWEB.address, {
-        signer: injector.signer,
-      });
+    // Create the transaction type
+    const transaction =
+      await sails.services.LiquidityInjectionService.functions.DepositCollateral();
+    //set the account signer
+    transaction.withAccount(accountWEB3.address, {
+      signer: injector.signer,
+    });
 
-      // Calculate gas limit with default options
-      await transaction.calculateGas();
+    // Set the value of the transaction
+    transaction.withValue(BigInt(10 * 1e12));
 
-      // Sign and send the transaction
-      const { msgId, blockHash, txHash, response, isFinalized } =
-        await transaction.signAndSend();
+    // Calculate gas limit with default options
+    await transaction.calculateGas();
 
-      console.log("Message ID:", msgId);
-      console.log("Transaction hash:", txHash);
-      console.log("Block hash:", blockHash);
+    // Sign and send the transaction
+    const { msgId, blockHash, txHash, response, isFinalized } =
+      await transaction.signAndSend();
 
-      // Check if the transaction is finalized
-      const finalized = await isFinalized;
-      console.log("Is finalized:", finalized);
+    console.log("Message ID:", msgId);
+    console.log("Transaction hash:", txHash);
+    console.log("Block hash:", blockHash);
 
-      // Get the response from the program
-      try {
-        const result = await response();
-        console.log("Program response:", result);
-      } catch (error) {
-        console.error("Error executing message:", error);
-      }
+    // Check if the transaction is finalized
+    const finalized = await isFinalized;
+    console.log("Is finalized:", finalized);
 
-      console.log(transaction);
+    // Get the response from the program
+    try {
+      const result = await response();
+      console.log("Program response:", result);
+    } catch (error) {
+      console.error("Error executing message:", error);
     }
+
+    console.log(transaction);
   };
 
   return (
