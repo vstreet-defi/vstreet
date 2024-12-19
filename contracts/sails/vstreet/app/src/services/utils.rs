@@ -2,6 +2,15 @@ use sails_rs::{
     prelude::*,
 };
 
+pub const ERROR_TRANSFER_FAILED: &str = "Error in VFT Transfer call";
+pub const ERROR_INVALID_AMOUNT: &str = "Invalid Amount";
+pub const ERROR_USER_NOT_FOUND: &str = "User not found";
+pub const ERROR_REWARDS_POOL_INSUFFICIENT: &str = "Not enough rewards in the pool";
+pub const ERROR_USER_REWARDS_INSUFFICIENT: &str = "Not enough rewards to withdraw";
+pub const ERROR_INSUFFICIENT_ADMIN_PRIVILEGES: &str = "Only an administrator can perform this action";
+pub const ERROR_ADMIN_ALREADY_EXISTS: &str = "Admin already exists";
+pub const ERROR_ADMIN_DOESNT_EXIST: &str = "Admin does not exist";
+
 pub trait EventNotifier {
     fn notify_deposit(&mut self, amount: u128);
     fn notify_vft_seted(&mut self, actor_id: ActorId);
