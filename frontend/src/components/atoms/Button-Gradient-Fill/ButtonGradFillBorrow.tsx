@@ -3,7 +3,7 @@ import { AlertModalContext } from "contexts/alertContext";
 import { useAccount, useApi } from "@gear-js/react-hooks";
 import { web3Accounts, web3FromSource } from "@polkadot/extension-dapp";
 
-//Sails-js Impotrts
+//Sails-js Imports
 import { Sails } from "sails-js";
 import { SailsIdlParser } from "sails-js-parser";
 
@@ -34,245 +34,168 @@ interface ButtonProps {
   balance: number;
 }
 
-type TransactionFunction = (
-  api: GearApi,
-  message: MessageSendOptions,
-  account: any,
-  accounts: any[],
-  setLoading?: ((loading: boolean) => void) | undefined
-) => Promise<void>;
+type TransactionFunction = () => Promise<void>;
 
 const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   amount,
   label,
   balance,
 }) => {
-  const { accounts, account } = useAccount();
-  const { api } = useApi();
+  const { accounts } = useAccount();
+
   const alertModalContext = useContext(AlertModalContext);
 
   //Polkadot Extension Wallet-Hook by PSYLABS
-  const {
-    selectedAccount,
-    hexAddress,
-    allAccounts,
-    accountData,
-    handleSelectAccount,
-  } = useWallet();
+  const { accountData } = useWallet();
   console.log("accountData", accountData);
 
   const [isLoading, setIsLoading] = useState(false);
 
-  // const handleTransaction = async (
-  //   messages: { message: MessageSendOptions; infoText: string }[],
-  //   transactions: TransactionFunction[]
-  // ) => {
-  //   for (let i = 0; i < messages.length; i++) {
-  //     const { message, infoText } = messages[i];
-  //     const transaction = transactions[i];
+  const handleTransaction = async (
+    transactions: { transaction: TransactionFunction; infoText: string }[]
+  ) => {
+    for (let i = 0; i < transactions.length; i++) {
+      const { transaction, infoText } = transactions[i];
 
-  //     alertModalContext?.showInfoModal(infoText);
+      alertModalContext?.showInfoModal(infoText);
 
-  //     try {
-  //       await transaction(
-  //         api as GearApi,
-  //         message,
-  //         account,
-  //         accounts,
-  //         i === messages.length - 1 ? setIsLoading : undefined
-  //       );
-  //     } catch (error) {
-  //       throw error;
-  //     }
-  //   }
+      try {
+        await transaction();
+      } catch (error) {
+        throw error;
+      }
+    }
 
-  //   alertModalContext?.showSuccessModal();
-  //   setTimeout(() => {
-  //     alertModalContext?.hideAlertModal();
-  //   }, 2000);
-  // };
+    alertModalContext?.showSuccessModal();
+    setTimeout(() => {
+      alertModalContext?.hideAlertModal();
+      window.location.reload();
+    }, 2000);
+  };
 
-  // const handleApproveAndDeposit = async () => {
-  //   const approveMessage = createApproveMessage(amount);
-  //   const depositMessage = createDepositMessage(amount);
+  const createDepositTransaction = async () => {
+    const parser = await SailsIdlParser.new();
+    const sails = new Sails(parser);
 
-  //   await handleTransaction(
-  //     [
-  //       {
-  //         message: approveMessage,
-  //         infoText: "Approval requested. Please check your wallet.",
-  //       },
-  //       {
-  //         message: depositMessage,
-  //         infoText:
-  //           "Deposit in progress. Please check your wallet to sign the transaction.",
-  //       },
-  //     ],
-  //     [approveTransaction, depositTransaction]
-  //   );
-  // };
+    sails.parseIdl(idlVSTREET);
+    sails.setProgramId(vstreetProgramID);
 
-  // const handleWithdraw = async () => {
-  //   const withdrawMessage = createWithdrawMessage(amount);
+    const accountWEB = accountData;
+    if (!accountWEB) {
+      throw new Error("No account data found");
+    }
 
-  //   await handleTransaction(
-  //     [
-  //       {
-  //         message: withdrawMessage,
-  //         infoText:
-  //           "Withdrawal in progress. Please check your wallet to sign the transaction.",
-  //       },
-  //     ],
-  //     [withdrawTransaction as TransactionFunction]
-  //   );
-  // };
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+
+    sails.setApi(gearApi);
+
+    if (accounts.length === 0) {
+      throw new Error("No account found");
+    }
+
+    const transaction =
+      await sails.services.LiquidityInjectionService.functions.DepositCollateral();
+    const { signer } = await web3FromSource(accountWEB.meta.source);
+    transaction.withAccount(accountWEB.address, {
+      signer: signer as string | CodecClass<Codec, any[]> as Signer,
+    });
+    transaction.withValue(BigInt(Number(amount) * 1e12));
+    await transaction.calculateGas();
+
+    return async () => {
+      const { msgId, blockHash, txHash, response, isFinalized } =
+        await transaction.signAndSend();
+
+      console.log("Message ID:", msgId);
+      console.log("Transaction hash:", txHash);
+      console.log("Block hash:", blockHash);
+
+      const finalized = await isFinalized;
+      console.log("Is finalized:", finalized);
+
+      try {
+        const result = await response();
+        console.log("Program response:", result);
+      } catch (error) {
+        console.error("Error executing message:", error);
+      }
+    };
+  };
+
+  const createWithdrawTransaction = async () => {
+    const parser = await SailsIdlParser.new();
+    const sails = new Sails(parser);
+
+    sails.parseIdl(idlVSTREET);
+    sails.setProgramId(vstreetProgramID);
+
+    const accountWEB = accountData;
+    if (!accountWEB) {
+      throw new Error("No account data found");
+    }
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+
+    sails.setApi(gearApi);
+
+    if (accounts.length === 0) {
+      throw new Error("No account found");
+    }
+
+    const transaction =
+      await sails.services.LiquidityInjectionService.functions.WithdrawCollateral(
+        Number(amount)
+      );
+    const { signer } = await web3FromSource(accountWEB.meta.source);
+    transaction.withAccount(accountWEB.address, {
+      signer: signer as string | CodecClass<Codec, any[]> as Signer,
+    });
+    await transaction.calculateGas();
+
+    return async () => {
+      const { msgId, blockHash, txHash, response, isFinalized } =
+        await transaction.signAndSend();
+
+      console.log("Message ID:", msgId);
+      console.log("Transaction hash:", txHash);
+      console.log("Block hash:", blockHash);
+
+      const finalized = await isFinalized;
+      console.log("Is finalized:", finalized);
+
+      try {
+        const result = await response();
+        console.log("Program response:", result);
+      } catch (error) {
+        console.error("Error executing message:", error);
+      }
+    };
+  };
 
   const handleDeposit = async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVSTREET);
-
-    sails.setProgramId(vstreetProgramID);
-
-    // Retrieve selected account data
-    const accountWEB = accountData;
-
-    // Check if accountWEB is null
-    if (!accountWEB) {
-      alertModalContext?.showErrorModal("No account data found");
-      setTimeout(() => {
-        alertModalContext?.hideAlertModal();
-      }, 3000);
-      return;
-    }
-
-    console.log("button grad fill borrow", accountData);
-
-    const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
-    });
-
-    sails.setApi(gearApi);
-
-    //make an erorr modal if no account is found
-    if (accounts.length === 0) {
-      alertModalContext?.showErrorModal("No account found");
-      setTimeout(() => {
-        alertModalContext?.hideAlertModal();
-      }, 3000);
-      return;
-    } else {
-      // Create the transaction type
-      const transaction =
-        await sails.services.LiquidityInjectionService.functions.DepositCollateral();
-      const { signer } = await web3FromSource(accountWEB.meta.source);
-      //set the account signer
-      transaction.withAccount(accountWEB.address, {
-        signer: signer as string | CodecClass<Codec, any[]> as Signer,
-      });
-
-      // Set the amount of collateral to deposit
-      transaction.withValue(BigInt(Number(amount) * 1e12));
-
-      // Calculate gas limit with default options
-      await transaction.calculateGas();
-
-      // Sign and send the transaction
-      const { msgId, blockHash, txHash, response, isFinalized } =
-        await transaction.signAndSend();
-
-      console.log("Message ID:", msgId);
-      console.log("Transaction hash:", txHash);
-      console.log("Block hash:", blockHash);
-
-      // Check if the transaction is finalized
-      const finalized = await isFinalized;
-      console.log("Is finalized:", finalized);
-
-      // Get the response from the program
-      try {
-        const result = await response();
-        console.log("Program response:", result);
-      } catch (error) {
-        console.error("Error executing message:", error);
-      }
-
-      console.log(transaction);
-    }
+    const transaction = await createDepositTransaction();
+    await handleTransaction([
+      {
+        transaction,
+        infoText:
+          "Deposit in progress. Please check your wallet to sign the transaction.",
+      },
+    ]);
   };
+
   const handleWithdraw = async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVSTREET);
-
-    sails.setProgramId(vstreetProgramID);
-
-    // Retrieve selected account data
-    const accountWEB = accountData;
-
-    // Check if accountWEB is null
-    if (!accountWEB) {
-      alertModalContext?.showErrorModal("No account data found");
-      setTimeout(() => {
-        alertModalContext?.hideAlertModal();
-      }, 3000);
-      return;
-    }
-
-    console.log("button grad fill borrow", accountData);
-
-    const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
-    });
-
-    sails.setApi(gearApi);
-
-    //make an erorr modal if no account is found
-    if (accounts.length === 0) {
-      alertModalContext?.showErrorModal("No account found");
-      setTimeout(() => {
-        alertModalContext?.hideAlertModal();
-      }, 3000);
-      return;
-    } else {
-      // Create the transaction type
-      const transaction =
-        await sails.services.LiquidityInjectionService.functions.WithdrawCollateral(
-          Number(amount)
-        );
-      const { signer } = await web3FromSource(accountWEB.meta.source);
-      //set the account signer
-      transaction.withAccount(accountWEB.address, {
-        signer: signer as string | CodecClass<Codec, any[]> as Signer,
-      });
-
-      // Calculate gas limit with default options
-      await transaction.calculateGas();
-
-      // Sign and send the transaction
-      const { msgId, blockHash, txHash, response, isFinalized } =
-        await transaction.signAndSend();
-
-      console.log("Message ID:", msgId);
-      console.log("Transaction hash:", txHash);
-      console.log("Block hash:", blockHash);
-
-      // Check if the transaction is finalized
-      const finalized = await isFinalized;
-      console.log("Is finalized:", finalized);
-
-      // Get the response from the program
-      try {
-        const result = await response();
-        console.log("Program response:", result);
-      } catch (error) {
-        console.error("Error executing message:", error);
-      }
-
-      console.log(transaction);
-    }
+    const transaction = await createWithdrawTransaction();
+    await handleTransaction([
+      {
+        transaction,
+        infoText:
+          "Withdrawal in progress. Please check your wallet to sign the transaction.",
+      },
+    ]);
   };
 
   const actions: { [key: string]: () => Promise<void> } = {
