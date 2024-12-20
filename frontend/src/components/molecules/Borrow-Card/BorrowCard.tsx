@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useAccount, useApi } from "@gear-js/react-hooks";
 import { GearApi } from "@gear-js/api";
 import { FullState, FullStateVST } from "smart-contracts-tools";
+import { hexToBn } from "@polkadot/util";
 
 // Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
@@ -31,15 +32,16 @@ function BorrowCard() {
     setInputValue(value);
   };
 
+  const convertHexToDecimal = (hexValue: string) => {
+    return hexToBn(hexValue).toString();
+  };
+
   useEffect(() => {
     if (selectedAccount && account) {
-      getVFTBalance(hexAddress, setBalanceVFT);
-      // getStakingInfo(
-      //   api,
-      //   account.decodedAddress,
-      //   setDepositedBalance,
-      //   setFullState
-      // );
+      getVFTBalance(hexAddress, (balance: number) => {
+        const humanReadableBalance = convertHexToDecimal(balance.toString());
+        setBalanceVFT(Number(humanReadableBalance));
+      });
     }
   }, [selectedAccount, account, hexAddress]);
 

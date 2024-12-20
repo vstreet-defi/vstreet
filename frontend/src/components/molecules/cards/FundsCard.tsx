@@ -4,15 +4,11 @@ import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 import { useEffect, useState } from "react";
-import { useApi } from "@gear-js/react-hooks";
-import {
-  FullState,
-  FullStateVST,
-  getUserInfo,
-  getVFTBalance,
-} from "smart-contracts-tools";
+
+import { getUserInfo, getVFTBalance } from "smart-contracts-tools";
 import { useWallet } from "contexts/accountContext";
 import { UserInfo } from "smart-contracts-tools";
+import { hexToBn } from "@polkadot/util";
 
 type props = {
   buttonLabel: string;
@@ -24,7 +20,6 @@ function FundsCard({ buttonLabel }: props) {
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
   const [userInfo, setUserInfo] = useState<UserInfo>();
 
-  const { api } = useApi();
   const { selectedAccount, hexAddress } = useWallet();
 
   const isDepositCard = () => {
@@ -34,13 +29,20 @@ function FundsCard({ buttonLabel }: props) {
     setInputValue(value);
   };
 
+  const convertHexToDecimal = (hexValue: string) => {
+    return hexToBn(hexValue).toString();
+  };
+
   useEffect(() => {
     if (selectedAccount) {
       //call sails get balance
-      getVFTBalance(hexAddress, setBalance);
+      getVFTBalance(hexAddress, (balance: number) => {
+        const humanReadableBalance = convertHexToDecimal(balance.toString());
+        setBalance(Number(humanReadableBalance));
+      });
       getUserInfo(hexAddress, setUserInfo);
     }
-  }, [selectedAccount, hexAddress, userInfo]);
+  }, [selectedAccount, hexAddress]);
 
   useEffect(() => {
     if (userInfo) {

@@ -127,36 +127,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   //   );
   // };
 
-  // const actions: { [key: string]: () => Promise<void> } = {
-  //   Deposit: handleApproveAndDeposit,
-  //   Withdraw: handleWithdraw,
-  // };
-
-  // const handleClick = async () => {
-  //   setIsLoading(true);
-
-  //   const action = actions[label];
-  //   if (action) {
-  //     try {
-  //       await action();
-  //     } catch (error) {
-  //       const errorMessage =
-  //         error instanceof Error ? error.message : "An unknown error occurred.";
-  //       alertModalContext?.showErrorModal(errorMessage);
-  //       setTimeout(() => {
-  //         alertModalContext?.hideAlertModal();
-  //       }, 3000);
-  //     }
-  //   } else {
-  //     alertModalContext?.showErrorModal("Invalid action");
-  //     setTimeout(() => {
-  //       alertModalContext?.hideAlertModal();
-  //     }, 3000);
-  //   }
-  //   setIsLoading(false);
-  // };
-
-  const handleSailsFunction = async () => {
+  const handleDeposit = async () => {
     const parser = await SailsIdlParser.new();
     const sails = new Sails(parser);
 
@@ -176,7 +147,6 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       return;
     }
 
-    const injector = await web3FromSource(accountWEB.meta.source);
     console.log("button grad fill borrow", accountData);
 
     const gearApi = await GearApi.create({
@@ -203,7 +173,80 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       });
 
       // Set the amount of collateral to deposit
-      transaction.withValue(BigInt(10 * 1e12));
+      transaction.withValue(BigInt(Number(amount) * 1e12));
+
+      // Calculate gas limit with default options
+      await transaction.calculateGas();
+
+      // Sign and send the transaction
+      const { msgId, blockHash, txHash, response, isFinalized } =
+        await transaction.signAndSend();
+
+      console.log("Message ID:", msgId);
+      console.log("Transaction hash:", txHash);
+      console.log("Block hash:", blockHash);
+
+      // Check if the transaction is finalized
+      const finalized = await isFinalized;
+      console.log("Is finalized:", finalized);
+
+      // Get the response from the program
+      try {
+        const result = await response();
+        console.log("Program response:", result);
+      } catch (error) {
+        console.error("Error executing message:", error);
+      }
+
+      console.log(transaction);
+    }
+  };
+  const handleWithdraw = async () => {
+    const parser = await SailsIdlParser.new();
+    const sails = new Sails(parser);
+
+    sails.parseIdl(idlVSTREET);
+
+    sails.setProgramId(vstreetProgramID);
+
+    // Retrieve selected account data
+    const accountWEB = accountData;
+
+    // Check if accountWEB is null
+    if (!accountWEB) {
+      alertModalContext?.showErrorModal("No account data found");
+      setTimeout(() => {
+        alertModalContext?.hideAlertModal();
+      }, 3000);
+      return;
+    }
+
+    console.log("button grad fill borrow", accountData);
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+
+    sails.setApi(gearApi);
+
+    //make an erorr modal if no account is found
+    if (accounts.length === 0) {
+      alertModalContext?.showErrorModal("No account found");
+      setTimeout(() => {
+        alertModalContext?.hideAlertModal();
+      }, 3000);
+      return;
+    } else {
+      // Create the transaction type
+      const transaction =
+        await sails.services.LiquidityInjectionService.functions.WithdrawCollateral(
+          Number(amount)
+        );
+      const { signer } = await web3FromSource(accountWEB.meta.source);
+      //set the account signer
+      transaction.withAccount(accountWEB.address, {
+        signer: signer as string | CodecClass<Codec, any[]> as Signer,
+      });
 
       // Calculate gas limit with default options
       await transaction.calculateGas();
@@ -232,10 +275,39 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     }
   };
 
+  const actions: { [key: string]: () => Promise<void> } = {
+    Deposit: handleDeposit,
+    Withdraw: handleWithdraw,
+  };
+
+  const handleClick = async () => {
+    setIsLoading(true);
+
+    const action = actions[label];
+    if (action) {
+      try {
+        await action();
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : "An unknown error occurred.";
+        alertModalContext?.showErrorModal(errorMessage);
+        setTimeout(() => {
+          alertModalContext?.hideAlertModal();
+        }, 3000);
+      }
+    } else {
+      alertModalContext?.showErrorModal("Invalid action");
+      setTimeout(() => {
+        alertModalContext?.hideAlertModal();
+      }, 3000);
+    }
+    setIsLoading(false);
+  };
+
   return (
     <button
       className={`btn-grad-fill ${isLoading ? "btn-grad-fill--loading" : ""}`}
-      onClick={handleSailsFunction}
+      onClick={handleClick}
       disabled={Number(amount) > balance || Number(amount) === 0 || isLoading}
     >
       {isLoading ? <Loader /> : label}
