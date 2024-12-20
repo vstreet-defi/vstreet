@@ -226,7 +226,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
         />
         <InfoRow
           label="APR"
-          value={liquidityData ? formatApr(liquidityData.APR) : "loading"}
+          value={liquidityData ? `${formatApr(liquidityData.APR)}%` : "loading"}
         />
         <div
           className={`ButtonFlex ${"disabled"}`}
