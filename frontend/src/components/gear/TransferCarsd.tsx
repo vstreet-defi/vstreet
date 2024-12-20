@@ -39,19 +39,19 @@ function TransferCard() {
 
     const injector = await web3FromSource(accountextension.meta.source);
 
-    transferExtrinsic
-      .signAndSend(
-        accountextension.address,
-        { signer: injector.signer },
-        ({ status }) => {
-          if (status.type === "Finalized") {
-            alert.success(status.type);
-          }
-        }
-      )
-      .catch((error: any) => {
-        console.log(":( transaction failed", error);
-      });
+    // transferExtrinsic
+    //   .signAndSend(
+    //     accountextension.address,
+    //     { signer: injector.signer },
+    //     ({ status }) => {
+    //       if (status.type === "Finalized") {
+    //         alert.success(status.type);
+    //       }
+    //     }
+    //   )
+    //   .catch((error: any) => {
+    //     console.log(":( transaction failed", error);
+    //   });
   };
 
   const AddressInputChange = (event: any) => {

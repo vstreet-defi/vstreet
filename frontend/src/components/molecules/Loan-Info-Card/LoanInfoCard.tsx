@@ -11,13 +11,21 @@ import { GearApi } from "@gear-js/api";
 import InfoIcon from "assets/images/icons/info_Icon.png";
 import {
   createWithdrawRewardsMessage,
-  getStakingInfo,
-  withdrawRewardsTransaction,
+  // getStakingInfo,
+  // withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
-import { useLiquidityData } from "contexts/stateContext";
+import { useLiquidity } from "contexts/stateContext";
+import { useWallet } from "contexts/accountContext";
+import { getUserInfo } from "smart-contracts-tools";
+import { UserInfo } from "smart-contracts-tools";
+import { formatWithCommasVARA, formatWithCommasVUSD } from "utils/index";
 
-const formatWithCommas = (number: number) => number.toLocaleString();
+const formatDayliInterest = (number: number) => {
+  const decimalsFactor = 1000000;
+  const formattedNumber = number / decimalsFactor;
+  return formattedNumber.toLocaleString();
+};
 
 type TransactionFunction = (
   api: GearApi,
@@ -73,37 +81,25 @@ const useStakingInfo = (api: GearApi | undefined, account: any) => {
   const [rewardsUsdc, setRewardsUsdc] = useState<number>(0);
   const [fullState, setFullState] = useState<any | undefined>({});
 
-  useEffect(() => {
-    if (api && account) {
-      getStakingInfo(
-        api,
-        account.decodedAddress,
-        setDepositedBalance,
-        setFullState,
-        setRewardsUsdc
-      );
-    }
-  }, [api, account]);
+  const useOutsideClick = (
+    ref: React.RefObject<HTMLDivElement>,
+    callback: () => void
+  ) => {
+    useEffect(() => {
+      const handleClickOutside = (event: MouseEvent) => {
+        if (ref.current && !ref.current.contains(event.target as Node)) {
+          callback();
+        }
+      };
 
-  return { depositedBalance, rewardsUsdc };
-};
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [ref, callback]);
+  };
 
-const useOutsideClick = (
-  ref: React.RefObject<HTMLDivElement>,
-  callback: () => void
-) => {
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (ref.current && !ref.current.contains(event.target as Node)) {
-        callback();
-      }
-    };
-
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, [ref, callback]);
+  return { depositedBalance, rewardsUsdc, useOutsideClick };
 };
 
 // Components
@@ -146,61 +142,90 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
   const { api } = useApi();
   const { account, accounts } = useAccount();
   const alertModalContext = useContext(AlertModalContext);
-  const liquidityData = useLiquidityData();
+  const liquidityData = useLiquidity();
 
   const [activeTooltip, setActiveTooltip] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const { selectedAccount, hexAddress } = useWallet();
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
 
-  const { depositedBalance, rewardsUsdc } = useStakingInfo(api, account);
+  const { depositedBalance, rewardsUsdc, useOutsideClick } = useStakingInfo(
+    api,
+    account
+  );
+
+  useEffect(() => {
+    if (selectedAccount) {
+      //sails call getUserInfo
+      getUserInfo(hexAddress, setUserInfo);
+      console.log("hexAddress", hexAddress);
+    }
+  }, [selectedAccount, hexAddress]);
+
   useOutsideClick(wrapperRef, () => setActiveTooltip(""));
 
-  const handleClaim = useCallback(async () => {
-    const withdrawRewardsMessage = createWithdrawRewardsMessage();
-    await handleTransaction(
-      [
-        {
-          message: withdrawRewardsMessage,
-          infoText:
-            "Claim rewards in progress. Please check your wallet to sign the transaction.",
-        },
-      ],
-      [withdrawRewardsTransaction],
-      api as GearApi,
-      account,
-      accounts,
-      alertModalContext,
-      setIsLoading
-    );
-  }, [api, account, accounts, alertModalContext]);
+  // const handleClaim = useCallback(async () => {
+  //   const withdrawRewardsMessage = createWithdrawRewardsMessage();
+  //   await handleTransaction(
+  //     [
+  //       {
+  //         message: withdrawRewardsMessage,
+  //         infoText:
+  //           "Claim rewards in progress. Please check your wallet to sign the transaction.",
+  //       },
+  //     ],
+  //     [withdrawRewardsTransaction],
+  //     api as GearApi,
+  //     account,
+  //     accounts,
+  //     alertModalContext,
+  //     setIsLoading
+  //   );
+  // }, [api, account, accounts, alertModalContext]);
 
-  const handleClick = async (actionKey: string) => {
-    setIsLoading(true);
-    try {
-      if (actionKey === "Claim") {
-        await handleClaim();
-      } else {
-        throw new Error("Invalid action");
-      }
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred.";
-      alertModalContext?.showErrorModal(errorMessage);
-      if (alertModalContext?.hideAlertModal) {
-        setTimeout(() => alertModalContext.hideAlertModal(), 3000);
-      }
-    } finally {
-      setIsLoading(false);
+  // const handleClick = async (actionKey: string) => {
+  //   setIsLoading(true);
+  //   try {
+  //     if (actionKey === "Claim") {
+  //       await handleClaim();
+  //     } else {
+  //       throw new Error("Invalid action");
+  //     }
+  //   } catch (error) {
+  //     const errorMessage =
+  //       error instanceof Error ? error.message : "An unknown error occurred.";
+  //     alertModalContext?.showErrorModal(errorMessage);
+  //     if (alertModalContext?.hideAlertModal) {
+  //       setTimeout(() => alertModalContext.hideAlertModal(), 3000);
+  //     }
+  //   } finally {
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  //Logic for LTV styles an Status
+  const greenTextStyle: React.CSSProperties = { color: "green" };
+  const yellowTextStyle: React.CSSProperties = { color: "yellow" };
+  const redTextStyle: React.CSSProperties = { color: "red" };
+  const defaultTextStyle: React.CSSProperties = { color: "white" };
+
+  const getLtvStyleAndStatus = (ltv: number) => {
+    if (ltv === 0) {
+      return { style: defaultTextStyle, status: "NO ACTIVE LOAN" };
+    } else if (ltv <= 20 && ltv > 0) {
+      return { style: greenTextStyle, status: "Low Risk" };
+    } else if (ltv <= 40) {
+      return { style: yellowTextStyle, status: "Medium Risk" };
+    } else if (ltv <= 70) {
+      return { style: redTextStyle, status: "High Risk" };
+    } else {
+      return { style: defaultTextStyle, status: "NO ACTIVE LOAN" };
     }
   };
 
-  if (!liquidityData) {
-    return <div>Error: Liquidity data not available</div>;
-  }
-
-  const { apr } = liquidityData;
-
-  const greenTextStyle: React.CSSProperties = { color: "green" };
+  const ltv = userInfo?.ltv || 0;
+  const { style: ltvStyle, status: ltvStatus } = getLtvStyleAndStatus(ltv);
 
   const tooltipMessages: Record<string, string> = {
     borrow:
@@ -221,11 +246,11 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
         )}
         <InfoRow
           label="Total Collateral Deposited"
-          value={`$${formatWithCommas(depositedBalance ?? 0)} vUSD`}
+          value={`$${formatWithCommasVARA(userInfo?.balance_vara ?? 0)} TVARA`}
         />
         <InfoRow
           label="Available To Borrow"
-          value={`$${formatWithCommas(rewardsUsdc ?? 0)} vUSD`}
+          value={`$${formatWithCommasVUSD(userInfo?.mla ?? 0)} vUSD`}
           icon={
             <img
               onClick={() =>
@@ -245,7 +270,9 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
         />
         <InfoRow
           label="Current Loan/Debt"
-          value={`$${apr} vUSD`}
+          value={`$${
+            userInfo?.loan_amount_usdc ? userInfo?.loan_amount_usdc : 0
+          } vUSD`}
           icon={
             <img
               onClick={() =>
@@ -266,7 +293,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
 
         <InfoRow
           label="Loan To Value"
-          value={`10%`}
+          value={`${ltv}%`}
           icon={
             <img
               onClick={() =>
@@ -282,21 +309,19 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
               alt="Info Icon"
             />
           }
-          valueStyle={greenTextStyle}
+          valueStyle={ltvStyle}
         />
-        <InfoRow
-          label="Status"
-          value={`Low Risk`}
-          valueStyle={greenTextStyle}
-        />
+        <InfoRow label="Status" value={ltvStatus} valueStyle={ltvStyle} />
         <InfoRow
           label="Daily Loan Interest"
-          value={`2.5%`}
+          value={`${formatDayliInterest(
+            liquidityData?.liquidityData?.InterestRate ?? 0
+          )}%`}
           valueStyle={greenTextStyle}
         />
         <div
           className={`ButtonFlex ${rewardsUsdc > 0 ? "" : "disabled"}`}
-          onClick={() => handleClick("Claim")}
+          // onClick={() => handleClick("Claim")}
         ></div>
       </div>
     </div>

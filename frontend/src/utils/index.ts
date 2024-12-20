@@ -7,3 +7,21 @@ export const isLoggedIn = ({ address }: InjectedAccountWithMeta) =>
 export function formatNumber(num: number): number {
   return parseFloat(num.toFixed(2));
 }
+
+export const formatWithCommasVARA = (number: number) => {
+  const decimalsFactor = 1000000000000;
+  const formattedNumber = number / decimalsFactor;
+  return formattedNumber.toLocaleString();
+};
+
+export const formatWithDecimalsVARA = (number: number) => {
+  const decimalsFactor = 1000000000000;
+  const formattedNumber = number / decimalsFactor;
+  return parseFloat(formattedNumber.toFixed(2));
+};
+
+export const formatWithCommasVUSD = (number: number) => {
+  const decimalsFactor = 1000000;
+  const formattedNumber = number / decimalsFactor;
+  return formattedNumber.toLocaleString();
+};
