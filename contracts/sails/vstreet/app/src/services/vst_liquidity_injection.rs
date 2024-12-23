@@ -424,16 +424,12 @@ where VftClient: Vft, {
 
     // Service's query owner of the contract
     pub fn contract_owner(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         state.owner.to_string()
     } 
 
     //Service's query seted VFT of the contract
     pub fn vft_contract_id(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let contract_id = state.vft_contract_id.unwrap();
         contract_id.to_string() 
@@ -441,8 +437,6 @@ where VftClient: Vft, {
 
     //Service's query user-balance
     pub fn user_balance(&self, user: ActorId) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         user_info.balance_usdc.to_string()
@@ -450,8 +444,6 @@ where VftClient: Vft, {
 
     //Service's query user-rewards
     pub fn user_rewards(&self, user: ActorId) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         user_info.rewards_usdc.to_string()
@@ -459,8 +451,6 @@ where VftClient: Vft, {
 
     //Service's query user info
     pub fn user_info(&self, user: ActorId) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         format!("User Info: {:?}", user_info)
@@ -468,8 +458,6 @@ where VftClient: Vft, {
 
     //Service's query all users
     pub fn all_users(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let users = state.users.keys().map(|id| id.to_string()).collect::<Vec<_>>();
         users.join(", ")
@@ -477,8 +465,6 @@ where VftClient: Vft, {
 
     //Service's query APR , interest rate, dev fee, total borrowed, available rewards pool, base rate, risk multiplier, utilization factor
     pub fn contract_info(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         format!(
             "APR: {:?}, Interest Rate: {:?}, Dev Fee: {:?}, Total Deposited: {:?}, Total Borrowed: {:?}, Available Rewards Pool: {:?}, Base Rate: {:?}, Risk Multiplier: {:?}, Utilization Factor: {:?}", 
@@ -489,8 +475,6 @@ where VftClient: Vft, {
 
     //Service's query total deposited
     pub fn total_deposited(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         state.total_deposited.to_string()
     }
