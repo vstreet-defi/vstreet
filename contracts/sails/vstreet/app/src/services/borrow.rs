@@ -244,13 +244,13 @@ where
     let scaled_amount = amount
         .checked_mul(decimals_factor)
         .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            let error_message = "Error while multiplying amount * decimals_factor".to_string();
             service.notify_error(error_message.clone());
             error_message
         })?;
 
     if scaled_amount == 0 || scaled_amount > loan_amount {
-        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        let error_message = "Error: scaled_amount is larger than loan_amount".to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
     }
@@ -259,7 +259,7 @@ where
         .loan_amount
         .checked_sub(scaled_amount)
         .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            let error_message = "Error while substracting loan_amount - scaled_amount".to_string();
             service.notify_error(error_message.clone());
             error_message
         })?;
@@ -268,7 +268,7 @@ where
         .loan_amount_usdc
         .checked_sub(amount)
         .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            let error_message = "Error while substracting loan_amount_usdc - amount".to_string();
             service.notify_error(error_message.clone());
             error_message
         })?;
@@ -277,7 +277,7 @@ where
         .total_borrowed
         .checked_sub(scaled_amount)
         .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            let error_message = "Error while substracting total_borrowed - scaled_amount".to_string();
             service.notify_error(error_message.clone());
             error_message
         })?;
