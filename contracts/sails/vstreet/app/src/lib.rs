@@ -31,6 +31,7 @@ impl VstreetProgram {
     // Program's constructor
     pub fn new_with_vft(vft_contract_id: ActorId, ltv: u128) -> Self {
         let owner = msg::source();
+        let config = Config::default();
 
         LiquidityInjectionService::<VftClient<GStdRemoting>>::seed(
             owner.clone(), 
@@ -38,7 +39,8 @@ impl VstreetProgram {
             Some(vft_contract_id),
              0, 0, 0, 0, 
              BTreeMap::new(), 
-             0, 0, 0, ltv);
+             0, 0, 0, ltv, config,
+            );
 
         Self
     }
@@ -48,9 +50,8 @@ impl VstreetProgram {
     pub fn vstreet(&self)-> LiquidityInjectionService<VftClient<GStdRemoting>>
     {
         let vft_client = VftClient::new(GStdRemoting);
-        let config = Config::default();
 
-        LiquidityInjectionService::new(vft_client, config)
+        LiquidityInjectionService::new(vft_client)
     }
 
 }

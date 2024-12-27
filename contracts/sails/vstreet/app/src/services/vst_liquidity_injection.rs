@@ -36,20 +36,8 @@ pub enum LiquidityEvent {
     LoanPayed{amount:u128},
 }
 
-// #[derive(Encode, Decode, TypeInfo)]
-// #[codec(crate = sails_rs::scale_codec)]
-// #[scale_info(crate = sails_rs::scale_info)]
-// pub enum LiquidityError {
-//     ZeroAmount,
-//     InvalidAmount,
-//     ZeroRewards,
-//     UserNotFound,
-//     TransferFailed,
-// }
-
 pub struct LiquidityInjectionService<VftClient>{
     pub vft_client: VftClient,
-    pub config: Config
 }
 
 impl<VftClient> EventNotifier for LiquidityInjectionService<VftClient>
@@ -129,6 +117,7 @@ where VftClient: Vft, {
         interest_rate: u128,
         apr: u128,
         ltv: u128,
+        config: Config,
     ) {
         unsafe {
             VSTREET_STATE = Some(
@@ -145,6 +134,7 @@ where VftClient: Vft, {
                     interest_rate,
                     apr,
                     ltv,
+                    config,
                 }
             );
         };
@@ -152,11 +142,9 @@ where VftClient: Vft, {
 
     pub fn new(
         vft_client: VftClient,
-        config: Config
     ) -> Self {
         Self {
             vft_client,
-            config
         }
     }
 
@@ -268,7 +256,7 @@ where VftClient: Vft, {
         self.update_all_collateral_available_to_withdraw();
 
         let state_mut = self.state_mut();
-        let decimals_factor = self.get_decimals_factor();
+        let decimals_factor = state_mut.config.decimals_factor;
         state_mut.available_rewards_pool = amount * decimals_factor;
 
         // Notify the AvailableRewardsPoolModified event
@@ -279,161 +267,30 @@ where VftClient: Vft, {
         Ok(())
     }
 
-    // Config Setters
+    pub async fn set_vara_price(&mut self, vara_price: u128) -> String {
+        self.ensure_admin_or_panic();
 
-    pub fn set_decimals_factor(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
+        let state = self.state_mut();
 
-        self.config.decimals_factor = new_value;
-        Ok(())
-    }
-
-    pub fn set_year_in_seconds(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.year_in_seconds = new_value;
-        Ok(())
-    }
-
-    pub fn set_base_rate(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.base_rate = new_value;
-        Ok(())
-    }
-
-    pub fn set_risk_multiplier(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.risk_multiplier = new_value;
-        Ok(())
-    }
-
-    pub fn set_one_tvara(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.one_tvara = new_value;
-        Ok(())
-    }
-
-    pub async fn set_vara_price(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
+        state.config.vara_price = vara_price;
 
         self.update_cv_and_mla_for_all_users();
         self.update_all_ltv().await;
-        
         let _ = self.liquidate_all_loans();
 
-        self.config.vara_price = new_value;
-        Ok(())
-    }
-
-    pub fn set_dev_fee(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.dev_fee = new_value;
-        Ok(())
-    }
-
-    pub fn set_max_loan_amount(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.max_loan_amount = new_value;
-        Ok(())
-    }
-
-    pub fn set_max_collateral_withdraw(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.max_collateral_withdraw = new_value;
-        Ok(())
-    }
-
-    pub fn set_max_liquidity_deposit(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.max_liquidity_deposit = new_value;
-        Ok(())
-    }
-
-    pub fn set_max_liquidity_withdraw(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.max_liquidity_withdraw = new_value;
-        Ok(())
-    }
-
-    pub fn set_min_rewards_withdraw(&mut self, new_value: u128) -> Result<(), String> {
-        self.ensure_admin()?;
-
-        self.config.min_rewards_withdraw = new_value;
-        Ok(())
-    }
-
-    // Config Getters
-
-    pub fn get_decimals_factor(&self) -> u128 {
-        self.config.decimals_factor
-    }
-
-    pub fn get_year_in_seconds(&self) -> u128 {
-        self.config.year_in_seconds
-    }
-
-    pub fn get_base_rate(&self) -> u128 {
-        self.config.base_rate
-    }
-
-    pub fn get_risk_multiplier(&self) -> u128 {
-        self.config.risk_multiplier
-    }
-
-    pub fn get_one_tvara(&self) -> u128 {
-        self.config.one_tvara
-    }
-
-    pub fn get_vara_price(&self) -> u128 {
-        self.config.vara_price
-    }
-
-    pub fn get_dev_fee(&self) -> u128 {
-        self.config.dev_fee
-    }
-
-    pub fn get_max_loan_amount(&self) -> u128 {
-        self.config.max_loan_amount
-    }
-
-    pub fn get_max_collateral_withdraw(&self) -> u128 {
-        self.config.max_collateral_withdraw
-    }
-
-    pub fn get_max_liquidity_deposit(&self) -> u128 {
-        self.config.max_liquidity_deposit
-    }
-
-    pub fn get_max_liquidity_withdraw(&self) -> u128 {
-        self.config.max_liquidity_withdraw
-    }
-
-    pub fn get_min_rewards_withdraw(&self) -> u128 {
-        self.config.min_rewards_withdraw
+        format!("New Vara price set: {:?}", vara_price)
     }
 
     // Queries
 
     // Service's query owner of the contract
     pub fn contract_owner(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         state.owner.to_string()
     } 
 
     //Service's query seted VFT of the contract
     pub fn vft_contract_id(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let contract_id = state.vft_contract_id.unwrap();
         contract_id.to_string() 
@@ -441,8 +298,6 @@ where VftClient: Vft, {
 
     //Service's query user-balance
     pub fn user_balance(&self, user: ActorId) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         user_info.balance_usdc.to_string()
@@ -450,8 +305,6 @@ where VftClient: Vft, {
 
     //Service's query user-rewards
     pub fn user_rewards(&self, user: ActorId) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         user_info.rewards_usdc.to_string()
@@ -459,8 +312,6 @@ where VftClient: Vft, {
 
     //Service's query user info
     pub fn user_info(&self, user: ActorId) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
         format!("User Info: {:?}", user_info)
@@ -468,8 +319,6 @@ where VftClient: Vft, {
 
     //Service's query all users
     pub fn all_users(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         let users = state.users.keys().map(|id| id.to_string()).collect::<Vec<_>>();
         users.join(", ")
@@ -477,20 +326,16 @@ where VftClient: Vft, {
 
     //Service's query APR , interest rate, dev fee, total borrowed, available rewards pool, base rate, risk multiplier, utilization factor
     pub fn contract_info(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         format!(
             "APR: {:?}, Interest Rate: {:?}, Dev Fee: {:?}, Total Deposited: {:?}, Total Borrowed: {:?}, Available Rewards Pool: {:?}, Base Rate: {:?}, Risk Multiplier: {:?}, Utilization Factor: {:?}", 
-            state.apr, state.interest_rate, self.get_dev_fee(),state.total_deposited, state.total_borrowed, 
-            state.available_rewards_pool, self.get_base_rate(), self.get_risk_multiplier(), state.utilization_factor
+            state.apr, state.interest_rate, state.config.dev_fee, state.total_deposited, state.total_borrowed, 
+            state.available_rewards_pool, state.config.base_rate, state.config.risk_multiplier, state.utilization_factor
         )
     }
 
     //Service's query total deposited
     pub fn total_deposited(&self) -> String {
-        self.ensure_admin_or_panic();
-
         let state = self.state_ref();
         state.total_deposited.to_string()
     }
@@ -507,6 +352,7 @@ where VftClient: Vft, {
         debug_assert!(state.is_none(), "state is not started!");
         unsafe { state.unwrap_unchecked() }
     }
+
 
     // Internal methods
 
@@ -563,7 +409,7 @@ where VftClient: Vft, {
 
         self.calculate_utilization_factor();
 
-        state_mut.interest_rate = self.get_base_rate().saturating_add(state_mut.utilization_factor * self.get_risk_multiplier());
+        state_mut.interest_rate = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor * state_mut.config.risk_multiplier);
 
         state_mut.interest_rate
     }
@@ -591,7 +437,7 @@ where VftClient: Vft, {
 
         for user_info in state_mut.users.values_mut() {
             if user_info.balance > 0 {
-                Self::update_user_rewards(user_info, state_mut.interest_rate, self.get_decimals_factor(), self.get_year_in_seconds());
+                Self::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
             }
         }
     }
@@ -623,9 +469,9 @@ where VftClient: Vft, {
     pub fn calculate_cv(&mut self, user: ActorId) -> String {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
-        let vara_price = self.get_vara_price();
+        let vara_price = state_mut.config.vara_price;
 
-        let tvaras = user_info.balance_vara / self.get_one_tvara();
+        let tvaras = user_info.balance_vara / state_mut.config.one_tvara;
 
         let cv = tvaras * vara_price;
         user_info.cv = cv;
@@ -649,7 +495,7 @@ where VftClient: Vft, {
 
         for user in state_mut.users.keys().cloned().collect::<Vec<_>>() {
             let user_info = state_mut.users.get(&user).unwrap();
-            if user_info.balance_vara >= self.get_one_tvara() {
+            if user_info.balance_vara >= state_mut.config.one_tvara {
                 self.calculate_cv(user);
                 self.calculate_mla(user);
             }
@@ -683,7 +529,7 @@ where VftClient: Vft, {
 
         let total_deposited = state_mut.total_deposited;
         let total_borrowed = state_mut.total_borrowed;
-        let decimals_factor = self.get_decimals_factor();
+        let decimals_factor = state_mut.config.decimals_factor;
 
         // Check if total_deposited or total_borrowed is zero
         if total_deposited == 0 || total_borrowed == 0 {
@@ -699,9 +545,9 @@ where VftClient: Vft, {
     fn calculate_interest_rate(&mut self) -> u128 {
         let state_mut = self.state_mut();
         let utilization_factor = state_mut.utilization_factor;
-        let base_rate = self.get_base_rate();
-        let risk_multiplier = self.get_risk_multiplier();
-        let dev_fee = self.get_dev_fee();
+        let base_rate = state_mut.config.base_rate;
+        let risk_multiplier = state_mut.config.risk_multiplier;
+        let dev_fee = state_mut.config.dev_fee;
 
         base_rate.saturating_add(utilization_factor * risk_multiplier) * (1 + dev_fee)
     }
@@ -715,9 +561,9 @@ where VftClient: Vft, {
         let interest_rate = self.calculate_interest_rate();
         let current_timestamp = exec::block_timestamp() as u128;
         let time_diff_seconds = (current_timestamp - user_info.borrow_last_updated) / 1000;
-        let decimals_factor = self.get_decimals_factor();
+        let decimals_factor = state_mut.config.decimals_factor;
 
-        let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds) / (self.get_year_in_seconds() * decimals_factor);
+        let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds) / (state_mut.config.year_in_seconds * decimals_factor);
         user_info.loan_amount = user_info.loan_amount.saturating_add(interest_rate_amount);
         user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
         user_info.borrow_last_updated = current_timestamp;
