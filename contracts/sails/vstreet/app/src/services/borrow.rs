@@ -27,7 +27,7 @@ where
 {
     let state_mut = service.state_mut();
     let caller = msg::source();
-    let decimals_factor = service.get_decimals_factor();
+    let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {
         Some(user_info) => user_info,
@@ -57,7 +57,7 @@ where
             error_message
         })?;
 
-    if amount > service.get_max_loan_amount() || amount == 0 || future_loan_amount > mla {
+    if amount > state_mut.config.max_loan_amount || amount == 0 || future_loan_amount > mla {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return Err(error_message);
@@ -128,7 +128,7 @@ where
 {
     let state_mut = service.state_mut();
     let caller = msg::source();
-    let decimals_factor = service.get_decimals_factor();
+    let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {
         Some(user_info) => user_info,
@@ -211,7 +211,7 @@ where
 {
     let state_mut = service.state_mut();
     let caller = msg::source();
-    let decimals_factor = service.get_decimals_factor();
+    let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {
         Some(user_info) => user_info,
@@ -224,7 +224,7 @@ where
 
     let loan_amount = user_info.loan_amount_usdc;
 
-    if amount > service.get_max_loan_amount() || amount == 0 || amount > loan_amount {
+    if amount > state_mut.config.max_loan_amount || amount == 0 || amount > loan_amount {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);

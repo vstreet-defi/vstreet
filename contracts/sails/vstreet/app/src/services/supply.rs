@@ -30,17 +30,17 @@ where
     VftClient: Vft,
 {
     service.update_all_rewards();
+    let state_mut = service.state_mut();
 
     debug!("Depositing funds");
-    if amount > service.get_max_liquidity_deposit() || amount == 0 {
+    if amount > state_mut.config.max_liquidity_deposit || amount == 0 {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
     }
  
-    let state_mut = service.state_mut();
     let caller = msg::source();
-    let decimals_factor = service.get_decimals_factor();
+    let decimals_factor = state_mut.config.decimals_factor;
 
     // Transfer tokens from user to contract
     let result = service.transfer_tokens(caller, exec::program_id(), amount).await;
@@ -101,7 +101,7 @@ where
     service.calculate_apr();
     debug!("New APR after deposit: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, service.get_decimals_factor(), service.get_year_in_seconds());
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
 
     // Notify the deposit event
     service.notify_deposit(scaled_amount);
@@ -121,7 +121,7 @@ where
 
     let state_mut = service.state_mut();
     let caller = msg::source();
-    let decimals_factor = service.get_decimals_factor();
+    let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {
         Some(user_info) => user_info,
@@ -133,7 +133,7 @@ where
     };
 
     // Check if amount is valid
-    if amount > service.get_max_liquidity_withdraw() || amount == 0 || amount > user_info.balance {
+    if amount > state_mut.config.max_liquidity_withdraw || amount == 0 || amount > user_info.balance {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
@@ -203,7 +203,7 @@ where
 
     debug!("New APR after Withdraw: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, service.get_decimals_factor(), service.get_year_in_seconds());
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
 
     // Notify the withdraw event
     service.notify_withdraw_liquidity(scaled_amount);
@@ -223,7 +223,7 @@ where
 
     let state_mut = service.state_mut();
     let caller = msg::source();
-    let decimals_factor = service.get_decimals_factor();
+    let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {
         Some(user_info) => user_info,
@@ -235,7 +235,7 @@ where
     };
 
     state_mut.apr = service.calculate_apr();
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, service.get_decimals_factor(), service.get_year_in_seconds());
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
     
     let rewards_to_withdraw = user_info
         .rewards
@@ -246,7 +246,7 @@ where
             error_message
         })?;
 
-    if rewards_to_withdraw < service.get_min_rewards_withdraw() {
+    if rewards_to_withdraw < state_mut.config.min_rewards_withdraw {
         let error_message = ERROR_USER_REWARDS_INSUFFICIENT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
@@ -347,17 +347,17 @@ pub async fn deposit_collateral<VftClient>(
 where
     VftClient: Vft,
 {
+    let state_mut = service.state_mut();
+
     let value = msg::value();
     let caller = msg::source();
-    let one_tvara = service.get_one_tvara();
+    let one_tvara = state_mut.config.one_tvara;
 
     if value == 0 {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
     }
-
-    let state_mut = service.state_mut();
 
     // Update user collateral
     let current_timestamp = exec::block_timestamp() as u128;
@@ -413,7 +413,7 @@ where
 {
     let state_mut = service.state_mut();
     let caller = msg::source();
-    let one_tvara = service.get_one_tvara();
+    let one_tvara = state_mut.config.one_tvara;
 
     let user_info = match state_mut.users.get_mut(&caller) {
         Some(user_info) => user_info,
@@ -433,7 +433,7 @@ where
         })?;
 
     // Check if amount is valid
-    if amount_vara > service.get_max_collateral_withdraw() || amount_vara <= 0 || amount_vara > user_info.available_to_withdraw_vara {
+    if amount_vara > state_mut.config.max_collateral_withdraw || amount_vara <= 0 || amount_vara > user_info.available_to_withdraw_vara {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
