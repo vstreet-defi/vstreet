@@ -21,6 +21,8 @@ use crate::services::utils::{
 
 static mut VSTREET_STATE: Option<VstreetState> = None;
 
+static mut CONFIG: Option<Config> = None;
+
 #[derive(Decode, Encode, TypeInfo)]
 pub enum LiquidityEvent {
     Deposit{amount:u128},
@@ -36,20 +38,8 @@ pub enum LiquidityEvent {
     LoanPayed{amount:u128},
 }
 
-// #[derive(Encode, Decode, TypeInfo)]
-// #[codec(crate = sails_rs::scale_codec)]
-// #[scale_info(crate = sails_rs::scale_info)]
-// pub enum LiquidityError {
-//     ZeroAmount,
-//     InvalidAmount,
-//     ZeroRewards,
-//     UserNotFound,
-//     TransferFailed,
-// }
-
 pub struct LiquidityInjectionService<VftClient>{
     pub vft_client: VftClient,
-    pub config: Config
 }
 
 impl<VftClient> EventNotifier for LiquidityInjectionService<VftClient>
@@ -129,6 +119,7 @@ where VftClient: Vft, {
         interest_rate: u128,
         apr: u128,
         ltv: u128,
+        config: Config,
     ) {
         unsafe {
             VSTREET_STATE = Some(
@@ -145,6 +136,7 @@ where VftClient: Vft, {
                     interest_rate,
                     apr,
                     ltv,
+                    config: Config::default(),
                 }
             );
         };
@@ -152,11 +144,9 @@ where VftClient: Vft, {
 
     pub fn new(
         vft_client: VftClient,
-        config: Config
     ) -> Self {
         Self {
             vft_client,
-            config
         }
     }
 
@@ -279,147 +269,96 @@ where VftClient: Vft, {
         Ok(())
     }
 
-    // Config Setters
-
+       // Config Setters
+    
     pub fn set_decimals_factor(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.decimals_factor = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.decimals_factor = new_value;
         Ok(())
     }
-
+    
     pub fn set_year_in_seconds(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.year_in_seconds = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.year_in_seconds = new_value;
         Ok(())
     }
-
+    
     pub fn set_base_rate(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.base_rate = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.base_rate = new_value;
         Ok(())
     }
-
+    
     pub fn set_risk_multiplier(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.risk_multiplier = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.risk_multiplier = new_value;
         Ok(())
     }
-
+    
     pub fn set_one_tvara(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.one_tvara = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.one_tvara = new_value;
         Ok(())
     }
-
+    
     pub async fn set_vara_price(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
+        let state_mut = self.state_mut();
+        state_mut.config.vara_price = new_value;
         self.update_cv_and_mla_for_all_users();
         self.update_all_ltv().await;
-        
         let _ = self.liquidate_all_loans();
-
-        self.config.vara_price = new_value;
         Ok(())
     }
-
+    
     pub fn set_dev_fee(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.dev_fee = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.dev_fee = new_value;
         Ok(())
     }
-
+    
     pub fn set_max_loan_amount(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.max_loan_amount = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.max_loan_amount = new_value;
         Ok(())
     }
-
+    
     pub fn set_max_collateral_withdraw(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.max_collateral_withdraw = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.max_collateral_withdraw = new_value;
         Ok(())
     }
-
+    
     pub fn set_max_liquidity_deposit(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.max_liquidity_deposit = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.max_liquidity_deposit = new_value;
         Ok(())
     }
-
+    
     pub fn set_max_liquidity_withdraw(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.max_liquidity_withdraw = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.max_liquidity_withdraw = new_value;
         Ok(())
     }
-
+    
     pub fn set_min_rewards_withdraw(&mut self, new_value: u128) -> Result<(), String> {
         self.ensure_admin()?;
-
-        self.config.min_rewards_withdraw = new_value;
+        let state_mut = self.state_mut();
+        state_mut.config.min_rewards_withdraw = new_value;
         Ok(())
     }
 
-    // Config Getters
-
-    pub fn get_decimals_factor(&self) -> u128 {
-        self.config.decimals_factor
-    }
-
-    pub fn get_year_in_seconds(&self) -> u128 {
-        self.config.year_in_seconds
-    }
-
-    pub fn get_base_rate(&self) -> u128 {
-        self.config.base_rate
-    }
-
-    pub fn get_risk_multiplier(&self) -> u128 {
-        self.config.risk_multiplier
-    }
-
-    pub fn get_one_tvara(&self) -> u128 {
-        self.config.one_tvara
-    }
-
-    pub fn get_vara_price(&self) -> u128 {
-        self.config.vara_price
-    }
-
-    pub fn get_dev_fee(&self) -> u128 {
-        self.config.dev_fee
-    }
-
-    pub fn get_max_loan_amount(&self) -> u128 {
-        self.config.max_loan_amount
-    }
-
-    pub fn get_max_collateral_withdraw(&self) -> u128 {
-        self.config.max_collateral_withdraw
-    }
-
-    pub fn get_max_liquidity_deposit(&self) -> u128 {
-        self.config.max_liquidity_deposit
-    }
-
-    pub fn get_max_liquidity_withdraw(&self) -> u128 {
-        self.config.max_liquidity_withdraw
-    }
-
-    pub fn get_min_rewards_withdraw(&self) -> u128 {
-        self.config.min_rewards_withdraw
-    }
-
+   
     // Queries
 
     // Service's query owner of the contract
@@ -491,6 +430,7 @@ where VftClient: Vft, {
         debug_assert!(state.is_none(), "state is not started!");
         unsafe { state.unwrap_unchecked() }
     }
+
 
     // Internal methods
 

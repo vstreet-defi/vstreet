@@ -38,8 +38,10 @@ pub struct VstreetState {
     pub interest_rate: u128,
     pub apr: u128,
     pub ltv: u128,
+    pub config: Config,
 }
 
+#[derive(Clone, Encode, Decode, TypeInfo)]
 pub struct Config {
     pub decimals_factor: u128,
     pub year_in_seconds: u128,
@@ -63,7 +65,7 @@ impl Default for Config {
             base_rate: 10_000,           // 0.01 * DECIMALS_FACTOR
             risk_multiplier: 40_000,     // 0.04 * DECIMALS_FACTOR
             one_tvara: 1_000_000_000_000, // Value of one TVara and Vara
-            vara_price: 0,
+            vara_price: 1000000,
             dev_fee: 1_500_000, // 1.5% * DECIMALS_FACTOR
             max_loan_amount: 100000000000000000000,
             max_collateral_withdraw: 100000000000000000000,
