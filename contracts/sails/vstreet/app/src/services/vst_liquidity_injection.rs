@@ -267,12 +267,16 @@ where VftClient: Vft, {
         Ok(())
     }
 
-    pub fn set_vara_price(&mut self, vara_price: u128) -> String {
+    pub async fn set_vara_price(&mut self, vara_price: u128) -> String {
         self.ensure_admin_or_panic();
 
         let state = self.state_mut();
 
         state.config.vara_price = vara_price;
+
+        self.update_cv_and_mla_for_all_users();
+        self.update_all_ltv().await;
+        let _ = self.liquidate_all_loans();
 
         format!("New Vara price set: {:?}", vara_price)
     }
