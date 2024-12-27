@@ -11,6 +11,28 @@ export function Loader() {
   );
 }
 
+export function GreenLoader() {
+  return (
+    <div className="lds-facebook">
+      <div
+        style={{
+          backgroundColor: "#00ffc4",
+        }}
+      ></div>
+      <div
+        style={{
+          backgroundColor: "#00ffc4",
+        }}
+      ></div>
+      <div
+        style={{
+          backgroundColor: "#00ffc4",
+        }}
+      ></div>
+    </div>
+  );
+}
+
 function AlertModal() {
   const alertContext = useContext(AlertModalContext);
   const [isVisible, setIsVisible] = useState(false);

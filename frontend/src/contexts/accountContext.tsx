@@ -13,6 +13,7 @@ import {
 } from "@polkadot/extension-dapp";
 import { decodeAddress } from "@polkadot/util-crypto";
 import { u8aToHex } from "@polkadot/util";
+import { ApiPromise, WsProvider } from "@polkadot/api";
 
 interface Account {
   address: string;
@@ -25,9 +26,10 @@ interface Account {
 interface WalletContextType {
   allAccounts: Account[];
   selectedAccount: string | null;
-  accountData: Account;
+  accountData: Account | undefined;
   hexAddress: any;
   isWalletConnected: boolean;
+  balance: number;
   handleConnectWallet: () => void;
   handleSelectAccount: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   formatAccount: (account: string) => string;
@@ -49,11 +51,19 @@ const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
 
   const [selectedAccount, setSelectedAccount] = useState<string | null>(() => {
     const storedSelectedAccount = sessionStorage.getItem("selectedAccount");
-
     return storedSelectedAccount || null;
   });
 
-  const [accountData, setAccountData] = useState<any>();
+  const [accountData, setAccountData] = useState<Account | undefined>(() => {
+    const storedSelectedAccount = sessionStorage.getItem("selectedAccount");
+    const storedAccounts = sessionStorage.getItem("allAccounts");
+    if (storedSelectedAccount && storedAccounts) {
+      const accounts = JSON.parse(storedAccounts) as Account[];
+      return accounts.find((acc) => acc.address === storedSelectedAccount);
+    }
+    return undefined;
+  });
+
   const [hexAddress, setHexAddress] = useState<string>(() => {
     const account = sessionStorage.getItem("selectedAccount");
     return account ? u8aToHex(decodeAddress(account)) : "";
@@ -62,6 +72,8 @@ const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const [isWalletConnected, setIsWalletConnected] = useState<boolean>(() => {
     return sessionStorage.getItem("allAccounts") ? true : false;
   });
+
+  const [balance, setBalance] = useState<number>(0);
 
   const isSubscribed = useRef(false);
 
@@ -95,13 +107,8 @@ const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   const handleSelectAccount = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const address = event.target.value;
     setSelectedAccount(address);
-    const account = allAccounts.find(
-      (acc: Account) => acc.address === selectedAccount
-    );
-    setAccountData(account);
     sessionStorage.setItem("selectedAccount", address);
     const hexAddress = address.length && u8aToHex(decodeAddress(address));
-
     setHexAddress(hexAddress || "");
   };
 
@@ -169,6 +176,26 @@ const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     subscribeToAccountChanges();
   }, [selectedAccount]);
 
+  useEffect(() => {
+    const fetchBalance = async () => {
+      if (selectedAccount) {
+        const provider = new WsProvider("wss://testnet.vara.network");
+        const api = await ApiPromise.create({ provider });
+        const { data: balance } = await api.query.system.account(
+          selectedAccount
+        );
+        setBalance(Number(balance.free.toString()));
+      }
+    };
+
+    fetchBalance();
+  }, [selectedAccount]);
+
+  useEffect(() => {
+    const account = allAccounts.find((acc) => acc.address === selectedAccount);
+    setAccountData(account);
+  }, [selectedAccount, allAccounts]);
+
   const formatAccount = (account: string) =>
     account.length > 4 ? `...${account.slice(-4)}` : account;
 
@@ -180,6 +207,7 @@ const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         accountData,
         hexAddress,
         isWalletConnected,
+        balance,
         handleConnectWallet,
         handleSelectAccount,
         formatAccount,
