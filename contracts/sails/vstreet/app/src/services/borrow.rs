@@ -249,7 +249,7 @@ where
             error_message
         })?;
 
-    if scaled_amount == 0 || scaled_amount > loan_amount {
+    if scaled_amount == 0 || scaled_amount > user_info.loan_amount {
         let error_message = format!("Error: scaled_amount {:?} is larger than loan_amount {:?}. Decimals factor: {:?}", scaled_amount, loan_amount, decimals_factor).to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
