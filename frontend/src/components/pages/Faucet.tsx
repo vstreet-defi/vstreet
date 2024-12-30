@@ -19,7 +19,7 @@ function Faucet() {
     DappTab.Home,
     DappTab.Supply,
     DappTab.Borrow,
-    DappTab.Faucet,
+
     DappTab.Markets,
   ];
 

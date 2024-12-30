@@ -1,12 +1,12 @@
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import DappPage from "./pages/Dapp";
-import { Faucet } from "./pages/Faucet";
+//import { Faucet } from "./pages/Faucet";
 
 const routes = [
   { path: "/", Page: Home },
   { path: "/dapp", Page: DappPage },
-  { path: "/faucet", Page: Faucet },
+  //{ path: "/faucet", Page: Faucet },
 ];
 
 function Routing() {

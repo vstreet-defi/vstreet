@@ -10,7 +10,6 @@ export enum DappTab {
   Home = "Home",
   Supply = "Supply",
   Borrow = "Borrow",
-  Faucet = "Faucet",
   Markets = "Markets",
 }
 
@@ -44,8 +43,6 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
       setActiveTab(DappTab.Supply.toLowerCase());
     } else if (isDapp) {
       setActiveTab((tab || DappTab.Supply).toLowerCase());
-    } else if (location.pathname === "/faucet") {
-      setActiveTab(DappTab.Faucet.toLowerCase());
     } else {
       setActiveTab(null); // Resetear en otras rutas
     }
@@ -63,10 +60,6 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
     [DappTab.Supply]: () => {
       navigate("/dapp?tab=supply");
       setActiveTab(DappTab.Supply.toLowerCase());
-    },
-    [DappTab.Faucet]: () => {
-      navigate("/faucet");
-      setActiveTab(DappTab.Faucet.toLowerCase());
     },
     [DappTab.Markets]: () => {},
   };
@@ -91,7 +84,7 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   };
 
   const renderFlag = (item: string) => {
-    if (item !== DappTab.Home && (isDapp || location.pathname === "/faucet")) {
+    if (item !== DappTab.Home && isDapp) {
       return <Flag text={item === DappTab.Markets ? "Coming Soon" : "New"} />;
     }
     return null;
@@ -103,10 +96,7 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
         {renderFlag(item)}
         <button
           className={`item${
-            item.toLowerCase() === activeTab &&
-            (isDapp || location.pathname === "/faucet")
-              ? "-active"
-              : ""
+            item.toLowerCase() === activeTab && isDapp ? "-active" : ""
           }`}
           onClick={() => handleClick(item)}
         >
@@ -123,9 +113,7 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
     return (
       <>
         <div className="items-container">{renderItems()}</div>
-        {isAccountVisible ||
-        location.pathname === "/dapp" ||
-        location.pathname === "/faucet" ? (
+        {isAccountVisible || location.pathname === "/dapp" ? (
           <DisplayWallet />
         ) : (
           <button
