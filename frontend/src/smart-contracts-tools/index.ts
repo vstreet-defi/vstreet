@@ -87,12 +87,9 @@ function handleStatusUpdate(status: any, actionType: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const checkStatus = () => {
       if (status.isInBlock) {
-        console.log(`${actionType} is in block`);
       } else if (status.type === "Finalized") {
-        console.log(`${actionType} finalized`);
         resolve();
       } else {
-        console.log(`${actionType} in process`);
       }
     };
 
@@ -106,155 +103,6 @@ function handleStatusUpdate(status: any, actionType: string): Promise<void> {
     }, 100);
   });
 }
-
-// async function executeTransaction(
-//   api: GearApi,
-//   message: MessageSendOptions,
-//   metadata: any,
-//   account: any,
-//   accounts: any[]
-// ): Promise<void> {
-//   const localAccountAddress = account?.address;
-//   const isVisibleAccount = accounts.some(
-//     (visibleAccount) => visibleAccount.address === localAccountAddress
-//   );
-
-//   if (!isVisibleAccount) {
-//     throw new Error("Account not available to sign");
-//   }
-
-//   const transferExtrinsic = await api.message.send(message, metadata);
-//   const injector = await web3FromSource(accounts[0].meta.source);
-
-//   const actionType = (payload: any) => {
-//     if ("Approve" in payload) return "Approve";
-//     if ("Deposit" in payload) return "Deposit";
-//     if ("withdrawliquidity" in payload) return "Withdraw";
-//     if ("WithdrawRewards" in payload) return "Withdraw Rewards";
-//     return "Transaction";
-//   };
-
-//   return new Promise<void>((resolve, reject) => {
-//     if (!localAccountAddress) {
-//       throw new Error("No account");
-//     }
-//     transferExtrinsic
-//       .signAndSend(
-//         localAccountAddress,
-//         { signer: injector.signer },
-//         async ({ status }) => {
-//           try {
-//             await handleStatusUpdate(status, actionType(message.payload));
-//             resolve();
-//           } catch (error: any) {
-//             reject(error);
-//           }
-//         }
-//       )
-//       .catch((error: any) => {
-//         reject(error);
-//       });
-//   });
-// }
-
-// export async function approveVSTTransaction(
-//   account: any,
-//   amount: string
-// ): Promise<void> {
-//   const parser = await SailsIdlParser.new();
-//   const sails = new Sails(parser);
-
-//   const idl = idlVFT;
-
-//   sails.parseIdl(idl);
-
-//   const api = await GearApi.create({
-//     providerAddress: "wss://testnet.vara.network",
-//   });
-
-//   sails.setApi(api);
-
-//   sails.setProgramId(fungibleTokenProgramID);
-
-//   try {
-//     const transaction = await sails.services.Vft.functions.Approve(
-//       vstreetProgramID,
-//       amount
-//     );
-//     console.log("Transaction created:", transaction);
-
-//     // Retrieve all accounts from the wallet extension
-//     const injector = await web3FromSource(account.meta.source);
-//     console.log("Injector retrieved:", injector);
-
-//     // Set the account address and signer in the transaction
-//     transaction.withAccount(account, { signer: injector.signer });
-//     console.log("Transaction signed with account:", account);
-//   } catch (error) {
-//     console.error("Error during transaction approval:", error);
-//   }
-// }
-
-// export async function approveTransaction(
-//   api: GearApi,
-//   approveMessage: MessageSendOptions,
-//   account: any,
-//   accounts: any[]
-// ): Promise<void> {
-//   return executeTransaction(
-//     api,
-//     approveMessage,
-//     decodedFungibleTokenMeta,
-//     account,
-//     accounts
-//   );
-// }
-
-// export async function depositTransaction(
-//   api: GearApi,
-//   depositMessage: MessageSendOptions,
-//   account: any,
-//   accounts: any[]
-// ): Promise<void> {
-//   return executeTransaction(
-//     api,
-//     depositMessage,
-//     decodedVstreetMeta,
-//     account,
-//     accounts
-//   );
-// }
-
-// export async function withdrawTransaction(
-//   api: GearApi,
-//   withdrawMessage: MessageSendOptions,
-//   account: any,
-//   accounts: any[]
-// ): Promise<void> {
-//   return executeTransaction(
-//     api,
-//     withdrawMessage,
-//     decodedVstreetMeta,
-//     account,
-//     accounts
-//   );
-// }
-// export async function withdrawRewardsTransaction(
-//   api: GearApi,
-//   withdrawRewardsMessage: MessageSendOptions,
-//   account: any,
-//   accounts: any[]
-// ): Promise<void> {
-//   return executeTransaction(
-//     api,
-//     withdrawRewardsMessage,
-//     decodedVstreetMeta,
-//     account,
-//     accounts
-//   );
-// }
-
-//SAILS FUNCTIONS START HERE --
 
 //Query Liquidit Pool State, this is only for example new one used in Total Liquidity is in stateContext.tsx
 export const getVstreetState = async (
@@ -282,7 +130,6 @@ export const getVstreetState = async (
         undefined
       );
     const contractInfo = result as string;
-    console.log(contractInfo);
     setFullState(contractInfo);
   } catch (error) {
     console.error("Error calling ContractInfo:", error);

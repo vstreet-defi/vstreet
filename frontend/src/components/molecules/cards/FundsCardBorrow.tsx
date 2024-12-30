@@ -33,7 +33,6 @@ function FundsCardBorrow({ buttonLabel }: props) {
 
   useEffect(() => {
     if (selectedAccount) {
-      console.log("balanceVara:", balance);
       setBalanceVara(Number(balance));
       getUserInfo(hexAddress, setUserInfo);
     }
@@ -42,7 +41,6 @@ function FundsCardBorrow({ buttonLabel }: props) {
   useEffect(() => {
     if (userInfo) {
       setDepositedBalance(userInfo.available_to_withdraw_vara);
-      console.log("depositedBalance:", userInfo.available_to_withdraw_vara);
     }
   }, [selectedAccount, hexAddress, userInfo]);
   return (

@@ -97,16 +97,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
 
-      console.log("Message ID:", msgId);
-      console.log("Transaction hash:", txHash);
-      console.log("Block hash:", blockHash);
 
       const finalized = await isFinalized;
-      console.log("Is finalized:", finalized);
 
       try {
         const result = await response();
-        console.log("Program response:", result);
       } catch (error) {
         console.error("Error executing message:", error);
       }
@@ -150,16 +145,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
 
-      console.log("Message ID:", msgId);
-      console.log("Transaction hash:", txHash);
-      console.log("Block hash:", blockHash);
 
       const finalized = await isFinalized;
-      console.log("Is finalized:", finalized);
 
       try {
         const result = await response();
-        console.log("Program response:", result);
       } catch (error) {
         console.error("Error executing message:", error);
       }
@@ -203,16 +193,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
 
-      console.log("Message ID:", msgId);
-      console.log("Transaction hash:", txHash);
-      console.log("Block hash:", blockHash);
-
+      
       const finalized = await isFinalized;
-      console.log("Is finalized:", finalized);
 
       try {
         const result = await response();
-        console.log("Program response:", result);
       } catch (error) {
         console.error("Error executing message:", error);
       }

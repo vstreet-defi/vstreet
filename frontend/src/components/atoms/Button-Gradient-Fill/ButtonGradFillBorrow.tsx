@@ -47,7 +47,6 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
 
   //Polkadot Extension Wallet-Hook by PSYLABS
   const { accountData } = useWallet();
-  console.log("accountData", accountData);
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -108,16 +107,12 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
 
-      console.log("Message ID:", msgId);
-      console.log("Transaction hash:", txHash);
-      console.log("Block hash:", blockHash);
+     
 
       const finalized = await isFinalized;
-      console.log("Is finalized:", finalized);
 
       try {
         const result = await response();
-        console.log("Program response:", result);
       } catch (error) {
         console.error("Error executing message:", error);
       }
@@ -160,16 +155,10 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
 
-      console.log("Message ID:", msgId);
-      console.log("Transaction hash:", txHash);
-      console.log("Block hash:", blockHash);
-
       const finalized = await isFinalized;
-      console.log("Is finalized:", finalized);
 
       try {
         const result = await response();
-        console.log("Program response:", result);
       } catch (error) {
         console.error("Error executing message:", error);
       }

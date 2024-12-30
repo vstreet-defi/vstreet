@@ -11,9 +11,7 @@ export const DisplayWallet = () => {
     handleSelectAccount,
     formatAccount,
   } = useWallet();
-  // console.log("allAccounts: ", allAccounts);
-  // console.log("selectedAccount: ", selectedAccount);
-  // console.log("isWalletConnected: ", isWalletConnected);
+
 
   return (
     <>

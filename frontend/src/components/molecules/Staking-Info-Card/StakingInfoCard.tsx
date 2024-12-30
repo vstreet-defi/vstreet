@@ -147,7 +147,6 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   useEffect(() => {
     const getUserData = async () => {
       if (selectedAccount) {
-        console.log("hexAddress", hexAddress);
         getUserInfo(hexAddress, setUserInfo);
       }
     };

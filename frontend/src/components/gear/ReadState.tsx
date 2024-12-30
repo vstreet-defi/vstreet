@@ -52,7 +52,7 @@ function ReadState() {
             .then((result) => {
               setFullState(result.toJSON());
             })
-            .catch(({ message }: Error) => console.log(message));
+            .catch(({ message }: Error) => console.error(message));
         }}
       >
         STATE

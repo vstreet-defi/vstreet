@@ -159,7 +159,6 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
     if (selectedAccount) {
       //sails call getUserInfo
       getUserInfo(hexAddress, setUserInfo);
-      console.log("hexAddress", hexAddress);
     }
   }, [selectedAccount, hexAddress]);
 

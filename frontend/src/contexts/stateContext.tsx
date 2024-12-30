@@ -81,7 +81,6 @@ export const LiquidityProvider: React.FC<LiquidityProviderProps> = ({
       };
 
       const parsedData = parseDataString(contractInfo);
-      console.log("Contract Info Parsed Data:", parsedData);
 
       //Map the parsed data to the LiquidityData interface
       const liquidityData: LiquidityData = {

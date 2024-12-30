@@ -46,10 +46,7 @@ function FundsCard({ buttonLabel }: props) {
 
   useEffect(() => {
     if (userInfo) {
-      console.log("userInfo:", userInfo);
-      console.log("userInfo.balance_usdc:", userInfo.balance_usdc);
       setDepositedBalance(userInfo.balance_usdc ?? 0);
-      console.log("depositedBalance:", userInfo.balance_usdc ?? 0);
     }
   }, [userInfo]);
 

@@ -104,7 +104,6 @@ function UserLockedBalances() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fullState]);
 
-  // console.log(userStatus);
   return (
     <Box className={styles.Moduleborderwrap}>
       <Box className={styles.modulePositions}>

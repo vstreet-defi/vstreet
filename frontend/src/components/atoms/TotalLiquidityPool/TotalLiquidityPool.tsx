@@ -22,7 +22,6 @@ const TotalLiquidityPool: React.FC = () => {
   //Format TVL
   const tvl = calculateTvl(liquidityData?.TotalDeposited || 0);
 
-  console.log("liquidityData", liquidityData);
   return (
     <div className="Container">
       <div>
