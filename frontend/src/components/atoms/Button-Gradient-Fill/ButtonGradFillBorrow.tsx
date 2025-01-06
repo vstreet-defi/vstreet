@@ -101,13 +101,11 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
     transaction.withValue(BigInt(Number(amount) * 1e12));
-    await transaction.calculateGas();
+    await transaction.calculateGas(true, 15);
 
     return async () => {
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
-
-     
 
       const finalized = await isFinalized;
 
@@ -149,7 +147,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
-    await transaction.calculateGas();
+    await transaction.calculateGas(true, 15);
 
     return async () => {
       const { msgId, blockHash, txHash, response, isFinalized } =

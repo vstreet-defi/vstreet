@@ -136,12 +136,11 @@ function BorrowCard() {
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
-    await transaction.calculateGas();
+    await transaction.calculateGas(true, 15);
 
     return async () => {
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
-
 
       const finalized = await isFinalized;
 
@@ -184,13 +183,11 @@ function BorrowCard() {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
 
-    await transaction.calculateGas();
+    await transaction.calculateGas(true, 15);
 
     return async () => {
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
-
-    
 
       const finalized = await isFinalized;
 
@@ -233,13 +230,11 @@ function BorrowCard() {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
 
-    await transaction.calculateGas();
+    await transaction.calculateGas(true, 15);
 
     return async () => {
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
-
-   
 
       const finalized = await isFinalized;
 
