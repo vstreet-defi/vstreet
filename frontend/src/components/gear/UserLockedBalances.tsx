@@ -23,7 +23,7 @@ function UserLockedBalances() {
   const [syntheticLocked, setSyntheticLocked] = useState();
 
   useEffect(() => {
-    if (account?.address) {
+    if (account && account.address) {
       setWalletAddress(account.address);
       setWalletDecoded(decodeAddress(account.address));
     }
@@ -104,7 +104,6 @@ function UserLockedBalances() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fullState]);
 
-  // console.log(userStatus);
   return (
     <Box className={styles.Moduleborderwrap}>
       <Box className={styles.modulePositions}>

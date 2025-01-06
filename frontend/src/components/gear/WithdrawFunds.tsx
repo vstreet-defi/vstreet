@@ -49,24 +49,7 @@ function WithdrawFunds() {
 
       const injector = await web3FromSource(accounts[0].meta.source);
 
-      transferExtrinsic
-        .signAndSend(
-          account?.address ?? alert.error("No account"),
-          { signer: injector.signer },
-          ({ status }) => {
-            if (status.isInBlock) {
-              alert.success(status.asInBlock.toString());
-            } else {
-              console.log("in process");
-              if (status.type === "Finalized") {
-                alert.success(status.type);
-              }
-            }
-          }
-        )
-        .catch((error: any) => {
-          console.log(":( transaction failed", error);
-        });
+    
     } else {
       alert.error("Account not available to sign");
     }

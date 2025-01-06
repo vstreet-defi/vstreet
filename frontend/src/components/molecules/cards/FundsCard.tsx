@@ -4,21 +4,11 @@ import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 import { useEffect, useState } from "react";
-import { useAccount, useApi } from "@gear-js/react-hooks";
-import { GearApi } from "@gear-js/api";
-import {
-  FullState,
-  FullStateVST,
-  getVFTBalance,
-  getStakingInfo,
-} from "smart-contracts-tools";
 
-//Import useWallet from contexts
+import { getUserInfo, getVFTBalance } from "smart-contracts-tools";
 import { useWallet } from "contexts/accountContext";
-
-//Sails-js Impotrts
-import { Sails } from "sails-js";
-import { SailsIdlParser } from "sails-js-parser";
+import { UserInfo } from "smart-contracts-tools";
+import { hexToBn } from "@polkadot/util";
 
 type props = {
   buttonLabel: string;
@@ -28,11 +18,8 @@ function FundsCard({ buttonLabel }: props) {
   const [inputValue, setInputValue] = useState("");
   const [balance, setBalance] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
-  const [fullState, setFullState] = useState<FullStateVST | FullState>();
-  const { api } = useApi();
-  const { account } = useAccount();
+  const [userInfo, setUserInfo] = useState<UserInfo>();
 
-  //Polkadot Extension Wallet-Hook by PSYLABS
   const { selectedAccount, hexAddress } = useWallet();
 
   const isDepositCard = () => {
@@ -42,25 +29,27 @@ function FundsCard({ buttonLabel }: props) {
     setInputValue(value);
   };
 
+  const convertHexToDecimal = (hexValue: string) => {
+    return hexToBn(hexValue).toString();
+  };
+
   useEffect(() => {
-    if (selectedAccount && account) {
-      // getBalanceVUSD(api, account.address, setBalance, setFullState);
-
+    if (selectedAccount) {
       //call sails get balance
-      getVFTBalance(api, hexAddress, setBalance);
-
-      getStakingInfo(
-        api,
-        account.decodedAddress,
-        setDepositedBalance,
-        setFullState
-      );
-
-      console.log("gear decoded address", account.decodedAddress);
-      console.log("hex address", hexAddress);
-      console.log("polkadot extension address", selectedAccount);
+      getVFTBalance(hexAddress, (balance: number) => {
+        const humanReadableBalance = convertHexToDecimal(balance.toString());
+        setBalance(Number(humanReadableBalance));
+      });
+      getUserInfo(hexAddress, setUserInfo);
     }
-  }, [selectedAccount, account, api]);
+  }, [selectedAccount, hexAddress]);
+
+  useEffect(() => {
+    if (userInfo) {
+      setDepositedBalance(userInfo.balance_usdc ?? 0);
+    }
+  }, [userInfo]);
+
   return (
     <div className={styles.Container}>
       <div className={styles.BasicCard}>

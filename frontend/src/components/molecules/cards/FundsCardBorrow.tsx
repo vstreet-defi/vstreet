@@ -2,25 +2,26 @@ import BasicInput from "components/molecules/Basic-Input/BasicInput";
 import TokenSelectorBorrow from "components/atoms/Token-Selector-Borrow/TokenSelectorBorrow";
 import styles from "./Card.module.scss";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
-import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
+import ButtonGradFillBorrow from "components/atoms/Button-Gradient-Fill/ButtonGradFillBorrow";
 import { useEffect, useState } from "react";
 import { useAccount, useApi } from "@gear-js/react-hooks";
-import {
-  FullState,
-  FullStateVST,
-  getBalanceVUSD,
-  getStakingInfo,
-} from "smart-contracts-tools";
+import { FullState, FullStateVST } from "smart-contracts-tools";
+import { useWallet } from "contexts/accountContext";
+import { getUserInfo } from "smart-contracts-tools";
+import { UserInfo } from "smart-contracts-tools";
+import { formatWithDecimalsVARA } from "utils";
 
 type props = {
   buttonLabel: string;
 };
 
-function FundsCard({ buttonLabel }: props) {
+function FundsCardBorrow({ buttonLabel }: props) {
   const [inputValue, setInputValue] = useState("");
-  const [balance, setBalance] = useState<number>(0);
+  const [balanceVara, setBalanceVara] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
   const [fullState, setFullState] = useState<FullStateVST | FullState>();
+  const { selectedAccount, hexAddress, balance } = useWallet();
+  const [userInfo, setUserInfo] = useState<UserInfo>();
   const { api } = useApi();
   const { account } = useAccount();
   const isDepositCard = () => {
@@ -31,18 +32,17 @@ function FundsCard({ buttonLabel }: props) {
   };
 
   useEffect(() => {
-    if (account) {
-      // getBalanceVUSD(api, account.address, setBalance, setFullState);
-      getStakingInfo(
-        api,
-        account.decodedAddress,
-        setDepositedBalance,
-        setFullState
-      );
-
-      console.log(account.decodedAddress);
+    if (selectedAccount) {
+      setBalanceVara(Number(balance));
+      getUserInfo(hexAddress, setUserInfo);
     }
-  }, [account, api]);
+  }, [selectedAccount, balance, hexAddress]);
+
+  useEffect(() => {
+    if (userInfo) {
+      setDepositedBalance(userInfo.available_to_withdraw_vara);
+    }
+  }, [selectedAccount, hexAddress, userInfo]);
   return (
     <div className={styles.Container}>
       <div className={styles.BasicCard}>
@@ -50,21 +50,33 @@ function FundsCard({ buttonLabel }: props) {
         <BasicInput
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? balance : depositedBalance}
+          balance={
+            isDepositCard()
+              ? formatWithDecimalsVARA(balanceVara)
+              : formatWithDecimalsVARA(depositedBalance)
+          }
         />
         <PercentageSelector
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? balance : depositedBalance}
+          balance={
+            isDepositCard()
+              ? formatWithDecimalsVARA(balanceVara)
+              : formatWithDecimalsVARA(depositedBalance)
+          }
         />
-        <ButtonGradFill
+        <ButtonGradFillBorrow
           amount={inputValue}
           label={buttonLabel}
-          balance={isDepositCard() ? balance : depositedBalance}
+          balance={
+            isDepositCard()
+              ? formatWithDecimalsVARA(balanceVara)
+              : formatWithDecimalsVARA(depositedBalance)
+          }
         />
       </div>
     </div>
   );
 }
 
-export { FundsCard };
+export { FundsCardBorrow };

@@ -1,77 +1,60 @@
-import { useState, useEffect } from "react";
-
-import { AccountsModal } from "../../molecules/accounts-modal";
 import { useWallet } from "../../../contexts/accountContext";
 import "./DisplayWallet.scss";
+import { Button, Select } from "@chakra-ui/react";
 
-interface Account {
-  address: string;
-  // Add other properties if needed
-}
-
-export default function DisplayWallet() {
-  //Polkadot Extension Wallet-Hook by PSYLABS
+export const DisplayWallet = () => {
   const {
     allAccounts,
     selectedAccount,
+    isWalletConnected,
     handleConnectWallet,
     handleSelectAccount,
     formatAccount,
   } = useWallet();
 
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
 
   return (
     <>
-      {/* Estado de la cuenta conectada */}
-      <p
-        style={{
-          color: "white",
-          fontSize: "0.8rem",
-          margin: "0",
-          padding: "0",
-          textAlign: "center",
-        }}
-      >
-        {selectedAccount
-          ? formatAccount(selectedAccount)
-          : "no account found, select account"}
-      </p>
-
-      {allAccounts.length === 0 ? (
-        <button className="ButtonGradientBorder" onClick={handleConnectWallet}>
-          Connect Wallet
-        </button>
-      ) : null}
-
-      {allAccounts.length > 0 ? (
-        <select
-          className="selectCustom"
+      {isWalletConnected && allAccounts.length ? (
+        <Select
+          fontWeight={500}
+          background={"linear-gradient(to left, #00ffc4, #4fff4b)"}
+          _focusWithin={{
+            ring: "2px",
+            ringOffset: "1px",
+            ringOffsetColor: "transparent",
+            borderColor: "transparent",
+            backgroundClip: "padding-box",
+            backgroundImage: "linear-gradient(141deg, #4fff4b, #00ff96)",
+            backgroundOrigin: "border-box",
+            borderRadius: "8px",
+          }}
+          variant="brandPrimary"
+          placeholder={
+            allAccounts.length > 0 ? "Select Account" : "No accounts"
+          }
+          size="lg"
+          maxWidth="12rem"
           onChange={handleSelectAccount}
-          placeholder="select Account"
+          value={selectedAccount || ""}
+          isDisabled={allAccounts.length === 0}
         >
-          {allAccounts.map((account: Account) => (
-            <option
-              style={{ backgroundColor: "Black" }}
-              key={account.address}
-              value={account.address}
-            >
+          {allAccounts.map((account, index) => (
+            <option key={index} value={account.address}>
               {formatAccount(account.address)}
             </option>
           ))}
-        </select>
-      ) : null}
-      {isModalOpen && (
-        <AccountsModal accounts={allAccounts} close={closeModal} />
+        </Select>
+      ) : (
+        <Button
+          className="ButtonGradientBorder"
+          _hover={{ backgroundColor: "brand.primary", color: "white" }}
+          width="12rem"
+          onClick={handleConnectWallet}
+        >
+          Connect Wallet
+        </Button>
       )}
     </>
   );
-}
+};

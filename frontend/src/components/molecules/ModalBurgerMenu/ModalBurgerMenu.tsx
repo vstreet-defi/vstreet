@@ -13,7 +13,9 @@ const ModalBurgerMenu = ({ isOpen, items, selectedTab }: any) => {
       navigate("/dapp?tab=borrow");
     } else if (item === DappTab.Supply) {
       navigate("/dapp?tab=supply");
-    } else if (item === "GitHub") {
+    } /*else if (item === DappTab.Faucet) {
+      navigate("/faucet");
+    }*/ else if (item === "GitHub") {
       window.open("https://github.com/vstreet-defi/vstreet", "_blank");
     } else if (item === "Team") {
       window.location.href = "#team";

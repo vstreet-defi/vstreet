@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { AlertModalContext } from "contexts/alertContext";
-import { useAccount } from "@gear-js/react-hooks";
-import { web3FromSource } from "@polkadot/extension-dapp";
+import { useAccount, useApi } from "@gear-js/react-hooks";
+import { web3Accounts, web3FromSource } from "@polkadot/extension-dapp";
 
 //Sails-js Imports
 import { Sails } from "sails-js";
@@ -10,9 +10,6 @@ import { SailsIdlParser } from "sails-js-parser";
 //Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
 
-import { Codec, CodecClass } from "@polkadot/types/types";
-import { Signer } from "@polkadot/types/types";
-
 import {
   fungibleTokenProgramID,
   idlVFT,
@@ -20,8 +17,16 @@ import {
   vstreetProgramID,
 } from "../../../utils/smartPrograms";
 
+import {
+  createApproveMessage,
+  createDepositMessage,
+  createWithdrawMessage,
+} from "smart-contracts-tools";
 import { Loader } from "components/molecules/alert-modal/AlertModal";
 import { GearApi } from "@gear-js/api";
+import { MessageSendOptions } from "@gear-js/api/types";
+import { Signer } from "@polkadot/types/types";
+import { Codec, CodecClass, IKeyringPair } from "@polkadot/types/types";
 
 interface ButtonProps {
   label: string;
@@ -31,11 +36,17 @@ interface ButtonProps {
 
 type TransactionFunction = () => Promise<void>;
 
-const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
+const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
+  amount,
+  label,
+  balance,
+}) => {
   const { accounts } = useAccount();
+
   const alertModalContext = useContext(AlertModalContext);
 
-  const { accountData, hexAddress, selectedAccount } = useWallet();
+  //Polkadot Extension Wallet-Hook by PSYLABS
+  const { accountData } = useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -61,53 +72,6 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     }, 2000);
   };
 
-  const createApprovalTransaction = async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVFT);
-    sails.setProgramId(fungibleTokenProgramID);
-
-    const accountWEB = accountData;
-    if (!accountWEB) {
-      throw new Error("No account data found");
-    }
-
-    const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
-    });
-
-    sails.setApi(gearApi);
-
-    if (accounts.length === 0) {
-      throw new Error("No account found");
-    }
-
-    const transaction = await sails.services.Vft.functions.Approve(
-      vstreetProgramID,
-      Number(amount)
-    );
-    const { signer } = await web3FromSource(accountWEB.meta.source);
-    transaction.withAccount(accountWEB.address, {
-      signer: signer as string | CodecClass<Codec, any[]> as Signer,
-    });
-    await transaction.calculateGas();
-
-    return async () => {
-      const { msgId, blockHash, txHash, response, isFinalized } =
-        await transaction.signAndSend();
-
-
-      const finalized = await isFinalized;
-
-      try {
-        const result = await response();
-      } catch (error) {
-        console.error("Error executing message:", error);
-      }
-    };
-  };
-
   const createDepositTransaction = async () => {
     const parser = await SailsIdlParser.new();
     const sails = new Sails(parser);
@@ -131,20 +95,19 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     }
 
     const transaction =
-      await sails.services.LiquidityInjectionService.functions.DepositLiquidity(
-        Number(amount)
-      );
+      await sails.services.LiquidityInjectionService.functions.DepositCollateral();
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
-
+    transaction.withValue(BigInt(Number(amount) * 1e12));
     await transaction.calculateGas();
 
     return async () => {
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
 
+     
 
       const finalized = await isFinalized;
 
@@ -179,21 +142,19 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     }
 
     const transaction =
-      await sails.services.LiquidityInjectionService.functions.WithdrawLiquidity(
+      await sails.services.LiquidityInjectionService.functions.WithdrawCollateral(
         Number(amount)
       );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
-
     await transaction.calculateGas();
 
     return async () => {
       const { msgId, blockHash, txHash, response, isFinalized } =
         await transaction.signAndSend();
 
-      
       const finalized = await isFinalized;
 
       try {
@@ -204,17 +165,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     };
   };
 
-  const handleApproveAndDeposit = async () => {
-    const approvalTransaction = await createApprovalTransaction();
-    const depositTransaction = await createDepositTransaction();
+  const handleDeposit = async () => {
+    const transaction = await createDepositTransaction();
     await handleTransaction([
       {
-        transaction: approvalTransaction,
-        infoText:
-          "Approval in progress. Please check your wallet to approve the transaction.",
-      },
-      {
-        transaction: depositTransaction,
+        transaction,
         infoText:
           "Deposit in progress. Please check your wallet to sign the transaction.",
       },
@@ -233,7 +188,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   };
 
   const actions: { [key: string]: () => Promise<void> } = {
-    Deposit: handleApproveAndDeposit,
+    Deposit: handleDeposit,
     Withdraw: handleWithdraw,
   };
 
@@ -272,4 +227,4 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   );
 };
 
-export default ButtonGradFill;
+export default ButtonGradFillBorrow;

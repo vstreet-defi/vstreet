@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import DisplayWallet from "components/organisms/Wallet/DisplayWallet";
+import { DisplayWallet } from "components/organisms/Wallet/DisplayWallet";
 import Flag from "../../atoms/Flag/Flag";
 import Logo from "../../../assets/images/icons/vStreet-Navbar-Color-White.png";
 import styles from "../../molecules/wallet/Wallet.module.scss";
@@ -32,17 +32,21 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isTablet = window.innerWidth < 822;
-  const isDapp = location.pathname !== "/";
+  const isDapp = location.pathname.startsWith("/dapp");
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab") as DappTab | null;
+
     if (isDapp && !tab) {
       navigate("/dapp?tab=supply", { replace: true });
-    } else {
+      setActiveTab(DappTab.Supply.toLowerCase());
+    } else if (isDapp) {
       setActiveTab((tab || DappTab.Supply).toLowerCase());
+    } else {
+      setActiveTab(null); // Resetear en otras rutas
     }
-  }, [location.search, navigate, isDapp]);
+  }, [location.search, location.pathname, navigate, isDapp]);
 
   const dappTabActions: Record<DappTab, () => void> = {
     [DappTab.Home]: () => {
