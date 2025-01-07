@@ -34,7 +34,7 @@ function TokenSelector() {
         <span className="custom-arrow"></span>
       </div>
       {showMessage && (
-        <Tooltip message="At the moment we only allow } TVARA Liquidity Deposits." />
+        <Tooltip message="At the moment we only allow TVARA Liquidity Deposits." />
       )}
     </div>
   );
