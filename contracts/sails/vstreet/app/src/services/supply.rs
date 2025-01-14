@@ -101,7 +101,7 @@ where
     service.calculate_apr();
     debug!("New APR after deposit: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
 
     // Notify the deposit event
     service.notify_deposit(scaled_amount);
@@ -203,7 +203,7 @@ where
 
     debug!("New APR after Withdraw: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
 
     // Notify the withdraw event
     service.notify_withdraw_liquidity(scaled_amount);
@@ -235,7 +235,7 @@ where
     };
 
     state_mut.apr = service.calculate_apr();
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
     
     let rewards_to_withdraw = user_info
         .rewards
@@ -380,6 +380,9 @@ where
 
     // Calculate available to withdraw vara
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+
+    LiquidityInjectionService::<VftClient>::calculate_all_loan_interest_rate_amounts();
+
 
     if value % one_tvara != 0 {
         let error_message = ERROR_INVALID_AMOUNT.to_string();

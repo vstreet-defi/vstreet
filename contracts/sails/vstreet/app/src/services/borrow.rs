@@ -111,7 +111,8 @@ where
 
     service.update_user_ltv(caller);
     service.calculate_apr();
-
+         
+    LiquidityInjectionService::<VftClient>::calculate_loan_interest_rate_amount(user_info);
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
 
     service.notify_loan_taken(amount);
@@ -288,6 +289,8 @@ where
 
     service.update_user_ltv(caller);
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    LiquidityInjectionService::<VftClient>::calculate_loan_interest_rate_amount(user_info);
+
     
     service.notify_loan_payed(amount);
 

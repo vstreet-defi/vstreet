@@ -409,9 +409,9 @@ where VftClient: Vft, {
 
         self.calculate_utilization_factor();
 
-        state_mut.interest_rate = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor * state_mut.config.risk_multiplier);
+        state_mut.apr = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor * state_mut.config.risk_multiplier);
 
-        state_mut.interest_rate
+        state_mut.apr
     }
 
     // Update User Rewards
@@ -437,7 +437,7 @@ where VftClient: Vft, {
 
         for user_info in state_mut.users.values_mut() {
             if user_info.balance > 0 {
-                Self::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+                Self::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
             }
         }
     }
