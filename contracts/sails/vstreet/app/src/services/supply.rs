@@ -98,8 +98,13 @@ where
             error_message
         })?;
 
+    service.calculate_utilization_factor();
+
     service.calculate_apr();
     debug!("New APR after deposit: {}", state_mut.apr);
+
+    service.calculate_interest_rate();
+    service.calculate_all_loan_interest_rate_amounts();
 
     LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
 
@@ -200,6 +205,9 @@ where
 
     service.calculate_utilization_factor();
     state_mut.apr = service.calculate_apr();
+    service.calculate_interest_rate();
+
+    service.calculate_all_loan_interest_rate_amounts();
 
     debug!("New APR after Withdraw: {}", state_mut.apr);
 
@@ -398,7 +406,6 @@ where
             error_message
         })?;
 
-    service.calculate_apr();
 
     // Notify the deposit event
     service.notify_deposited_vara(amount);
@@ -476,6 +483,7 @@ where
 
     service.calculate_utilization_factor();
     service.calculate_apr();
+    service.calculate_interest_rate();
 
     // Notify the withdraw event
     service.notify_withdrawn_vara(amount);
