@@ -276,6 +276,7 @@ where VftClient: Vft, {
 
         self.update_cv_and_mla_for_all_users();
         self.update_all_ltv().await;
+        self.calculate_all_loan_interest_rate_amounts();
         let _ = self.liquidate_all_loans();
 
         format!("New Vara price set: {:?}", vara_price)

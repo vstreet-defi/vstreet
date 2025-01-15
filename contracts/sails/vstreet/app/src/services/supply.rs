@@ -332,7 +332,7 @@ where
         return sails_rs::Err(error_message);
     }
 
-    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
     
     // Notify the WithdrawRewards event
     service.notify_withdraw_rewards(amount);
@@ -381,7 +381,7 @@ where
     // Calculate available to withdraw vara
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
 
-    LiquidityInjectionService::<VftClient>::calculate_all_loan_interest_rate_amounts();
+    service.calculate_all_loan_interest_rate_amounts();
 
 
     if value % one_tvara != 0 {
@@ -470,6 +470,7 @@ where
    
     // Calculate available to withdraw vara
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    service.calculate_all_loan_interest_rate_amounts();
 
     let _ = service.liquidate_user_loan(caller).await;
 
