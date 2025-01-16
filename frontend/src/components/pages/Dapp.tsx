@@ -15,7 +15,7 @@ import { useLocation } from "react-router-dom";
 import LoanInfo from "components/organisms/LoanInfo/LoanInfo";
 import { FundsManagerBorrow } from "components/organisms/FundsManagerBorrow/FundsManagerBorrow";
 import { useWallet } from "../../contexts/accountContext";
-import Spline from "@splinetool/react-spline";
+
 import "./Dapp.scss";
 import { position } from "@chakra-ui/react";
 
@@ -35,25 +35,6 @@ function DappPage() {
   const [sceneUrl, setSceneUrl] = useState(
     "https://prod.spline.design/HuxD1L0ZMBZZ6p81/scene.splinecode"
   );
-
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth <= 600) {
-        setSceneUrl(
-          "https://prod.spline.design/Nam5w76DquhQTXJ0/scene.splinecode"
-        );
-      } else {
-        setSceneUrl(
-          "https://prod.spline.design/HuxD1L0ZMBZZ6p81/scene.splinecode"
-        );
-      }
-    };
-
-    window.addEventListener("resize", handleResize);
-    handleResize(); // Call once to set initial state
-
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
 
   //Polkadot Extension Wallet-Hook by PSYLABS
   const {
@@ -86,27 +67,14 @@ function DappPage() {
               />
               <DappTemplate
                 bannerComponent={
-                  <div className="background-container">
-                    <Spline scene={sceneUrl} />
-                    <div
-                      className="content"
-                      style={{
-                        position: "absolute",
-                        top: "40%",
-                        left: "50%",
-                        transform: "translate(-50%, -50%)",
-                      }}
-                    >
-                      <>
-                        <AlertModal />
-                        {isSupplyTab ? (
-                          <TotalLiquidityPool />
-                        ) : (
-                          <CollateralAndBorrowBanner />
-                        )}
-                      </>
-                    </div>
-                  </div>
+                  <>
+                    <AlertModal />
+                    {isSupplyTab ? (
+                      <TotalLiquidityPool />
+                    ) : (
+                      <CollateralAndBorrowBanner />
+                    )}
+                  </>
                 }
                 leftSectionComponent={
                   <>{isSupplyTab ? <FundsManager /> : <FundsManagerBorrow />}</>
