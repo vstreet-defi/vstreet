@@ -7,7 +7,7 @@ import { ProgramMetadata } from "@gear-js/api";
 
 //Working Contract with APR
 export const vstreetProgramID =
-  "0x504a251c663c9184297cd6fece395cf4866b1b317e738069376b392fd4b6c053";
+  "0x9ec3893f13936e1648450a4f5157a47216a437b4fbf0a08344ce4c03ead05ca5";
 
 //This meta is not longer used, use idlVSTREET instead
 const vstreetMeta =
