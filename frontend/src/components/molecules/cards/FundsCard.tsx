@@ -4,12 +4,11 @@ import TokenSelector from "components/atoms/Token-Selector/TokenSelector";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill";
 import { useEffect, useState } from "react";
-
-import { getUserInfo, getVFTBalance } from "smart-contracts-tools";
+import { useUserInfo } from "contexts/userInfoContext";
 import { useWallet } from "contexts/accountContext";
-import { UserInfo } from "smart-contracts-tools";
+import { getVFTBalance } from "smart-contracts-tools";
 import { hexToBn } from "@polkadot/util";
-
+import { formatWithCommasVUSD } from "utils";
 type props = {
   buttonLabel: string;
 };
@@ -18,7 +17,7 @@ function FundsCard({ buttonLabel }: props) {
   const [inputValue, setInputValue] = useState("");
   const [balance, setBalance] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
-  const [userInfo, setUserInfo] = useState<UserInfo>();
+  const { userInfo, fetchUserInfo } = useUserInfo();
 
   const { selectedAccount, hexAddress } = useWallet();
 
@@ -40,13 +39,14 @@ function FundsCard({ buttonLabel }: props) {
         const humanReadableBalance = convertHexToDecimal(balance.toString());
         setBalance(Number(humanReadableBalance));
       });
-      getUserInfo(hexAddress, setUserInfo);
+      fetchUserInfo(hexAddress);
     }
-  }, [selectedAccount, hexAddress]);
+  }, [selectedAccount, hexAddress, fetchUserInfo]);
 
   useEffect(() => {
     if (userInfo) {
-      setDepositedBalance(userInfo.balance_usdc ?? 0);
+      const formatedBalance = userInfo.balance ? userInfo.balance / 1000000 : 0;
+      setDepositedBalance(formatedBalance);
     }
   }, [userInfo]);
 

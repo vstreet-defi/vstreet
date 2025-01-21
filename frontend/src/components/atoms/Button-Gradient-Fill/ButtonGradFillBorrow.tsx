@@ -9,6 +9,7 @@ import { SailsIdlParser } from "sails-js-parser";
 
 //Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
+import { useUserInfo } from "contexts/userInfoContext";
 
 import {
   fungibleTokenProgramID,
@@ -44,9 +45,10 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   const { accounts } = useAccount();
 
   const alertModalContext = useContext(AlertModalContext);
+  const { fetchUserInfo } = useUserInfo();
 
   //Polkadot Extension Wallet-Hook by PSYLABS
-  const { accountData } = useWallet();
+  const { accountData, selectedAccount, hexAddress } = useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -68,8 +70,8 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     alertModalContext?.showSuccessModal();
     setTimeout(() => {
       alertModalContext?.hideAlertModal();
-      window.location.reload();
-    }, 2000);
+      fetchUserInfo(hexAddress);
+    }, 3000);
   };
 
   const createDepositTransaction = async () => {

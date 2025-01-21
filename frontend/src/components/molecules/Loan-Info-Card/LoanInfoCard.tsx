@@ -17,8 +17,7 @@ import {
 import { AlertModalContext } from "contexts/alertContext";
 import { useLiquidity } from "contexts/stateContext";
 import { useWallet } from "contexts/accountContext";
-import { getUserInfo } from "smart-contracts-tools";
-import { UserInfo } from "smart-contracts-tools";
+import { useUserInfo } from "contexts/userInfoContext";
 import { formatWithCommasVARA, formatWithCommasVUSD } from "utils/index";
 
 const formatDayliInterest = (number: number) => {
@@ -148,7 +147,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { selectedAccount, hexAddress } = useWallet();
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const { userInfo, fetchUserInfo } = useUserInfo();
 
   const { depositedBalance, rewardsUsdc, useOutsideClick } = useStakingInfo(
     api,
@@ -157,8 +156,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
 
   useEffect(() => {
     if (selectedAccount) {
-      //sails call getUserInfo
-      getUserInfo(hexAddress, setUserInfo);
+      fetchUserInfo(hexAddress);
     }
   }, [selectedAccount, hexAddress]);
 

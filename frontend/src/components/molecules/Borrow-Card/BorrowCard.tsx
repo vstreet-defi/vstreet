@@ -12,28 +12,17 @@ import { Codec, CodecClass } from "@polkadot/types/types";
 import { Signer } from "@polkadot/types/types";
 import { web3FromSource } from "@polkadot/extension-dapp";
 
-// Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
-
-// Import getVFTBalance from smart-contracts-tools
 import { getVFTBalance } from "smart-contracts-tools";
-
-//Import fungibleTokenProgramID and idlVFt from utils/smartPrograms
 import {
   idlVSTREET,
   idlVFT,
   vstreetProgramID,
   fungibleTokenProgramID,
 } from "utils/smartPrograms";
-
 import { AlertModalContext } from "contexts/alertContext";
-import { Loader } from "components/molecules/alert-modal/AlertModal";
+import { useUserInfo } from "contexts/userInfoContext";
 
-// Import getUserInfo
-import { getUserInfo } from "smart-contracts-tools";
-import { UserInfo } from "smart-contracts-tools";
-
-// Sails-js Imports
 import { Sails } from "sails-js";
 import { SailsIdlParser } from "sails-js-parser";
 
@@ -48,7 +37,7 @@ function BorrowCard() {
   const alertModalContext = useContext(AlertModalContext);
   const [balanceVFT, setBalanceVFT] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
-  const [userInfo, setUserInfo] = useState<UserInfo | undefined>(undefined);
+  const { userInfo, fetchUserInfo } = useUserInfo();
   const [maxLoanAmount, setMaxLoanAmount] = useState<number>(0);
   const [loanAmount, setLoanAmount] = useState<number>(0);
   const { account } = useAccount();
@@ -68,15 +57,15 @@ function BorrowCard() {
         const humanReadableBalance = convertHexToDecimal(balance.toString());
         setBalanceVFT(Number(humanReadableBalance));
       });
-      getUserInfo(hexAddress, setUserInfo);
+      fetchUserInfo(hexAddress);
     }
-  }, [selectedAccount, hexAddress, convertHexToDecimal]);
+  }, [selectedAccount, hexAddress]);
 
   useEffect(() => {
     if (userInfo) {
-      const mla = userInfo.mla / 1000000;
+      const mla = Number(userInfo.mla);
       setMaxLoanAmount(mla ?? 0);
-      const la = userInfo.loan_amount / 1000000;
+      const la = Number(userInfo.loan_amount);
       setLoanAmount(la ?? 0);
     }
   }, [userInfo]);
@@ -100,10 +89,11 @@ function BorrowCard() {
       alertModalContext?.showSuccessModal();
       setTimeout(() => {
         alertModalContext?.hideAlertModal();
-        window.location.reload();
-      }, 2000);
+        // Fetch user info again to refresh values
+        fetchUserInfo(hexAddress);
+      }, 3000);
     },
-    [alertModalContext]
+    [alertModalContext, fetchUserInfo, hexAddress]
   );
 
   const createApprovalTransaction = useCallback(async () => {
@@ -317,7 +307,7 @@ function BorrowCard() {
           <ButtonGradientBorderBorrow
             text="Borrow"
             isDisabled={
-              Number(inputValue) > maxLoanAmount ||
+              Number(inputValue) * 1000000 > maxLoanAmount ||
               Number(inputValue) === 0 ||
               isLoading
             }
@@ -328,7 +318,7 @@ function BorrowCard() {
           <ButtonGradientBorderBorrow
             text="Pay Loan"
             isDisabled={
-              Number(inputValue) > loanAmount ||
+              Number(inputValue) * 1000000 > loanAmount ||
               Number(inputValue) === 0 ||
               isLoading
             }
