@@ -270,7 +270,9 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
         <InfoRow
           label="Current Loan/Debt"
           value={`$${
-            userInfo?.loan_amount_usdc ? userInfo?.loan_amount_usdc : 0
+            userInfo?.loan_amount
+              ? formatWithCommasVUSD(userInfo.loan_amount)
+              : 0
           } vUSD`}
           icon={
             <img
