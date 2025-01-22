@@ -23,6 +23,7 @@ import {
 
 import { Loader } from "components/molecules/alert-modal/AlertModal";
 import { GearApi } from "@gear-js/api";
+import { getVFTBalance } from "smart-contracts-tools";
 
 interface ButtonProps {
   label: string;
@@ -37,7 +38,8 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   const { fetchUserInfo } = useUserInfo();
   const alertModalContext = useContext(AlertModalContext);
 
-  const { accountData, hexAddress, selectedAccount } = useWallet();
+  const { accountData, hexAddress, selectedAccount, fetchBalance } =
+    useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
 

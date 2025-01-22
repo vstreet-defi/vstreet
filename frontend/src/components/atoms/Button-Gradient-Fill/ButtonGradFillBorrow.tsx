@@ -48,7 +48,8 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   const { fetchUserInfo } = useUserInfo();
 
   //Polkadot Extension Wallet-Hook by PSYLABS
-  const { accountData, selectedAccount, hexAddress } = useWallet();
+  const { accountData, selectedAccount, hexAddress, fetchBalance } =
+    useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -71,6 +72,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     setTimeout(() => {
       alertModalContext?.hideAlertModal();
       fetchUserInfo(hexAddress);
+      fetchBalance();
     }, 3000);
   };
 

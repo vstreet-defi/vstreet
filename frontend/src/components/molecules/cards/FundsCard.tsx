@@ -15,9 +15,9 @@ type props = {
 
 function FundsCard({ buttonLabel }: props) {
   const [inputValue, setInputValue] = useState("");
-  const [balance, setBalance] = useState<number>(0);
+  const [balanceVFT, setBalanceVFT] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
-  const { userInfo, fetchUserInfo } = useUserInfo();
+  const { userInfo, fetchUserInfo, balance } = useUserInfo();
 
   const { selectedAccount, hexAddress } = useWallet();
 
@@ -34,14 +34,18 @@ function FundsCard({ buttonLabel }: props) {
 
   useEffect(() => {
     if (selectedAccount) {
-      //call sails get balance
-      getVFTBalance(hexAddress, (balance: number) => {
-        const humanReadableBalance = convertHexToDecimal(balance.toString());
-        setBalance(Number(humanReadableBalance));
-      });
       fetchUserInfo(hexAddress);
+
+      const balanceConverted = convertHexToDecimal(balance.toString());
+      setBalanceVFT(Number(balanceConverted));
+
+      // setBalanceVFT(Number(humanReadableBalance));
+      console.log("Address", hexAddress);
+      console.log("Balance USERINFO", balance);
+      console.log("Balance converted", balanceConverted);
+      console.log("Balance VFT", balanceVFT);
     }
-  }, [selectedAccount, hexAddress, fetchUserInfo]);
+  }, [selectedAccount, hexAddress, balance]);
 
   useEffect(() => {
     if (userInfo) {
@@ -57,17 +61,17 @@ function FundsCard({ buttonLabel }: props) {
         <BasicInput
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? balance : depositedBalance}
+          balance={isDepositCard() ? balanceVFT : depositedBalance}
         />
         <PercentageSelector
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? balance : depositedBalance}
+          balance={isDepositCard() ? balanceVFT : depositedBalance}
         />
         <ButtonGradFill
           amount={inputValue}
           label={buttonLabel}
-          balance={isDepositCard() ? balance : depositedBalance}
+          balance={isDepositCard() ? balanceVFT : depositedBalance}
         />
       </div>
     </div>

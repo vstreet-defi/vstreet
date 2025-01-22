@@ -15,8 +15,7 @@ import {
   // withdrawRewardsTransaction,
 } from "smart-contracts-tools";
 import { AlertModalContext } from "contexts/alertContext";
-import { getUserInfo } from "smart-contracts-tools";
-import { UserInfo } from "smart-contracts-tools";
+import { useUserInfo } from "contexts/userInfoContext";
 import { useLiquidity } from "contexts/stateContext";
 
 const formatWithCommas = (number: number) => {
@@ -140,14 +139,14 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-
   const { selectedAccount, hexAddress } = useWallet();
+  const { fetchUserInfo, userInfo, balance } = useUserInfo();
 
   useEffect(() => {
     const getUserData = async () => {
       if (selectedAccount) {
-        getUserInfo(hexAddress, setUserInfo);
+        fetchUserInfo(hexAddress);
+        console.log(userInfo);
       }
     };
     getUserData();

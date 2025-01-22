@@ -22,6 +22,7 @@ function FundsCardBorrow({ buttonLabel }: props) {
   const { selectedAccount, hexAddress, balance } = useWallet();
   const { api } = useApi();
   const { account } = useAccount();
+  const { fetchBalance } = useWallet();
   const { userInfo, fetchUserInfo } = useUserInfo();
   const isDepositCard = () => {
     return buttonLabel === "Deposit";
@@ -32,10 +33,12 @@ function FundsCardBorrow({ buttonLabel }: props) {
 
   useEffect(() => {
     if (selectedAccount) {
+      fetchBalance();
       setBalanceVara(Number(balance));
+      console.log("balance vara", balance);
       fetchUserInfo(hexAddress);
     }
-  }, [selectedAccount, balance, hexAddress, fetchUserInfo]);
+  }, [selectedAccount, balance, hexAddress]);
 
   useEffect(() => {
     if (userInfo) {

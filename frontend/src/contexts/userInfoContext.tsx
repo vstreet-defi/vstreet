@@ -5,12 +5,12 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { getUserInfo } from "smart-contracts-tools";
-import { UserInfo } from "smart-contracts-tools";
+import { getUserInfo, UserInfo, getVFTBalance } from "smart-contracts-tools";
 
 interface UserInfoContextProps {
   userInfo: UserInfo | null;
   fetchUserInfo: (hexAddress: string) => void;
+  balance: number;
 }
 
 const UserInfoContext = createContext<UserInfoContextProps | undefined>(
@@ -25,10 +25,14 @@ export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
   children,
 }) => {
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [balance, setBalance] = useState<number>(0);
 
   const fetchUserInfo = async (hexAddress: string) => {
     try {
       const userInfo = await getUserInfo(hexAddress, setUserInfo);
+      const balanceHex = await getVFTBalance(hexAddress, setBalance);
+
+      console.log("BalanceVFT:", balance);
       console.log("User info fetched:", userInfo);
     } catch (error) {
       console.error("Error fetching user info:", error);
@@ -36,7 +40,7 @@ export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
   };
 
   return (
-    <UserInfoContext.Provider value={{ userInfo, fetchUserInfo }}>
+    <UserInfoContext.Provider value={{ userInfo, fetchUserInfo, balance }}>
       {children}
     </UserInfoContext.Provider>
   );
