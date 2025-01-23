@@ -11,15 +11,11 @@ pub struct UserInfo {
     pub rewards_withdrawn: u128,
     pub liquidity_last_updated: u128,
     pub borrow_last_updated: u128,
-    pub balance_usdc: u128,
-    pub rewards_usdc: u128,
-    pub rewards_usdc_withdrawn: u128,
     pub balance_vara: u128,
     pub mla: u128,
     pub cv: u128,
     pub available_to_withdraw_vara: u128,
     pub loan_amount: u128,
-    pub loan_amount_usdc: u128,
     pub is_loan_active: bool,
     pub ltv: u128,
 }
@@ -66,7 +62,7 @@ impl Default for Config {
             risk_multiplier: 40_000,     // 0.04 * DECIMALS_FACTOR
             one_tvara: 1_000_000_000_000, // Value of one TVara and Vara
             vara_price: 1000000,
-            dev_fee: 1_500_000, // 1.5% * DECIMALS_FACTOR
+            dev_fee: 150_000, // 0.15 - 1.5% * DECIMALS_FACTOR
             max_loan_amount: 100000000000000000000,
             max_collateral_withdraw: 100000000000000000000,
             max_liquidity_deposit: 100000000000000000000,

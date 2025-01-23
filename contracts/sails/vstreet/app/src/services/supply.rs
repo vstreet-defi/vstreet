@@ -80,15 +80,6 @@ where
         return Err(error_message);
     }
 
-    user_info.balance_usdc = user_info
-        .balance
-        .checked_div(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
     state_mut.total_deposited = state_mut
         .total_deposited
         .checked_add(scaled_amount)
@@ -98,10 +89,11 @@ where
             error_message
         })?;
 
-    service.calculate_apr();
+    let _ = service.calculate_apr();
+    let _ = service.calculate_interest_rate();
     debug!("New APR after deposit: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info);
 
     // Notify the deposit event
     service.notify_deposit(scaled_amount);
@@ -180,15 +172,6 @@ where
         return Err(error_message);
     }
 
-    user_info.balance_usdc = user_info
-        .balance
-        .checked_div(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
     state_mut.total_deposited = state_mut
         .total_deposited
         .checked_sub(scaled_amount)
@@ -198,12 +181,12 @@ where
             error_message
         })?;
 
-    service.calculate_utilization_factor();
-    state_mut.apr = service.calculate_apr();
+    let _ = service.calculate_apr();
+    let _ = service.calculate_interest_rate();
 
     debug!("New APR after Withdraw: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info);
 
     // Notify the withdraw event
     service.notify_withdraw_liquidity(scaled_amount);
@@ -234,8 +217,10 @@ where
         }
     };
 
-    state_mut.apr = service.calculate_apr();
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+    let _ = service.calculate_apr();
+    let _ = service.calculate_interest_rate();
+
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info);
     
     let rewards_to_withdraw = user_info
         .rewards
@@ -270,24 +255,6 @@ where
     user_info.rewards_withdrawn = user_info
         .rewards_withdrawn
         .checked_add(rewards_to_withdraw)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
-    user_info.rewards_usdc = user_info
-        .rewards_usdc
-        .checked_sub(user_info.rewards_usdc)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
-    user_info.rewards_usdc_withdrawn = user_info
-        .rewards_usdc_withdrawn
-        .checked_add(user_info.rewards_usdc)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -378,6 +345,8 @@ where
     service.calculate_cv(caller);
     service.calculate_mla(caller);
 
+    service.update_user_ltv(caller);
+
     // Calculate available to withdraw vara
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
 
@@ -395,7 +364,8 @@ where
             error_message
         })?;
 
-    service.calculate_apr();
+    let _ = service.calculate_apr();
+    let _ = service.calculate_interest_rate();
 
     // Notify the deposit event
     service.notify_deposited_vara(amount);
@@ -470,8 +440,8 @@ where
 
     let _ = service.liquidate_user_loan(caller).await;
 
-    service.calculate_utilization_factor();
-    service.calculate_apr();
+    let _ = service.calculate_apr();
+    let _ = service.calculate_interest_rate();
 
     // Notify the withdraw event
     service.notify_withdrawn_vara(amount);

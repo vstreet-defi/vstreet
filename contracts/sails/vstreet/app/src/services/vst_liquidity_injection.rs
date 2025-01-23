@@ -276,7 +276,11 @@ where VftClient: Vft, {
 
         self.update_cv_and_mla_for_all_users();
         self.update_all_ltv().await;
+
+        let _ = self.calculate_all_loan_interest_rate_amounts();
         let _ = self.liquidate_all_loans();
+
+        self.update_all_rewards();
 
         format!("New Vara price set: {:?}", vara_price)
     }
@@ -300,14 +304,14 @@ where VftClient: Vft, {
     pub fn user_balance(&self, user: ActorId) -> String {
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
-        user_info.balance_usdc.to_string()
+        user_info.balance.to_string()
     }
 
     //Service's query user-rewards
     pub fn user_rewards(&self, user: ActorId) -> String {
         let state = self.state_ref();
         let user_info = state.users.get(&user).unwrap();
-        user_info.rewards_usdc.to_string()
+        user_info.rewards.to_string()
     }
 
     //Service's query user info
@@ -353,7 +357,6 @@ where VftClient: Vft, {
         unsafe { state.unwrap_unchecked() }
     }
 
-
     // Internal methods
 
     // Create new user
@@ -364,15 +367,11 @@ where VftClient: Vft, {
             rewards_withdrawn: 0,
             liquidity_last_updated: timestamp,
             borrow_last_updated: timestamp,
-            balance_usdc: 0,
-            rewards_usdc: 0,
-            rewards_usdc_withdrawn: 0,
             balance_vara: 0,
             mla: 0,
             cv: 0,
             available_to_withdraw_vara: 0,
             loan_amount: 0,
-            loan_amount_usdc: 0,
             is_loan_active: false,
             ltv: 0,
         }
@@ -404,19 +403,23 @@ where VftClient: Vft, {
     }
 
     // Lenders APR (INTEREST RATE)
-    pub fn calculate_apr(&mut self) -> u128 {
+    pub fn calculate_apr(&mut self) -> Result<(), String> {
         let state_mut = self.state_mut();
 
         self.calculate_utilization_factor();
 
-        state_mut.interest_rate = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor * state_mut.config.risk_multiplier);
+        state_mut.apr = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor * state_mut.config.risk_multiplier);
 
-        state_mut.interest_rate
+        Ok(())
     }
 
     // Update User Rewards
-    pub fn update_user_rewards(user_info: &mut UserInfo, interest_rate: u128, decimals_factor: u128, year_in_seconds: u128) {
+    pub fn update_user_rewards(user_info: &mut UserInfo) {
         let current_timestamp = exec::block_timestamp() as u128;
+
+        let decimals_factor = state_mut.config.decimals_factor;
+        let year_in_seconds = state_mut.config.year_in_seconds;
+        let interest_rate = state_mut.interest_rate;
 
         // Seconds in the 3 seconds Vara Blocks Elapsed since last update
         let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) * 3;
@@ -426,7 +429,6 @@ where VftClient: Vft, {
             let rewards = interest_per_second * time_elapsed;
             debug!("Calculated rewards: {}", rewards);
             user_info.rewards = user_info.rewards.saturating_add(rewards);
-            user_info.rewards_usdc = user_info.rewards / decimals_factor;
             user_info.liquidity_last_updated = current_timestamp;
         }
     }
@@ -437,7 +439,7 @@ where VftClient: Vft, {
 
         for user_info in state_mut.users.values_mut() {
             if user_info.balance > 0 {
-                Self::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+                Self::update_user_rewards(user_info);
             }
         }
     }
@@ -542,14 +544,25 @@ where VftClient: Vft, {
     }
 
     //Calculate Interest Rate = Base Rate+(Utilization Factor×Risk Multiplier)×(1+Dev Fee)
-    fn calculate_interest_rate(&mut self) -> u128 {
+    pub fn calculate_interest_rate(&mut self) -> Result<(), String> {
         let state_mut = self.state_mut();
+        
+        self.calculate_utilization_factor();
+
         let utilization_factor = state_mut.utilization_factor;
         let base_rate = state_mut.config.base_rate;
         let risk_multiplier = state_mut.config.risk_multiplier;
         let dev_fee = state_mut.config.dev_fee;
+        let decimals_factor = state_mut.config.decimals_factor;
 
-        base_rate.saturating_add(utilization_factor * risk_multiplier) * (1 + dev_fee)
+        let utilization_effect = utilization_factor.saturating_mul(risk_multiplier) / decimals_factor;
+        let rate_with_utilization = base_rate.saturating_add(utilization_effect);
+        let dev_fee_factor = decimals_factor + dev_fee;
+        let interest_rate = rate_with_utilization.saturating_mul(dev_fee_factor) / decimals_factor;
+
+        state_mut.interest_rate = interest_rate;
+        
+        Ok(())
     }
     
     //Calculate Loan Interest Rate Amount 
@@ -558,14 +571,13 @@ where VftClient: Vft, {
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
         let loan_amount = user_info.loan_amount;
-        let interest_rate = self.calculate_interest_rate();
+        let _ = self.calculate_interest_rate();
         let current_timestamp = exec::block_timestamp() as u128;
         let time_diff_seconds = (current_timestamp - user_info.borrow_last_updated) / 1000;
         let decimals_factor = state_mut.config.decimals_factor;
 
-        let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds) / (state_mut.config.year_in_seconds * decimals_factor);
+        let interest_rate_amount = (loan_amount * state_mut.interest_rate * time_diff_seconds) / (state_mut.config.year_in_seconds * decimals_factor);
         user_info.loan_amount = user_info.loan_amount.saturating_add(interest_rate_amount);
-        user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
         user_info.borrow_last_updated = current_timestamp;
 
         format!("Loan Interest Rate Amount: {:?}", interest_rate_amount)
@@ -602,7 +614,6 @@ where VftClient: Vft, {
             user_info.balance_vara = user_info.balance_vara.saturating_sub(locked);
             user_info.is_loan_active = false;
             user_info.loan_amount = 0;
-            user_info.loan_amount_usdc = 0;
             self.update_user_ltv(user);
             self.calculate_cv(user);
             self.calculate_mla(user);
