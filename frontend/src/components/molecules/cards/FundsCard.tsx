@@ -38,12 +38,6 @@ function FundsCard({ buttonLabel }: props) {
 
       const balanceConverted = convertHexToDecimal(balance.toString());
       setBalanceVFT(Number(balanceConverted));
-
-      // setBalanceVFT(Number(humanReadableBalance));
-      console.log("Address", hexAddress);
-      console.log("Balance USERINFO", balance);
-      console.log("Balance converted", balanceConverted);
-      console.log("Balance VFT", balanceVFT);
     }
   }, [selectedAccount, hexAddress, balance]);
 

@@ -147,7 +147,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
   const { selectedAccount, hexAddress } = useWallet();
-  const { userInfo, fetchUserInfo } = useUserInfo();
+  const { userInfo, fetchUserInfo, balance } = useUserInfo();
 
   const { depositedBalance, rewardsUsdc, useOutsideClick } = useStakingInfo(
     api,
@@ -157,6 +157,7 @@ const LoanInfoCard: React.FC<LoanInfoCardProps> = () => {
   useEffect(() => {
     if (selectedAccount) {
       fetchUserInfo(hexAddress);
+      console.log(userInfo);
     }
   }, [selectedAccount, hexAddress]);
 

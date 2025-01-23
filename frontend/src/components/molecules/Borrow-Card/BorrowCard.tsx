@@ -37,7 +37,7 @@ function BorrowCard() {
   const alertModalContext = useContext(AlertModalContext);
   const [balanceVFT, setBalanceVFT] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
-  const { userInfo, fetchUserInfo } = useUserInfo();
+  const { userInfo, fetchUserInfo, balance } = useUserInfo();
   const [maxLoanAmount, setMaxLoanAmount] = useState<number>(0);
   const [loanAmount, setLoanAmount] = useState<number>(0);
   const { account } = useAccount();
@@ -53,13 +53,11 @@ function BorrowCard() {
 
   useEffect(() => {
     if (selectedAccount) {
-      getVFTBalance(hexAddress, (balance: number) => {
-        const humanReadableBalance = convertHexToDecimal(balance.toString());
-        setBalanceVFT(Number(humanReadableBalance));
-      });
       fetchUserInfo(hexAddress);
+      const balanceConverted = convertHexToDecimal(balance.toString());
+      setBalanceVFT(Number(balanceConverted));
     }
-  }, [selectedAccount, hexAddress]);
+  }, [selectedAccount, hexAddress, balance]);
 
   useEffect(() => {
     if (userInfo) {
