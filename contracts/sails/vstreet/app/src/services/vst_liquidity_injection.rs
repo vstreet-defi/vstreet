@@ -429,7 +429,8 @@ where VftClient: Vft, {
         let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) / 1000;
         let apr = state_mut.apr;
         let year_in_seconds = state_mut.config.year_in_seconds;
-        let interest_per_second = (apr * decimals_factor) / year_in_seconds;
+        let year_in_hours = 8760;
+        let interest_per_second = (apr * decimals_factor) / year_in_hours / decimals_factor; //Currently interest_per_hour
 
         user_info.rewards = self.calculate_user_rewards(user);
 
@@ -447,6 +448,7 @@ where VftClient: Vft, {
         let decimals_factor = state_mut.config.decimals_factor;
 
         let year_in_seconds = state_mut.config.year_in_seconds;
+        let year_in_hours = 8760;
         let apr = state_mut.apr;
 
         // Seconds in the 3 seconds Vara Blocks Elapsed since last update
@@ -457,7 +459,7 @@ where VftClient: Vft, {
         debug!("Time elapsed: {}", time_elapsed);
 
         if time_elapsed > 0 {
-            let interest_per_second = (apr * decimals_factor) / year_in_seconds;
+            let interest_per_second = (apr * decimals_factor) / year_in_hours / decimals_factor; //Currently interest_per_hour
             let rewards = interest_per_second * time_elapsed;
 
             debug!("APR: {}", apr);
@@ -587,18 +589,13 @@ where VftClient: Vft, {
         
         self.calculate_utilization_factor();
 
-        let utilization_factor = state_mut.utilization_factor;
-        let base_rate = state_mut.config.base_rate;
-        let risk_multiplier = state_mut.config.risk_multiplier;
-        let dev_fee = state_mut.config.dev_fee;
         let decimals_factor = state_mut.config.decimals_factor;
+        let dev_fee = state_mut.config.dev_fee;
 
-        let utilization_effect = utilization_factor.saturating_mul(risk_multiplier) / decimals_factor;
-        let rate_with_utilization = base_rate.saturating_add(utilization_effect);
-        let dev_fee_factor = decimals_factor + dev_fee;
-        let interest_rate = rate_with_utilization.saturating_mul(dev_fee_factor) / decimals_factor;
+        let interest_rate = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor * state_mut.config.risk_multiplier);
+        let dev_fee_factor = (interest_rate * dev_fee) / decimals_factor;
 
-        state_mut.interest_rate = interest_rate;
+        state_mut.interest_rate = interest_rate.saturating_add(dev_fee_factor);
         
         Ok(())
     }
