@@ -23,4 +23,5 @@ pub trait EventNotifier {
     fn notify_withdrawn_vara(&mut self, amount: u128);
     fn notify_loan_taken(&mut self, amount: u128);
     fn notify_loan_payed(&mut self, amount: u128);
+    fn notify_rewards_calculated(&mut self, current_timestamp: u128, liquidity_last_updated: u128, time_elapsed: u128, apr: u128, decimals_factor: u128, interest_per_second: u128, rewards: u128);
 }

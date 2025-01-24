@@ -91,9 +91,8 @@ where
 
     let _ = service.calculate_apr();
     let _ = service.calculate_interest_rate();
+    let _ = service.update_user_rewards(caller);
     debug!("New APR after deposit: {}", state_mut.apr);
-
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info);
 
     // Notify the deposit event
     service.notify_deposit(scaled_amount);
@@ -183,10 +182,8 @@ where
 
     let _ = service.calculate_apr();
     let _ = service.calculate_interest_rate();
-
+    let _ = service.update_user_rewards(caller);
     debug!("New APR after Withdraw: {}", state_mut.apr);
-
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info);
 
     // Notify the withdraw event
     service.notify_withdraw_liquidity(scaled_amount);
@@ -219,8 +216,7 @@ where
 
     let _ = service.calculate_apr();
     let _ = service.calculate_interest_rate();
-
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info);
+    let _ = service.update_user_rewards(caller);
     
     let rewards_to_withdraw = user_info
         .rewards

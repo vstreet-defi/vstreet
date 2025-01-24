@@ -34,6 +34,7 @@ pub enum LiquidityEvent {
     WithdrawnVara{amount:u128},
     LoanTaken{amount:u128},
     LoanPayed{amount:u128},
+    RewardsCalculated{current_timestamp: u128, liquidity_last_updated: u128, time_elapsed: u128, apr: u128, decimals_factor: u128, interest_per_second: u128, rewards: u128},
 }
 
 pub struct LiquidityInjectionService<VftClient>{
@@ -96,6 +97,11 @@ where
 
     fn notify_loan_payed(&mut self, amount: u128) {
         self.notify_on(LiquidityEvent::LoanPayed { amount })
+            .expect("Notification Error");
+    }
+
+    fn notify_rewards_calculated(&mut self, current_timestamp: u128, liquidity_last_updated: u128, time_elapsed: u128, apr: u128, decimals_factor: u128, interest_per_second: u128, rewards: u128) {
+        self.notify_on(LiquidityEvent::RewardsCalculated { current_timestamp, liquidity_last_updated, time_elapsed, apr, decimals_factor, interest_per_second, rewards })
             .expect("Notification Error");
     }
 }
@@ -309,9 +315,7 @@ where VftClient: Vft, {
 
     //Service's query user-rewards
     pub fn user_rewards(&self, user: ActorId) -> String {
-        let state = self.state_ref();
-        let user_info = state.users.get(&user).unwrap();
-        user_info.rewards.to_string()
+        self.calculate_user_rewards(user).to_string()
     }
 
     //Service's query user info
@@ -414,22 +418,55 @@ where VftClient: Vft, {
     }
 
     // Update User Rewards
-    pub fn update_user_rewards(user_info: &mut UserInfo) {
-        let current_timestamp = exec::block_timestamp() as u128;
+    pub fn update_user_rewards(&mut self, user: ActorId) -> Result<(), String> {
+        let _ = self.calculate_apr();
 
+        let current_timestamp = exec::block_timestamp() as u128;
+        let state_mut = self.state_mut();
         let decimals_factor = state_mut.config.decimals_factor;
+        let user_info = state_mut.users.get_mut(&user).unwrap();
+
+        let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) / 1000;
+        let apr = state_mut.apr;
         let year_in_seconds = state_mut.config.year_in_seconds;
-        let interest_rate = state_mut.interest_rate;
+        let interest_per_second = (apr * decimals_factor) / year_in_seconds;
+
+        user_info.rewards = self.calculate_user_rewards(user);
+
+        self.notify_rewards_calculated(current_timestamp, user_info.liquidity_last_updated, time_elapsed, apr, decimals_factor, interest_per_second, user_info.rewards);
+
+        user_info.liquidity_last_updated = current_timestamp;
+
+        Ok(())
+    }
+
+    pub fn calculate_user_rewards(&self, user: ActorId) -> u128 {
+        let current_timestamp = exec::block_timestamp() as u128;
+        let state_mut = self.state_mut();
+        let user_info = state_mut.users.get_mut(&user).unwrap();
+        let decimals_factor = state_mut.config.decimals_factor;
+
+        let year_in_seconds = state_mut.config.year_in_seconds;
+        let apr = state_mut.apr;
 
         // Seconds in the 3 seconds Vara Blocks Elapsed since last update
-        let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) * 3;
+        let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) / 1000;
+
+        debug!("Current timestamp: {}", current_timestamp);
+        debug!("Last updated timestamp: {}", user_info.liquidity_last_updated);
+        debug!("Time elapsed: {}", time_elapsed);
 
         if time_elapsed > 0 {
-            let interest_per_second = ((interest_rate * decimals_factor) / year_in_seconds) / decimals_factor as u128;
+            let interest_per_second = (apr * decimals_factor) / year_in_seconds;
             let rewards = interest_per_second * time_elapsed;
+
+            debug!("APR: {}", apr);
+            debug!("Interest per second: {}", interest_per_second);
             debug!("Calculated rewards: {}", rewards);
-            user_info.rewards = user_info.rewards.saturating_add(rewards);
-            user_info.liquidity_last_updated = current_timestamp;
+
+            user_info.rewards.saturating_add(rewards)
+        } else {
+            user_info.rewards
         }
     }
 
@@ -437,9 +474,10 @@ where VftClient: Vft, {
     pub fn update_all_rewards(&mut self) {
         let state_mut = self.state_mut();
 
-        for user_info in state_mut.users.values_mut() {
+        for user in state_mut.users.keys().cloned().collect::<Vec<_>>() {
+            let user_info = state_mut.users.get(&user).unwrap();
             if user_info.balance > 0 {
-                Self::update_user_rewards(user_info);
+                let _ = self.update_user_rewards(user);
             }
         }
     }
