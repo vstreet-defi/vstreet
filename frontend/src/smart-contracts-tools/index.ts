@@ -14,6 +14,7 @@ import {
   idlVFT,
   idlVSTREET,
 } from "../utils/smartPrograms";
+import { useEffect } from "react";
 
 export interface FullState {
   balances: [string, any][];
@@ -42,6 +43,15 @@ export interface UserInfo {
   rewards_usdc: number;
   rewards_usdc_withdrawn: number;
 }
+let gearApi: GearApi;
+
+async function getAPI() {
+  gearApi = await GearApi.create({
+    providerAddress: "wss://testnet.vara.network",
+  });
+}
+
+getAPI();
 
 export function createApproveMessage(amount: string): MessageSendOptions {
   return {
@@ -116,9 +126,6 @@ export const getVstreetState = async (
   sails.setProgramId(vstreetProgramID);
 
   try {
-    const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
-    });
     sails.setApi(gearApi);
     const bob =
       "0xfe0a346d8e240f29ff67679b83506e92542d41d87b2a6f947c4261e58881a167";
@@ -149,9 +156,6 @@ export const getVFTBalance = async (
 
   if (accountAddress) {
     try {
-      const gearApi = await GearApi.create({
-        providerAddress: "wss://testnet.vara.network",
-      });
       sails.setApi(gearApi);
       // functionArg1, functionArg2 are the arguments of the query function from the IDL file
       const result = await sails.services.Vft.queries.BalanceOf(
@@ -181,9 +185,6 @@ export const getUserInfo = async (
 
   if (accountAddress) {
     try {
-      const gearApi = await GearApi.create({
-        providerAddress: "wss://testnet.vara.network",
-      });
       sails.setApi(gearApi);
       // functionArg1, functionArg2 are the arguments of the query function from the IDL file
       const result =

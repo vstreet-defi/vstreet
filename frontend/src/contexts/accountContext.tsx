@@ -33,6 +33,7 @@ interface WalletContextType {
   handleConnectWallet: () => void;
   handleSelectAccount: (event: React.ChangeEvent<HTMLSelectElement>) => void;
   formatAccount: (account: string) => string;
+  fetchBalance: () => void;
 }
 
 const NAME = "Polkattest";
@@ -176,20 +177,16 @@ const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     subscribeToAccountChanges();
   }, [selectedAccount]);
 
-  useEffect(() => {
-    const fetchBalance = async () => {
-      if (selectedAccount) {
-        const provider = new WsProvider("wss://testnet.vara.network");
-        const api = await ApiPromise.create({ provider });
-        const { data: balance } = await api.query.system.account(
-          selectedAccount
-        );
-        setBalance(Number(balance.free.toString()));
-      }
-    };
+  const fetchBalance = async () => {
+    if (selectedAccount) {
+      const provider = new WsProvider("wss://testnet.vara.network");
+      const api = await ApiPromise.create({ provider });
+      const { data: balance } = await api.query.system.account(selectedAccount);
+      setBalance(Number(balance.free.toString()));
+    }
+  };
 
-    fetchBalance();
-  }, [selectedAccount]);
+  fetchBalance();
 
   useEffect(() => {
     const account = allAccounts.find((acc) => acc.address === selectedAccount);
@@ -211,6 +208,7 @@ const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
         handleConnectWallet,
         handleSelectAccount,
         formatAccount,
+        fetchBalance,
       }}
     >
       {children}

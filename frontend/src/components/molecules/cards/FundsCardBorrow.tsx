@@ -7,8 +7,7 @@ import { useEffect, useState } from "react";
 import { useAccount, useApi } from "@gear-js/react-hooks";
 import { FullState, FullStateVST } from "smart-contracts-tools";
 import { useWallet } from "contexts/accountContext";
-import { getUserInfo } from "smart-contracts-tools";
-import { UserInfo } from "smart-contracts-tools";
+import { useUserInfo } from "contexts/userInfoContext";
 import { formatWithDecimalsVARA } from "utils";
 
 type props = {
@@ -21,9 +20,10 @@ function FundsCardBorrow({ buttonLabel }: props) {
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
   const [fullState, setFullState] = useState<FullStateVST | FullState>();
   const { selectedAccount, hexAddress, balance } = useWallet();
-  const [userInfo, setUserInfo] = useState<UserInfo>();
   const { api } = useApi();
   const { account } = useAccount();
+  const { fetchBalance } = useWallet();
+  const { userInfo, fetchUserInfo } = useUserInfo();
   const isDepositCard = () => {
     return buttonLabel === "Deposit";
   };
@@ -33,8 +33,10 @@ function FundsCardBorrow({ buttonLabel }: props) {
 
   useEffect(() => {
     if (selectedAccount) {
+      fetchBalance();
       setBalanceVara(Number(balance));
-      getUserInfo(hexAddress, setUserInfo);
+      console.log("balance vara", balance);
+      fetchUserInfo(hexAddress);
     }
   }, [selectedAccount, balance, hexAddress]);
 

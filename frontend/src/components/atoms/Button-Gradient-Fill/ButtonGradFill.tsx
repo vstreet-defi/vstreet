@@ -9,6 +9,7 @@ import { SailsIdlParser } from "sails-js-parser";
 
 //Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
+import { useUserInfo } from "contexts/userInfoContext";
 
 import { Codec, CodecClass } from "@polkadot/types/types";
 import { Signer } from "@polkadot/types/types";
@@ -22,6 +23,7 @@ import {
 
 import { Loader } from "components/molecules/alert-modal/AlertModal";
 import { GearApi } from "@gear-js/api";
+import { getVFTBalance } from "smart-contracts-tools";
 
 interface ButtonProps {
   label: string;
@@ -33,9 +35,11 @@ type TransactionFunction = () => Promise<void>;
 
 const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   const { accounts } = useAccount();
+  const { fetchUserInfo } = useUserInfo();
   const alertModalContext = useContext(AlertModalContext);
 
-  const { accountData, hexAddress, selectedAccount } = useWallet();
+  const { accountData, hexAddress, selectedAccount, fetchBalance } =
+    useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
 
@@ -57,8 +61,9 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     alertModalContext?.showSuccessModal();
     setTimeout(() => {
       alertModalContext?.hideAlertModal();
-      window.location.reload();
-    }, 2000);
+
+      fetchUserInfo(hexAddress);
+    }, 3000);
   };
 
   const createApprovalTransaction = async () => {

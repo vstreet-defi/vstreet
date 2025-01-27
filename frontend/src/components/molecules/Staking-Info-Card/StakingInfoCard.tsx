@@ -14,10 +14,15 @@ import {
   createWithdrawRewardsMessage,
   // withdrawRewardsTransaction,
 } from "smart-contracts-tools";
+import { Sails } from "sails-js";
+import { SailsIdlParser } from "sails-js-parser";
 import { AlertModalContext } from "contexts/alertContext";
-import { getUserInfo } from "smart-contracts-tools";
-import { UserInfo } from "smart-contracts-tools";
+import { useUserInfo } from "contexts/userInfoContext";
 import { useLiquidity } from "contexts/stateContext";
+import { idlVSTREET, vstreetProgramID } from "utils/smartPrograms";
+import { web3FromSource } from "@polkadot/extension-dapp";
+import { Codec, CodecClass } from "@polkadot/types/types";
+import { Signer } from "@polkadot/types/types";
 
 const formatWithCommas = (number: number) => {
   const decimalsFactor = 1000000;
@@ -27,55 +32,6 @@ const formatWithCommas = (number: number) => {
 
 const formatApr = (apr: number): string => {
   return (apr / 1000000).toFixed(2);
-};
-
-type TransactionFunction = (
-  api: GearApi,
-  message: any,
-  account: any,
-  accounts: any[],
-  setLoading?: (loading: boolean) => void
-) => Promise<void>;
-
-const handleTransaction = async (
-  messages: { message: any; infoText: string }[],
-  transactions: TransactionFunction[],
-  api: GearApi,
-  account: any,
-  accounts: any[],
-  alertModalContext: any,
-  setIsLoading: (loading: boolean) => void
-) => {
-  for (let i = 0; i < messages.length; i++) {
-    const { message, infoText } = messages[i];
-    const transaction = transactions[i];
-
-    alertModalContext?.showInfoModal(infoText);
-
-    try {
-      await transaction(
-        api,
-        message,
-        account,
-        accounts,
-        i === messages.length - 1 ? setIsLoading : undefined
-      );
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred.";
-      alertModalContext?.showErrorModal(errorMessage);
-      if (alertModalContext?.hideAlertModal) {
-        setTimeout(() => alertModalContext.hideAlertModal(), 3000);
-      }
-
-      throw error;
-    }
-  }
-
-  alertModalContext?.showSuccessModal();
-  if (alertModalContext?.hideAlertModal) {
-    setTimeout(() => alertModalContext.hideAlertModal(), 2000);
-  }
 };
 
 const useOutsideClick = (
@@ -107,6 +63,8 @@ const Tooltip: React.FC<TooltipProps> = ({ message }) => (
   </div>
 );
 
+type TransactionFunction = () => Promise<void>;
+
 interface InfoRowProps {
   label: string;
   value: string;
@@ -132,68 +90,146 @@ interface StakingInfoCardProps {}
 
 const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   const { api } = useApi();
-  const { account, accounts } = useAccount();
+
   const alertModalContext = useContext(AlertModalContext);
   const { liquidityData } = useLiquidity();
+  const { selectedAccount, hexAddress, allAccounts, accountData } = useWallet();
 
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
 
-  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
-
-  const { selectedAccount, hexAddress } = useWallet();
+  const { fetchUserInfo, userInfo, balance } = useUserInfo();
 
   useEffect(() => {
     const getUserData = async () => {
       if (selectedAccount) {
-        getUserInfo(hexAddress, setUserInfo);
+        fetchUserInfo(hexAddress);
+        console.log(userInfo);
+        console.log("REWARDS", userInfo?.rewards);
       }
     };
     getUserData();
-  }, [api, account, selectedAccount, hexAddress]);
+  }, [api, selectedAccount, hexAddress, userInfo.rewards]);
 
   // const { depositedBalance, rewardsUsdc } = useStakingInfo(api, account);
   useOutsideClick(wrapperRef, () => setShowMessage(false));
 
-  // const handleClaim = useCallback(async () => {
-  //   const withdrawRewardsMessage = createWithdrawRewardsMessage();
-  //   await handleTransaction(
-  //     [
-  //       {
-  //         message: withdrawRewardsMessage,
-  //         infoText:
-  //           "Claim rewards in progress. Please check your wallet to sign the transaction.",
-  //       },
-  //     ],
-  //     [withdrawRewardsTransaction],
-  //     api as GearApi,
-  //     account,
-  //     accounts,
-  //     alertModalContext,
-  //     setIsLoading
-  //   );
-  // }, [api, account, accounts, alertModalContext]);
+  const createWithdrawRewardsTransaction = useCallback(async () => {
+    const parser = await SailsIdlParser.new();
+    const sails = new Sails(parser);
 
-  // const handleClick = async (actionKey: string) => {
-  //   setIsLoading(true);
-  //   try {
-  //     if (actionKey === "Claim") {
-  //       await handleClaim();
-  //     } else {
-  //       throw new Error("Invalid action");
-  //     }
-  //   } catch (error) {
-  //     const errorMessage =
-  //       error instanceof Error ? error.message : "An unknown error occurred.";
-  //     alertModalContext?.showErrorModal(errorMessage);
-  //     if (alertModalContext?.hideAlertModal) {
-  //       setTimeout(() => alertModalContext.hideAlertModal(), 3000);
-  //     }
-  //   } finally {
-  //     setIsLoading(false);
-  //   }
-  // };
+    sails.parseIdl(idlVSTREET);
+    sails.setProgramId(vstreetProgramID);
+
+    const accountWEB = accountData;
+    if (!accountWEB) {
+      throw new Error("No account data found");
+    }
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+
+    sails.setApi(gearApi);
+
+    if (allAccounts.length === 0) {
+      throw new Error("No account found");
+    }
+
+    const transaction =
+      await sails.services.LiquidityInjectionService.functions.WithdrawRewards();
+    const { signer } = await web3FromSource(accountWEB.meta.source);
+    transaction.withAccount(accountWEB.address, {
+      signer: signer as string | CodecClass<Codec, any[]> as Signer,
+    });
+
+    await transaction.calculateGas(true, 15);
+
+    return async () => {
+      const { msgId, blockHash, txHash, response, isFinalized } =
+        await transaction.signAndSend();
+
+      const finalized = await isFinalized;
+
+      try {
+        const result = await response();
+      } catch (error) {
+        console.error("Error executing message:", error);
+      }
+    };
+  }, [accountData, allAccounts]);
+  const handleTransaction = useCallback(
+    async (
+      transactions: { transaction: TransactionFunction; infoText: string }[]
+    ) => {
+      for (let i = 0; i < transactions.length; i++) {
+        const { transaction, infoText } = transactions[i];
+
+        alertModalContext?.showInfoModal(infoText);
+
+        try {
+          await transaction();
+        } catch (error) {
+          throw error;
+        }
+      }
+
+      alertModalContext?.showSuccessModal();
+      setTimeout(() => {
+        alertModalContext?.hideAlertModal();
+        // Fetch user info again to refresh values
+        fetchUserInfo(hexAddress);
+      }, 3000);
+    },
+    [alertModalContext, fetchUserInfo, hexAddress]
+  );
+
+  const handleWithdrawRewards = useCallback(async () => {
+    const takeLoanTransaction = await createWithdrawRewardsTransaction();
+    await handleTransaction([
+      {
+        transaction: takeLoanTransaction,
+        infoText:
+          "Loan taking in progress. Please check your wallet to sign the transaction.",
+      },
+    ]);
+  }, [createWithdrawRewardsTransaction, handleTransaction]);
+
+  const handleClaim = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await handleWithdrawRewards();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred.";
+      alertModalContext?.showErrorModal(errorMessage);
+      setTimeout(() => {
+        alertModalContext?.hideAlertModal();
+      }, 3000);
+    }
+    setIsLoading(false);
+  }, [handleWithdrawRewards, alertModalContext]);
+
+  const handleClick = async (actionKey: string) => {
+    setIsLoading(true);
+    try {
+      if (actionKey === "Claim") {
+        await handleClaim();
+      } else {
+        throw new Error("Invalid action");
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred.";
+      alertModalContext?.showErrorModal(errorMessage);
+      if (alertModalContext?.hideAlertModal) {
+        setTimeout(() => alertModalContext.hideAlertModal(), 3000);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div>
@@ -227,13 +263,11 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
           label="APR"
           value={liquidityData ? `${formatApr(liquidityData.APR)}%` : "loading"}
         />
-        <div
-          className={`ButtonFlex ${"disabled"}`}
-          // onClick={() => handleClick("Claim")}
-        >
+        <div className="ButtonFlex">
           <ButtonGradientBorder
+            onClick={() => handleClick("Claim")}
             text="Claim"
-            // isDisabled={rewardsUsdc <= 0 || isLoading}
+            isDisabled={userInfo.rewards <= 1000000 || isLoading}
           />
         </div>
       </div>
