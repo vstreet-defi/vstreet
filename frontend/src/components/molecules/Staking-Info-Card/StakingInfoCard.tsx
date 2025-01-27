@@ -191,7 +191,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
       {
         transaction: takeLoanTransaction,
         infoText:
-          "Loan taking in progress. Please check your wallet to sign the transaction.",
+          "Rewards Claim in progress. Please check your wallet to sign the transaction.",
       },
     ]);
   }, [createWithdrawRewardsTransaction, handleTransaction]);
@@ -234,9 +234,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   return (
     <div>
       <div className="BasicCard">
-        {showMessage && (
-          <Tooltip message="We allow 1 Reward Withdraw per day." />
-        )}
+        {showMessage && <Tooltip message="Minimum claim: $1 USD." />}
         <InfoRow
           label="Total Deposited"
           value={`$${formatWithCommas(userInfo?.balance ?? 0)} vUSD`}
