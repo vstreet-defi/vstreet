@@ -106,10 +106,11 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
       if (selectedAccount) {
         fetchUserInfo(hexAddress);
         console.log(userInfo);
+        console.log("REWARDS", userInfo?.rewards);
       }
     };
     getUserData();
-  }, [api, selectedAccount, hexAddress]);
+  }, [api, selectedAccount, hexAddress, userInfo.rewards]);
 
   // const { depositedBalance, rewardsUsdc } = useStakingInfo(api, account);
   useOutsideClick(wrapperRef, () => setShowMessage(false));
@@ -262,11 +263,9 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
           label="APR"
           value={liquidityData ? `${formatApr(liquidityData.APR)}%` : "loading"}
         />
-        <div
-          className={`ButtonFlex ${"disabled"}`}
-          onClick={() => handleClick("Claim")}
-        >
+        <div className="ButtonFlex">
           <ButtonGradientBorder
+            onClick={() => handleClick("Claim")}
             text="Claim"
             isDisabled={userInfo.rewards <= 1000000 || isLoading}
           />
