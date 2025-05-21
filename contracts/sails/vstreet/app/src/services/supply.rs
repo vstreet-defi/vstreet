@@ -217,15 +217,15 @@ where
     let _ = service.calculate_apr();
     let _ = service.calculate_interest_rate();
     let _ = service.update_user_rewards(caller);
-    
-    let rewards_to_withdraw = user_info
-        .rewards
-        .checked_sub(user_info.rewards_withdrawn)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
+    let rewards_to_withdraw = user_info.rewards;
+
+    if rewards_to_withdraw == 0 {
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        return Err(error_message);
+    }
+
+    debug!("Rewards to withdraw: {}", rewards_to_withdraw);
 
     if rewards_to_withdraw < state_mut.config.min_rewards_withdraw {
         let error_message = ERROR_USER_REWARDS_INSUFFICIENT.to_string();
@@ -266,19 +266,20 @@ where
             error_message
         })?;
     
-    if rewards_to_withdraw % decimals_factor != 0 {
-        let error_message = ERROR_INVALID_AMOUNT.to_string();
-        service.notify_error(error_message.clone());
-        return Err(error_message);
-    }
+    // if rewards_to_withdraw % decimals_factor != 0 {
+    //     let error_message = ERROR_INVALID_AMOUNT.to_string();
+    //     service.notify_error(error_message.clone());
+    //     return Err(error_message);
+    // }
 
-    let amount = rewards_to_withdraw
-        .checked_div(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
+    let amount = rewards_to_withdraw / decimals_factor;
+    // if rewards_to_withdraw % decimals_factor != 0 {
+    //     let error_message = ERROR_INVALID_AMOUNT.to_string();
+    //     service.notify_error(error_message.clone());
+    //     return Err(error_message);
+    // }
+
+    debug!("rewards amount withdrawn: {}", amount);
 
     if rewards_to_withdraw == 0 || rewards_to_withdraw > state_mut.available_rewards_pool {
         let error_message = ERROR_REWARDS_POOL_INSUFFICIENT.to_string();
