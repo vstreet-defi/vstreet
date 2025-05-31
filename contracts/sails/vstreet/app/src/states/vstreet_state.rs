@@ -56,7 +56,7 @@ pub struct Config {
 impl Default for Config {
     fn default() -> Self {
         Self {
-            decimals_factor: 10_u128.pow(6),
+            decimals_factor: 10_u128.pow(18),
             year_in_seconds: 31_536_000, // 365 * 24 * 60 * 60
             base_rate: 10_000,           // 0.01 * DECIMALS_FACTOR
             risk_multiplier: 40_000,     // 0.04 * DECIMALS_FACTOR
