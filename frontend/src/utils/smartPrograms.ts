@@ -7,7 +7,7 @@ import { ProgramMetadata } from "@gear-js/api";
 
 //Working Contract with APR
 export const vstreetProgramID =
-  "0x258b7a6151f8a2f514099d4b4cfa998f1bc1768af68a099bab841ea1020ca3b7";
+  "0x813a6bee8fd47cd6d3eb26865795dce2bbc4e7f386b67abff8dbebd18d4f1edf";
 
 //This meta is not longer used, use idlVSTREET instead
 const vstreetMeta =
@@ -20,7 +20,7 @@ export const vstreetVFTProgramID =
 
 //Same but different variable that was used before (not used in sails).
 export const fungibleTokenProgramID =
-  "0x7c35c6a13fdd24e9f0607b580a66b3f2be2cfba8422f56c08221e857b9c72ce4";
+  "0x2156679a6147013e5217fa3b8210d0ce4986c54aaffcfa70c4a171c7a8b6afd9";
 
 //IDL for the VFT contract (New Metadata Schema)
 export const idlVFT = `constructor {

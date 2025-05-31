@@ -25,10 +25,14 @@ import { Codec, CodecClass } from "@polkadot/types/types";
 import { Signer } from "@polkadot/types/types";
 
 const formatWithCommas = (number: number) => {
-  const decimalsFactor = 1000000;
-  const formattedNumber = number / decimalsFactor;
-  return formattedNumber.toLocaleString();
+  const decimalsFactor: bigint = BigInt("1000000000000000000000000000000000");
+  console.log("Total Deposited", number);
+  const formattedNumber = BigInt(number) / decimalsFactor;
+  console.log("Formatted Number", formattedNumber);
+  return formattedNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
+
+
 
 const formatApr = (apr: number): string => {
   return (apr / 1000000).toFixed(2);

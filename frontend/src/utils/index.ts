@@ -21,7 +21,7 @@ export const formatWithDecimalsVARA = (number: number) => {
 };
 
 export const formatWithCommasVUSD = (number: number) => {
-  const decimalsFactor = 1000000;
+  const decimalsFactor = 1000000000000000;
   const formattedNumber = number / decimalsFactor;
   return formattedNumber.toLocaleString();
 };

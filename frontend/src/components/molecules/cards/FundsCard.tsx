@@ -37,14 +37,23 @@ function FundsCard({ buttonLabel }: props) {
       fetchUserInfo(hexAddress);
 
       const balanceConverted = convertHexToDecimal(balance.toString());
-      setBalanceVFT(Number(balanceConverted));
+      
+      console.log("balanceConverted", balanceConverted);
+      // const balanceFormatted = formatWithCommasVUSD(Number(balanceConverted) / 1000000000);
+      const balanceFormatted = formatWithCommasVUSD(Number(balanceConverted));
+      
+
+      console.log("balanceFormatted", balanceFormatted);
+      setBalanceVFT(Number(balanceFormatted));
     }
   }, [selectedAccount, hexAddress, balance]);
 
   useEffect(() => {
     if (userInfo) {
-      const formatedBalance = userInfo.balance ? userInfo.balance / 1000000 : 0;
-      setDepositedBalance(formatedBalance);
+      const formatedBalance = userInfo.balance ? userInfo.balance / 1000000000000000 : 0;
+      const balanceFormatted = Number(formatedBalance / 1000000000000000000);
+
+      setDepositedBalance(balanceFormatted);
     }
   }, [userInfo]);
 

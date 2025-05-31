@@ -55,7 +55,8 @@ function BorrowCard() {
     if (selectedAccount) {
       fetchUserInfo(hexAddress);
       const balanceConverted = convertHexToDecimal(balance.toString());
-      setBalanceVFT(Number(balanceConverted));
+      const balanceFormatted = Number(balanceConverted) / 1000000000000000;
+      setBalanceVFT(Number(balanceFormatted));
     }
   }, [selectedAccount, hexAddress, balance]);
 
@@ -67,6 +68,12 @@ function BorrowCard() {
       setLoanAmount(la ?? 0);
     }
   }, [userInfo]);
+
+  const multiplyAmount = (amount: string): BigInt=> {
+    const multiplier = BigInt("100000000000000000");
+    const result = BigInt(amount) * multiplier;
+    return result // Convert back to string for compatibility
+  };
 
   const handleTransaction = useCallback(
     async (
@@ -116,9 +123,11 @@ function BorrowCard() {
       throw new Error("No account found");
     }
 
+    const multipliedAmount = multiplyAmount(inputValue);
+
     const transaction = await sails.services.Vft.functions.Approve(
       vstreetProgramID,
-      Number(inputValue)
+      multipliedAmount
     );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
@@ -162,9 +171,11 @@ function BorrowCard() {
       throw new Error("No account found");
     }
 
+    const multipliedAmount = multiplyAmount(inputValue);
+
     const transaction =
       await sails.services.LiquidityInjectionService.functions.PayLoan(
-        Number(inputValue)
+        multipliedAmount
       );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
@@ -208,10 +219,15 @@ function BorrowCard() {
     if (allAccounts.length === 0) {
       throw new Error("No account found");
     }
+    console.log("inputValue", inputValue);
+
+    const multipliedAmount = multiplyAmount(inputValue);
+
+    console.log("multipliedAmount", multipliedAmount);
 
     const transaction =
       await sails.services.LiquidityInjectionService.functions.TakeLoan(
-        Number(inputValue)
+        multipliedAmount
       );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
@@ -292,6 +308,8 @@ function BorrowCard() {
     setIsLoading(false);
   }, [handleApproveAndPayLoan, alertModalContext]);
 
+  console.log( "InputValue Borrow",inputValue);
+
   return (
     <div className={styles.ContainerBorrow}>
       <div className={styles.BasicCardBorrow}>
@@ -305,8 +323,8 @@ function BorrowCard() {
           <ButtonGradientBorderBorrow
             text="Borrow"
             isDisabled={
-              Number(inputValue) * 1000000 > maxLoanAmount ||
-              Number(inputValue) === 0 ||
+              BigInt(inputValue) * BigInt(1000000000000000000) > maxLoanAmount ||
+             BigInt(inputValue) === BigInt(0) ||
               isLoading
             }
             onClick={handleClickTakeLoan}
@@ -316,8 +334,8 @@ function BorrowCard() {
           <ButtonGradientBorderBorrow
             text="Pay Loan"
             isDisabled={
-              Number(inputValue) * 1000000 > loanAmount ||
-              Number(inputValue) === 0 ||
+              BigInt(inputValue) * BigInt(1000000000000000000) > loanAmount ||
+              BigInt(inputValue) === BigInt(0) ||
               isLoading
             }
             onClick={handleClickApproveAndPayLoan}

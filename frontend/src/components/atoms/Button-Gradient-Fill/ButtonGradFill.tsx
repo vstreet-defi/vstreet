@@ -66,6 +66,12 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     }, 3000);
   };
 
+  const multiplyAmount = (amount: string): BigInt=> {
+    const multiplier = BigInt("1000000000000000000");
+    const result = BigInt(amount) * multiplier;
+    return result // Convert back to string for compatibility
+  };
+
   const createApprovalTransaction = async () => {
     const parser = await SailsIdlParser.new();
     const sails = new Sails(parser);
@@ -88,9 +94,14 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       throw new Error("No account found");
     }
 
+    console.log(amount);
+
+    const multipliedAmount = multiplyAmount(amount);
+    console.log("multipliedAmount", multipliedAmount);
+
     const transaction = await sails.services.Vft.functions.Approve(
       vstreetProgramID,
-      Number(amount)
+      multipliedAmount
     );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
@@ -134,10 +145,13 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       throw new Error("No account found");
     }
 
+    
+    const multipliedAmount = multiplyAmount(amount);
+
     const transaction =
-      await sails.services.LiquidityInjectionService.functions.DepositLiquidity(
-        Number(amount)
-      );
+    await sails.services.LiquidityInjectionService.functions.DepositLiquidity(
+    multipliedAmount
+    );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
@@ -181,10 +195,13 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       throw new Error("No account found");
     }
 
-    const transaction =
-      await sails.services.LiquidityInjectionService.functions.WithdrawLiquidity(
-        Number(amount)
-      );
+    
+    const multipliedAmount = multiplyAmount(amount);
+
+     const transaction =
+    await sails.services.LiquidityInjectionService.functions.WithdrawLiquidity(
+      multipliedAmount
+    );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,

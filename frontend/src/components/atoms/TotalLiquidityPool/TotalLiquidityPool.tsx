@@ -4,7 +4,11 @@ const formatWithCommas = (number: number | undefined): string => {
   if (number === undefined) {
     return "0";
   }
-  return number.toLocaleString();
+  const decimalsFactor: bigint = BigInt("1000000000000000000000000000");
+  const formattedNumber = BigInt(number) / decimalsFactor;
+
+  return formattedNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  
 };
 
 const calculateTvl = (totalLiquidityPool: number): number => {

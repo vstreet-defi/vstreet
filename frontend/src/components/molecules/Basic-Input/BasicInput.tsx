@@ -21,13 +21,17 @@ function BasicInput({ inputValue, onInputChange, balance }: BasicInputProps) {
     }
   };
 
+  const formatBalance = (balance: number): string => {
+    return balance.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
   return (
     <div style={{ marginTop: "1.5rem" }}>
       <div className="BI-label--container">
         <p className="BI-label">Amount</p>
         <div style={{ display: "flex" }}>
           <p className="BI-label tag">Your Balance:</p>
-          <p className="BI-label number">{balance}</p>
+          <p className="BI-label number">{formatBalance(balance)}</p>
         </div>
       </div>
 
