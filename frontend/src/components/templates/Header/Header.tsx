@@ -120,10 +120,10 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
             className={styles.connectWallet}
             type="button"
             onClick={() => navigate("/dapp?tab=borrow")}
-            disabled={true}
-            style={{ opacity: 0.4, cursor: "not-allowed" }}
+          
+            style={{ opacity: 0.4,  }}
           >
-            <p>Launch App</p>
+            <p>Testnet App </p>
           </button>
         )}
       </>

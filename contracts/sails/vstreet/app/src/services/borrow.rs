@@ -64,7 +64,7 @@ where
     }
 
     // Transfer tokens from contract to user
-    let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
+    let result = service.transfer_tokens(exec::program_id(), caller, scaled_amount).await;
 
     // Check if transfer was successful
     if let Err(_) = result {
@@ -229,9 +229,17 @@ where
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
     }
+    
+    let scaled_amount = amount
+    .checked_mul(decimals_factor)
+    .ok_or_else(|| {
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        error_message
+    })?;
 
     // Transfer tokens from user to contract
-    let result = service.transfer_tokens(caller, exec::program_id(), amount).await;
+    let result = service.transfer_tokens(caller, exec::program_id(), scaled_amount).await;
 
     // Check if transfer was successful
     if let Err(_) = result {
@@ -241,13 +249,13 @@ where
     }
 
     // Update loan amount and total borrowed
-    let scaled_amount = amount
-        .checked_mul(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
+    // let scaled_amount = amount
+    //     .checked_mul(decimals_factor)
+    //     .ok_or_else(|| {
+    //         let error_message = ERROR_INVALID_AMOUNT.to_string();
+    //         service.notify_error(error_message.clone());
+    //         error_message
+    //     })?;
 
     if scaled_amount == 0 || scaled_amount > user_info.loan_amount {
         let error_message = ERROR_INVALID_AMOUNT.to_string();

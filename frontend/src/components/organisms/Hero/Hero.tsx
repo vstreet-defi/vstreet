@@ -89,7 +89,7 @@ function Hero({ isMobile }: Props) {
                     bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
                     _hover={{ bg: "gray.200" }}
                     onClick={() => navigate("/dapp")}
-                    isDisabled={true}
+                    isDisabled={false}
                   >
                     Launch App
                   </Button>

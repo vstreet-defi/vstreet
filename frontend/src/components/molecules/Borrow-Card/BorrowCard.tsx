@@ -70,7 +70,14 @@ function BorrowCard() {
   }, [userInfo]);
 
   const multiplyAmount = (amount: string): BigInt=> {
-    const multiplier = BigInt("100000000000000000");
+    const multiplier = BigInt("1");
+    const result = BigInt(amount) * multiplier;
+    return result // Convert back to string for compatibility
+  };
+
+
+  const multiplyAmountApprove = (amount: string): BigInt=> {
+    const multiplier = BigInt("1000000000000000000");
     const result = BigInt(amount) * multiplier;
     return result // Convert back to string for compatibility
   };
@@ -123,7 +130,9 @@ function BorrowCard() {
       throw new Error("No account found");
     }
 
-    const multipliedAmount = multiplyAmount(inputValue);
+    const multipliedAmount = multiplyAmountApprove(inputValue);
+
+    console.log("Aprrove multipliedAmount", multipliedAmount);
 
     const transaction = await sails.services.Vft.functions.Approve(
       vstreetProgramID,
@@ -175,7 +184,7 @@ function BorrowCard() {
 
     const transaction =
       await sails.services.LiquidityInjectionService.functions.PayLoan(
-        multipliedAmount
+        inputValue
       );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
@@ -223,7 +232,7 @@ function BorrowCard() {
 
     const multipliedAmount = multiplyAmount(inputValue);
 
-    console.log("multipliedAmount", multipliedAmount);
+    console.log("TakeLoan multipliedAmount", multipliedAmount);
 
     const transaction =
       await sails.services.LiquidityInjectionService.functions.TakeLoan(
