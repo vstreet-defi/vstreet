@@ -1,57 +1,59 @@
 #![no_std]
 
-use sails_rs::{
-    prelude::*,
-    gstd::{
-        calls::GStdRemoting,
-        msg,
-    }
-};
-use sails_rs::collections::BTreeMap;
+use sails_rs::prelude::*;
+use session_service::*;
 
-pub mod clients;
-pub mod states;
 pub mod services;
 
-//Import the Liquidity Injection LiquidityInjectionService from the services module
-use services::vst_liquidity_injection::LiquidityInjectionService;
+use services::liquidity::{LiquidityInjectionService, ActionsForSession};
 
-//Import the VftClient from the clients module
-use clients::extended_vft_client::Vft as VftClient;
+session_service::generate_session_system!(ActionsForSession);
 
-//Import the Config state struct
-use crate::states::vstreet_state::Config;
+pub struct Program;
 
-#[derive(Default)]
-pub struct VstreetProgram;
-
-#[sails_rs::program]
-impl VstreetProgram {
-    
-    // Program's constructor
-    pub fn new_with_vft(vft_contract_id: ActorId, ltv: u128) -> Self {
-        let owner = msg::source();
-        let config = Config::default();
-
-        LiquidityInjectionService::<VftClient<GStdRemoting>>::seed(
-            owner.clone(), 
-            vec![owner],
-            Some(vft_contract_id),
-             0, 0, 0, 0, 
-             BTreeMap::new(), 
-             0, 0, 0, ltv, config,
-            );
-
+#[program]
+impl Program {
+    pub fn new(
+        owner: ActorId,
+        admins: Vec<ActorId>,
+        vft_contract_id: Option<ActorId>,
+        total_deposited: u128,
+        total_borrowed: u128,
+        available_rewards_pool: u128,
+        total_rewards_distributed: u128,
+        users: sails_rs::collections::BTreeMap<ActorId, services::vstreet_state::UserInfo>,
+        utilization_factor: u128,
+        interest_rate: u128,
+        apr: u128,
+        ltv: u128,
+        config: services::vstreet_state::Config,
+    ) -> Self {
+        LiquidityInjectionService::<services::liquidity::VftClient>::seed(
+            owner,
+            admins,
+            vft_contract_id,
+            total_deposited,
+            total_borrowed,
+            available_rewards_pool,
+            total_rewards_distributed,
+            users,
+            utilization_factor,
+            interest_rate,
+            apr,
+            ltv,
+            config,
+        );
+        SessionService::init(Default::default());
         Self
     }
 
-    // Expose liquidity Injection service
-    #[route("LiquidityInjectionService")]
-    pub fn vstreet(&self)-> LiquidityInjectionService<VftClient<GStdRemoting>>
-    {
-        let vft_client = VftClient::new(GStdRemoting);
-
-        LiquidityInjectionService::new(vft_client)
+    #[route("Service")]
+    pub fn service(&self) -> LiquidityInjectionService<services::liquidity::VftClient> {
+        LiquidityInjectionService::new(services::liquidity::VftClient::default())
     }
 
+    #[route("Session")]
+    pub fn session(&self) -> SessionService {
+        SessionService::new()
+    }
 }

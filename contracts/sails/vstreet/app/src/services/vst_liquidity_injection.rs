@@ -1,3 +1,19 @@
+
+#![no_std]
+
+#[cfg(target_arch = "wasm32")]
+pub use vstreet_app::wasm::*;
+
+#[cfg(feature = "wasm-binary")]
+#[cfg(not(target_arch = "wasm32"))]
+pub use code::WASM_BINARY_OPT as WASM_BINARY;
+
+#[cfg(feature = "wasm-binary")]
+#[cfg(not(target_arch = "wasm32"))]
+mod code {
+    include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
+}
+
 use sails_rs::calls::Call;
 use sails_rs::{
     prelude::*,
@@ -8,6 +24,10 @@ use sails_rs::{
     }
 };
 use sails_rs::collections::BTreeMap;
+
+// --- Session support for signless ---
+use sails_rs::collections::HashMap;
+use crate::{SessionData, Storage};
 
 use crate::clients::extended_vft_client::traits::Vft;
 use crate::states::vstreet_state::{VstreetState, UserInfo, Config};
@@ -100,6 +120,58 @@ where
     }
 }
 
+// --- Session service module for signless support ---
+#[derive(Debug, Clone, Encode, Decode, TypeInfo, PartialEq, Eq)]
+#[codec(crate = sails_rs::scale_codec)]
+#[scale_info(crate = sails_rs::scale_info)]
+pub enum ActionsForSession {
+    AddAdmin,
+    RemoveAdmin,
+    SetVftContractId,
+    SetLtv,
+    ModifyAvailableRewardsPool,
+    SetVaraPrice,
+    DepositLiquidity,
+    WithdrawLiquidity,
+    WithdrawRewards,
+    DepositCollateral,
+    WithdrawCollateral,
+    TakeLoan,
+    PayAllLoan,
+    PayLoan,
+    // Add more as needed
+}
+
+fn get_actor(
+    session_map: &HashMap<ActorId, SessionData>,
+    msg_source: &ActorId,
+    session_for_account: &Option<ActorId>,
+    actions_for_session: ActionsForSession,
+) -> ActorId {
+    match session_for_account {
+        Some(account) => {
+            let session = session_map
+                .get(account)
+                .expect("No valid session for this account");
+
+            assert!(
+                session.expires > exec::block_timestamp(),
+                "Session expired"
+            );
+            assert!(
+                session.allowed_actions.contains(&actions_for_session),
+                "Action not allowed"
+            );
+            assert_eq!(
+                session.key, *msg_source,
+                "Sender not authorized for session"
+            );
+            *account
+        }
+        None => *msg_source,
+    }
+}
+
 #[sails_rs::service(events = LiquidityEvent)]
 impl<VftClient> LiquidityInjectionService<VftClient> 
 where VftClient: Vft, {
@@ -183,7 +255,11 @@ where VftClient: Vft, {
         }
     }
 
-    pub fn add_admin(&mut self, new_admin: ActorId) -> Result<(), String> {
+    pub fn add_admin(&mut self, new_admin: ActorId, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::AddAdmin);
+
         self.ensure_admin()?;
 
         let state = self.state_mut();
@@ -202,7 +278,11 @@ where VftClient: Vft, {
         Ok(())
     }
 
-    pub fn remove_admin(&mut self, admin: ActorId) -> Result<(), String> {
+    pub fn remove_admin(&mut self, admin: ActorId, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::RemoveAdmin);
+
         self.ensure_admin()?;
 
         let state = self.state_mut();
@@ -223,7 +303,11 @@ where VftClient: Vft, {
     // Only administrators of the contract can perform this actions.
 
     // ## Change vft contract id
-    pub fn set_vft_contract_id(&mut self, vft_contract_id: ActorId) -> String {
+    pub fn set_vft_contract_id(&mut self, vft_contract_id: ActorId, session_for_account: Option<ActorId>) -> String {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::SetVftContractId);
+
         self.ensure_admin_or_panic();
 
         let state = self.state_mut();
@@ -239,7 +323,11 @@ where VftClient: Vft, {
 
     //Change LTV
     // LTV is a percentage value represented here in double digit format (e.g. 85% = 85)
-    pub fn set_ltv(&mut self, ltv: u128) -> String {
+    pub fn set_ltv(&mut self, ltv: u128, session_for_account: Option<ActorId>) -> String {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::SetLtv);
+
         self.ensure_admin_or_panic();
 
         let state = self.state_mut();
@@ -249,7 +337,11 @@ where VftClient: Vft, {
         format!("New LTV set: {:?}", ltv)
     }
 
-    pub async fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<(), String> {
+    pub async fn modify_available_rewards_pool(&mut self, amount: u128, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::ModifyAvailableRewardsPool);
+
         self.ensure_admin()?;
 
         self.update_all_rewards();
@@ -267,7 +359,11 @@ where VftClient: Vft, {
         Ok(())
     }
 
-    pub async fn set_vara_price(&mut self, vara_price: u128) -> String {
+    pub async fn set_vara_price(&mut self, vara_price: u128, session_for_account: Option<ActorId>) -> String {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::SetVaraPrice);
+
         self.ensure_admin_or_panic();
 
         let state = self.state_mut();
@@ -343,13 +439,13 @@ where VftClient: Vft, {
     // State mutable & ref functions
     pub fn state_mut(&self) -> &'static mut VstreetState {
         let state = unsafe { VSTREET_STATE.as_mut() };
-        debug_assert!(state.is_none(), "state is not started!");
+        debug_assert!(state.is_some(), "state is not started!");
         unsafe { state.unwrap_unchecked() }
     }
 
     fn state_ref(&self) -> &'static VstreetState {
         let state = unsafe { VSTREET_STATE.as_ref() };
-        debug_assert!(state.is_none(), "state is not started!");
+        debug_assert!(state.is_some(), "state is not started!");
         unsafe { state.unwrap_unchecked() }
     }
 
@@ -630,37 +726,132 @@ where VftClient: Vft, {
 
     // Supply methods
 
-    pub async fn deposit_liquidity(&mut self, amount: u128) -> Result<(), String> {
+    pub async fn deposit_liquidity(&mut self, amount: u128, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::DepositLiquidity);
+
         supply::deposit_liquidity(self, amount).await
     }
 
-    pub async fn withdraw_liquidity(&mut self, amount: u128) -> Result<(), String> {
+    pub async fn withdraw_liquidity(&mut self, amount: u128, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::WithdrawLiquidity);
+
         supply::withdraw_liquidity(self, amount).await
     }
 
-    pub async fn withdraw_rewards(&mut self) -> Result<(), String> {
+    pub async fn withdraw_rewards(&mut self, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::WithdrawRewards);
+
         supply::withdraw_rewards(self).await
     }
 
-    pub async fn deposit_collateral(&mut self) -> Result<(), String> {
+    pub async fn deposit_collateral(&mut self, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::DepositCollateral);
+
         supply::deposit_collateral(self).await
     }
 
-    pub async fn withdraw_collateral(&mut self, amount: u128) -> Result<(), String> {
+    pub async fn withdraw_collateral(&mut self, amount: u128, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::WithdrawCollateral);
+
         supply::withdraw_collateral(self, amount).await
     }
 
     // Borrow methods
 
-    pub async fn take_loan(&mut self, amount: u128) -> Result<(), String> {
+    pub async fn take_loan(&mut self, amount: u128, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::TakeLoan);
+
         borrow::take_loan(self, amount).await
     }
 
-    pub async fn pay_all_loan(&mut self) -> Result<(), String> {
+    pub async fn pay_all_loan(&mut self, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::PayAllLoan);
+
         borrow::pay_all_loan(self).await
     }
 
-    pub async fn pay_loan(&mut self, amount: u128) -> Result<(), String> {
+    pub async fn pay_loan(&mut self, amount: u128, session_for_account: Option<ActorId>) -> Result<(), String> {
+        let msg_src = msg::source();
+        let sessions = Storage::get_session_map();
+        let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::PayLoan);
+
         borrow::pay_loan(self, amount).await
+    }
+}
+
+// --- Session service module for signless support ---
+pub mod session_service {
+    use sails_rs::{
+        prelude::*,
+        gstd::{exec, msg},
+        collections::HashMap,
+    };
+    use crate::{SessionData, Storage};
+
+    #[derive(Default)]
+    pub struct SessionService;
+
+    #[sails_rs::service]
+    impl SessionService {
+        pub fn new() -> Self {
+            Self
+        }
+
+        pub fn create_session(
+            &mut self,
+            account: ActorId,
+            key: ActorId,
+            expires: u64,
+            allowed_actions: Vec<crate::services::liquidity::ActionsForSession>,
+        ) -> Result<(), String> {
+            let mut sessions = Storage::get_session_map_mut();
+            if sessions.contains_key(&account) {
+                return Err("Session already exists for this account".to_string());
+            }
+            let session = SessionData {
+                key,
+                expires,
+                allowed_actions,
+            };
+            sessions.insert(account, session);
+            Ok(())
+        }
+
+        pub fn revoke_session(&mut self, account: ActorId) -> Result<(), String> {
+            let mut sessions = Storage::get_session_map_mut();
+            if sessions.remove(&account).is_none() {
+                return Err("No session found for this account".to_string());
+            }
+            Ok(())
+        }
+
+        pub fn query_session(&self, account: ActorId) -> Option<SessionData> {
+            let sessions = Storage::get_session_map();
+            sessions.get(&account).cloned()
+        }
+
+        pub fn query_all_sessions(&self) -> Vec<(ActorId, SessionData)> {
+            let sessions = Storage::get_session_map();
+            sessions.iter().map(|(k, v)| (*k, v.clone())).collect()
+        }
+    }
+
+    #[macro_export]
+    macro_rules! generate_session_system {
+        ($actions_ty:ty) => {};
     }
 }
