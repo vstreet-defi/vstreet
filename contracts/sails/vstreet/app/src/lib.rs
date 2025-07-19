@@ -7,6 +7,9 @@ pub mod services;
 pub mod clients;
 pub mod states;
 
+use crate::clients::VftClient;
+use crate::states::vstreet_state;
+
 use services::vst_liquidity_injection::{LiquidityInjectionService, ActionsForSession};
 
 session_service::generate_session_system!(ActionsForSession);

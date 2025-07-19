@@ -65,57 +65,57 @@ where
     VftClient: Vft,
 {
     fn notify_deposit(&mut self, amount: u128) {
-        self.notify_on(LiquidityEvent::Deposit { amount })
+        self.emit_event(LiquidityEvent::Deposit { amount })
             .expect("Notification Error");
     }
 
     fn notify_vft_seted(&mut self, actor_id: ActorId) {
-        self.notify_on(LiquidityEvent::VFTseted(actor_id))
+        self.emit_event(LiquidityEvent::VFTseted(actor_id))
             .expect("Notification Error");
     }
 
     fn notify_withdraw_liquidity(&mut self, amount: u128) {
-        self.notify_on(LiquidityEvent::WithdrawLiquidity { amount })
+        self.emit_event(LiquidityEvent::WithdrawLiquidity { amount })
             .expect("Notification Error");
     }
 
     fn notify_withdraw_rewards(&mut self, amount_withdrawn: u128) {
-        self.notify_on(LiquidityEvent::WithdrawRewards { amount_withdrawn })
+        self.emit_event(LiquidityEvent::WithdrawRewards { amount_withdrawn })
             .expect("Notification Error");
     }
 
     fn notify_error(&mut self, message: String) {
-        self.notify_on(LiquidityEvent::Error(message))
+        self.emit_event(LiquidityEvent::Error(message))
             .expect("Notification Error");
     }
 
     fn notify_total_borrowed_modified(&mut self, borrowed: u128) {
-        self.notify_on(LiquidityEvent::TotalBorrowedModified { borrowed })
+        self.emit_event(LiquidityEvent::TotalBorrowedModified { borrowed })
             .expect("Notification Error");
     }
 
     fn notify_available_rewards_pool_modified(&mut self, pool: u128) {
-        self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool })
+        self.emit_event(LiquidityEvent::AvailableRewardsPoolModified { pool })
             .expect("Notification Error");
     }
 
     fn notify_deposited_vara(&mut self, amount: u128) {
-        self.notify_on(LiquidityEvent::DepositedVara { amount })
+        self.emit_event(LiquidityEvent::DepositedVara { amount })
             .expect("Notification Error");
     }
 
     fn notify_withdrawn_vara(&mut self, amount: u128) {
-        self.notify_on(LiquidityEvent::WithdrawnVara { amount })
+        self.emit_event(LiquidityEvent::WithdrawnVara { amount })
             .expect("Notification Error");
     }
 
     fn notify_loan_taken(&mut self, amount: u128) {
-        self.notify_on(LiquidityEvent::LoanTaken { amount })
+        self.emit_event(LiquidityEvent::LoanTaken { amount })
             .expect("Notification Error");
     }
 
     fn notify_loan_payed(&mut self, amount: u128) {
-        self.notify_on(LiquidityEvent::LoanPayed { amount })
+        self.emit_event(LiquidityEvent::LoanPayed { amount })
             .expect("Notification Error");
     }
 }
@@ -143,10 +143,10 @@ pub enum ActionsForSession {
 }
 
 fn get_actor(
-    session_map: &HashMap<ActorId, SessionData>,
+    session_map: &sails_rs::collections::HashMap<ActorId, SessionData>,
     msg_source: &ActorId,
     session_for_account: &Option<ActorId>,
-    actions_for_session: ActionsForSession,
+    action: ActionsForSession,
 ) -> ActorId {
     match session_for_account {
         Some(account) => {
@@ -159,7 +159,7 @@ fn get_actor(
                 "Session expired"
             );
             assert!(
-                session.allowed_actions.contains(&actions_for_session),
+                session.allowed_actions.contains(&action),
                 "Action not allowed"
             );
             assert_eq!(
@@ -228,7 +228,7 @@ where VftClient: Vft, {
         if !state.admins.contains(&msg::source()) {
             let error_message = ERROR_INSUFFICIENT_ADMIN_PRIVILEGES.to_string();
 
-            self.notify_on(LiquidityEvent::Error(error_message.clone()))
+            self.emit_event(LiquidityEvent::Error(error_message.clone()))
                 .expect("Notification Error");
             
             return Err(error_message);
@@ -267,7 +267,7 @@ where VftClient: Vft, {
         if state.admins.contains(&new_admin) {
             let error_message = ERROR_ADMIN_ALREADY_EXISTS.to_string();
 
-            self.notify_on(LiquidityEvent::Error(error_message.clone()))
+            self.emit_event(LiquidityEvent::Error(error_message.clone()))
                 .expect("Notification Error");
             
             return Err(error_message);
@@ -291,7 +291,7 @@ where VftClient: Vft, {
             state.admins.remove(pos);
         } else {
             let error_message = ERROR_ADMIN_DOESNT_EXIST.to_string();
-            self.notify_on(LiquidityEvent::Error(error_message.clone()))
+            self.emit_event(LiquidityEvent::Error(error_message.clone()))
                 .expect("Notification Error");
             return Err(error_message)
         }
@@ -314,7 +314,7 @@ where VftClient: Vft, {
 
         state.vft_contract_id = Some(vft_contract_id);
 
-        self.notify_on(LiquidityEvent::VFTseted(vft_contract_id))
+        self.emit_event(LiquidityEvent::VFTseted(vft_contract_id))
                 .expect("Notification Error");
 
         let new_vft_contract_id = state.vft_contract_id.unwrap();
@@ -353,7 +353,7 @@ where VftClient: Vft, {
 
         // Notify the AvailableRewardsPoolModified event
         let new_rewards_pool: u128 = amount * decimals_factor;
-        self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
+        self.emit_event(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
                 .expect("Notification Error");
 
         Ok(())
@@ -485,13 +485,13 @@ where VftClient: Vft, {
         .await;
 
         let Ok(transfer_status) = response else {
-            self.notify_on(LiquidityEvent::Error("Error in VFT Contract".to_string()))
+            self.emit_event(LiquidityEvent::Error("Error in VFT Contract".to_string()))
                 .expect("Notification Error");
             return Err("Error in VFT Contract".to_string());
         };
     
         if !transfer_status {
-            self.notify_on(LiquidityEvent::Error("Operation was not performed".to_string()))
+            self.emit_event(LiquidityEvent::Error("Operation was not performed".to_string()))
                 .expect("Notification Error");
             return Err("Operation was not performed".to_string());
         }
@@ -795,63 +795,49 @@ where VftClient: Vft, {
 
 // --- Session service module for signless support ---
 pub mod session_service {
-    use sails_rs::{
-        prelude::*,
-        gstd::{exec, msg},
-        collections::HashMap,
-    };
-    use crate::{SessionData, Storage};
+    use super::*;
+    use sails_rs::collections::HashMap;
 
-    #[derive(Default)]
-    pub struct SessionService;
-
-    #[sails_rs::service]
-    impl SessionService {
-        pub fn new() -> Self {
-            Self
-        }
-
-        pub fn create_session(
-            &mut self,
-            account: ActorId,
-            key: ActorId,
-            expires: u64,
-            allowed_actions: Vec<crate::services::vst_liquidity_injection::ActionsForSession>,
-        ) -> Result<(), String> {
-            let mut sessions = Storage::get_session_map_mut();
-            if sessions.contains_key(&account) {
-                return Err("Session already exists for this account".to_string());
-            }
-            let session = SessionData {
-                key,
-                expires,
-                allowed_actions,
-            };
-            sessions.insert(account, session);
-            Ok(())
-        }
-
-        pub fn revoke_session(&mut self, account: ActorId) -> Result<(), String> {
-            let mut sessions = Storage::get_session_map_mut();
-            if sessions.remove(&account).is_none() {
-                return Err("No session found for this account".to_string());
-            }
-            Ok(())
-        }
-
-        pub fn query_session(&self, account: ActorId) -> Option<SessionData> {
-            let sessions = Storage::get_session_map();
-            sessions.get(&account).cloned()
-        }
-
-        pub fn query_all_sessions(&self) -> Vec<(ActorId, SessionData)> {
-            let sessions = Storage::get_session_map();
-            sessions.iter().map(|(k, v)| (*k, v.clone())).collect()
-        }
+    #[derive(Clone, Encode, Decode, TypeInfo, Default)]
+    #[codec(crate = sails_rs::scale_codec)]
+    #[scale_info(crate = sails_rs::scale_info)]
+    pub struct SessionData {
+        pub key: ActorId,
+        pub expires: u64,
+        pub allowed_actions: Vec<ActionsForSession>,
     }
 
-    #[macro_export]
-    macro_rules! generate_session_system {
-        ($actions_ty:ty) => {};
+    #[derive(Default)]
+    pub struct SessionStorage {
+        pub session_map: HashMap<ActorId, SessionData>,
+    }
+
+    static mut SESSION_STORAGE: Option<SessionStorage> = None;
+
+    impl SessionStorage {
+        pub fn get_mut() -> &'static mut SessionStorage {
+            unsafe {
+                SESSION_STORAGE
+                    .as_mut()
+                    .expect("Session storage not initialized")
+            }
+        }
+        pub fn get() -> &'static SessionStorage {
+            unsafe {
+                SESSION_STORAGE
+                    .as_ref()
+                    .expect("Session storage not initialized")
+            }
+        }
+        pub fn seed() {
+            unsafe {
+                SESSION_STORAGE = Some(SessionStorage {
+                    session_map: HashMap::new(),
+                });
+            }
+        }
+    }
+    pub fn get_session_map() -> &'static HashMap<ActorId, SessionData> {
+        &SessionStorage::get().session_map
     }
 }
