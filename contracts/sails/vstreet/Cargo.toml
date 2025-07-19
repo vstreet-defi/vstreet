@@ -1,7 +1,21 @@
 [workspace]
+resolver = "2"
+members = ["app", "client"]
 
-members = ["client"]
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
 
+[workspace.dependencies]
+session-service = { git = "https://github.com/gear-foundation/signless-gasless-session-service.git" }
+gstd = "1.8"
+sails-rs = "=0.8.0"
+sails-client-gen = "=0.8.0"
+sails-idl-meta = "=0.8.0"
+sails-idl-gen = "=0.8.0"
+parity-scale-codec = { version = "3.6", default-features = false }
+scale-info = { version = "2.10", default-features = false }
 
 [package]
 name = "vstreet"
@@ -9,25 +23,17 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+session-service = { git = "https://github.com/gear-foundation/signless-gasless-session-service.git" }
 vstreet-app = { path = "app" }
-parity-scale-codec = { version = "3.6", default-features = false }
-scale-info = { version = "2.10", default-features = false }
 
 [build-dependencies]
 vstreet-app = { path = "app" }
-sails-rs = { version = "0.6.1", features = ["wasm-builder"] }
-sails-idl-gen = "0.6.1"
-parity-scale-codec = { version = "3.6", default-features = false }
-scale-info = { version = "2.10", default-features = false }
-
 
 [dev-dependencies]
 vstreet = { path = ".", features = ["wasm-binary"] }
 vstreet-client = { path = "client" }
-sails-rs = { version = "0.6.1", features = ["gtest"] }
 tokio = { version = "1.40", features = ["rt", "macros"] }
-parity-scale-codec = { version = "3.6", default-features = false }
-scale-info = { version = "2.10", default-features = false }
 
 [features]
 wasm-binary = []
+

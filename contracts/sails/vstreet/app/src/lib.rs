@@ -4,8 +4,10 @@ use sails_rs::prelude::*;
 use session_service::*;
 
 pub mod services;
+pub mod clients;
+pub mod states;
 
-use services::liquidity::{LiquidityInjectionService, ActionsForSession};
+use services::vst_liquidity_injection::{LiquidityInjectionService, ActionsForSession};
 
 session_service::generate_session_system!(ActionsForSession);
 

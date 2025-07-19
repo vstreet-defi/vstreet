@@ -816,7 +816,7 @@ pub mod session_service {
             account: ActorId,
             key: ActorId,
             expires: u64,
-            allowed_actions: Vec<crate::services::liquidity::ActionsForSession>,
+            allowed_actions: Vec<crate::services::vst_liquidity_injection::ActionsForSession>,
         ) -> Result<(), String> {
             let mut sessions = Storage::get_session_map_mut();
             if sessions.contains_key(&account) {
