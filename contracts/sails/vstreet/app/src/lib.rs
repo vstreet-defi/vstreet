@@ -7,7 +7,7 @@ pub mod services;
 pub mod clients;
 pub mod states;
 
-use crate::clients::VftClient;
+use clients::extended_vft_client::Vft as VftClient;
 use crate::states::vstreet_state;
 
 use services::vst_liquidity_injection::{LiquidityInjectionService, ActionsForSession};
@@ -33,7 +33,7 @@ impl Program {
         ltv: u128,
         config: services::vstreet_state::Config,
     ) -> Self {
-        LiquidityInjectionService::<services::liquidity::VftClient>::seed(
+        LiquidityInjectionService::<services::vst_liquidity_injection::VftClient>::seed(
             owner,
             admins,
             vft_contract_id,
@@ -53,8 +53,8 @@ impl Program {
     }
 
     #[route("Service")]
-    pub fn service(&self) -> LiquidityInjectionService<services::liquidity::VftClient> {
-        LiquidityInjectionService::new(services::liquidity::VftClient::default())
+    pub fn service(&self) -> LiquidityInjectionService<services::vst_liquidity_injection::VftClient> {
+        LiquidityInjectionService::new(services::vst_liquidity_injection::VftClient::default())
     }
 
     #[route("Session")]
