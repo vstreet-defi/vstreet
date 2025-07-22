@@ -1,20 +1,20 @@
 
-#![no_std]
+// #![no_std]
 
-#[cfg(target_arch = "wasm32")]
-pub use vstreet_app::wasm::*;
+// #[cfg(target_arch = "wasm32")]
+// pub use vstreet_app::wasm::*;
 
-#[cfg(feature = "wasm-binary")]
-#[cfg(not(target_arch = "wasm32"))]
-pub use code::WASM_BINARY_OPT as WASM_BINARY;
+// #[cfg(feature = "wasm-binary")]
+// #[cfg(not(target_arch = "wasm32"))]
+// pub use code::WASM_BINARY_OPT as WASM_BINARY;
 
-#[cfg(feature = "wasm-binary")]
-#[cfg(not(target_arch = "wasm32"))]
-mod code {
-    include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
-}
+// #[cfg(feature = "wasm-binary")]
+// #[cfg(not(target_arch = "wasm32"))]
+// mod code {
+//     include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
+// }
 
-use sails_rs::calls::Call;
+use sails_rs::calls::{Call, Query};
 use sails_rs::{
     prelude::*,
     gstd::{
@@ -23,6 +23,7 @@ use sails_rs::{
         exec,
     }
 };
+
 use sails_rs::collections::BTreeMap;
 
 // --- Session support for signless ---
@@ -140,6 +141,7 @@ pub enum ActionsForSession {
     PayAllLoan,
     PayLoan,
     // Add more as needed
+    //To-do Quitar acciones administrativas
 }
 
 fn get_actor(

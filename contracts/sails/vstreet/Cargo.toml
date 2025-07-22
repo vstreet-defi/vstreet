@@ -9,6 +9,7 @@ license = "MIT"
 
 [workspace.dependencies]
 session-service = { git = "https://github.com/gear-foundation/signless-gasless-session-service.git" }
+extended-vft-client = { git = "https://github.com/gear-foundation/standards/"}
 gstd = "1.8"
 sails-rs = "=0.8.0"
 sails-client-gen = "=0.8.0"
@@ -28,6 +29,8 @@ vstreet-app = { path = "app" }
 
 [build-dependencies]
 vstreet-app = { path = "app" }
+sails-rs = { version = "=0.8.0" , features = ["wasm-builder"] }
+sails-idl-gen = "=0.8.0"
 
 [dev-dependencies]
 vstreet = { path = ".", features = ["wasm-binary"] }
