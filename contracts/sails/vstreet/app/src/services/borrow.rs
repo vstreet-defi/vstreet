@@ -21,6 +21,7 @@ use crate::services::utils::{
 pub async fn take_loan<VftClient>(
     service: &mut LiquidityInjectionService<VftClient>,
     amount: u128,
+    user_id:ActorId
 ) -> Result<(), String> 
 where
     VftClient: Vft,
@@ -29,7 +30,7 @@ where
     let caller = msg::source();
     let decimals_factor = state_mut.config.decimals_factor;
 
-    let user_info = match state_mut.users.get_mut(&caller) {
+    let user_info = match state_mut.users.get_mut(&user_id) {
         Some(user_info) => user_info,
         None => {
             let error_message = ERROR_USER_NOT_FOUND.to_string();
@@ -64,7 +65,7 @@ where
     }
 
     // Transfer tokens from contract to user
-    let result = service.transfer_tokens(exec::program_id(), caller, scaled_amount).await;
+    let result = service.transfer_tokens(exec::program_id(), user_id, scaled_amount).await;
 
     // Check if transfer was successful
     if let Err(_) = result {
@@ -109,7 +110,7 @@ where
             error_message
         })?;
 
-    service.update_user_ltv(caller);
+    service.update_user_ltv(user_id);
     service.calculate_apr();
 
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);

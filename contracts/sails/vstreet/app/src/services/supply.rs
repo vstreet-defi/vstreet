@@ -342,7 +342,8 @@ where
 
 // Deposit Vara as Collateral
 pub async fn deposit_collateral<VftClient>(
-    service: &mut LiquidityInjectionService<VftClient>
+    service: &mut LiquidityInjectionService<VftClient>,
+    user_id: ActorId
 ) -> Result<(), String>
 where
     VftClient: Vft,
@@ -362,7 +363,7 @@ where
     // Update user collateral
     let current_timestamp = exec::block_timestamp() as u128;
     let user_info = state_mut.users
-        .entry(caller)
+        .entry(user_id)
         .or_insert_with(|| LiquidityInjectionService::<VftClient>::create_new_user(current_timestamp));
 
     user_info.balance_vara = user_info
@@ -375,8 +376,8 @@ where
         })?;
 
     //Update CV and MLA
-    service.calculate_cv(caller);
-    service.calculate_mla(caller);
+    service.calculate_cv(user_id);
+    service.calculate_mla(user_id);
 
     // Calculate available to withdraw vara
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
@@ -406,7 +407,8 @@ where
 // Withdraw Vara as Collateral
 pub async fn withdraw_collateral<VftClient>(
     service: &mut LiquidityInjectionService<VftClient>,
-    amount: u128
+    amount: u128,
+    user_id: ActorId
 ) -> Result<(), String>
 where
     VftClient: Vft,
@@ -415,7 +417,7 @@ where
     let caller = msg::source();
     let one_tvara = state_mut.config.one_tvara;
 
-    let user_info = match state_mut.users.get_mut(&caller) {
+    let user_info = match state_mut.users.get_mut(&user_id) {
         Some(user_info) => user_info,
         None => {
             let error_message = ERROR_USER_NOT_FOUND.to_string();
@@ -440,7 +442,7 @@ where
     }
 
     if let Err(_err) = msg::send(
-        caller,
+        user_id,
         LiquidityEvent::WithdrawnVara { amount: amount }, 
         amount_vara
     ) {
@@ -460,15 +462,15 @@ where
         })?;
 
     //Update CV and MLA
-    service.calculate_cv(caller);
-    service.calculate_mla(caller);
+    service.calculate_cv(user_id);
+    service.calculate_mla(user_id);
 
-    service.update_user_ltv(caller);
+    service.update_user_ltv(user_id);
    
     // Calculate available to withdraw vara
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
 
-    let _ = service.liquidate_user_loan(caller).await;
+    let _ = service.liquidate_user_loan(user_id).await;
 
     service.calculate_utilization_factor();
     service.calculate_apr();

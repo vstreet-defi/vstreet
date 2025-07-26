@@ -1,0 +1,171 @@
+type VstreetAppConfig = struct {
+  gas_to_delete_session: u64,
+  minimum_session_duration_ms: u64,
+  ms_per_block: u64,
+};
+
+type VstreetStateConfig = struct {
+  decimals_factor: u128,
+  year_in_seconds: u128,
+  base_rate: u128,
+  risk_multiplier: u128,
+  one_tvara: u128,
+  vara_price: u128,
+  dev_fee: u128,
+  max_loan_amount: u128,
+  max_collateral_withdraw: u128,
+  max_liquidity_deposit: u128,
+  max_liquidity_withdraw: u128,
+  min_rewards_withdraw: u128,
+};
+
+type VstreetState = struct {
+  owner: actor_id,
+  admins: vec actor_id,
+  vft_contract_id: opt actor_id,
+  total_deposited: u128,
+  total_borrowed: u128,
+  available_rewards_pool: u128,
+  total_rewards_distributed: u128,
+  users: map (actor_id, UserInfo),
+  utilization_factor: u128,
+  interest_rate: u128,
+  apr: u128,
+  ltv: u128,
+  config: VstreetStateConfig,
+};
+
+type UserInfo = struct {
+  balance: u128,
+  rewards: u128,
+  rewards_withdrawn: u128,
+  liquidity_last_updated: u128,
+  borrow_last_updated: u128,
+  balance_usdc: u128,
+  rewards_usdc: u128,
+  rewards_usdc_withdrawn: u128,
+  balance_vara: u128,
+  mla: u128,
+  cv: u128,
+  available_to_withdraw_vara: u128,
+  loan_amount: u128,
+  loan_amount_usdc: u128,
+  is_loan_active: bool,
+  ltv: u128,
+};
+
+type SignatureData = struct {
+  key: actor_id,
+  duration: u64,
+  allowed_actions: vec ActionsForSession,
+};
+
+type ActionsForSession = enum {
+  AddAdmin,
+  RemoveAdmin,
+  SetVftContractId,
+  SetLtv,
+  ModifyAvailableRewardsPool,
+  SetVaraPrice,
+  DepositLiquidity,
+  WithdrawLiquidity,
+  WithdrawRewards,
+  DepositCollateral,
+  WithdrawCollateral,
+  TakeLoan,
+  PayAllLoan,
+  PayLoan,
+};
+
+type SessionData = struct {
+  key: actor_id,
+  expires: u64,
+  allowed_actions: vec ActionsForSession,
+  expires_at_block: u32,
+};
+
+constructor {
+  New : (owner: actor_id, admins: vec actor_id, vft_contract_id: opt actor_id, total_deposited: u128, total_borrowed: u128, available_rewards_pool: u128, total_rewards_distributed: u128, utilization_factor: u128, interest_rate: u128, apr: u128, ltv: u128, config: VstreetAppConfig, vstreetConfig: VstreetStateConfig);
+};
+
+service Service {
+  AddAdmin : (new_admin: actor_id, session_for_account: opt actor_id) -> result (null, str);
+  CalculateAllLoanInterestRateAmounts : () -> result (null, str);
+  CalculateApr : () -> u128;
+  CalculateCv : (user: actor_id) -> str;
+  CalculateMla : (user: actor_id) -> str;
+  CalculateUtilizationFactor : () -> u128;
+  DepositCollateral : (session_for_account: opt actor_id) -> result (null, str);
+  DepositLiquidity : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  LiquidateUserLoan : (user: actor_id) -> result (null, str);
+  ModifyAvailableRewardsPool : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  PayAllLoan : (session_for_account: opt actor_id) -> result (null, str);
+  PayLoan : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  RemoveAdmin : (admin: actor_id, session_for_account: opt actor_id) -> result (null, str);
+  SetLtv : (ltv: u128, session_for_account: opt actor_id) -> str;
+  SetVaraPrice : (vara_price: u128, session_for_account: opt actor_id) -> str;
+  SetVftContractId : (vft_contract_id: actor_id, session_for_account: opt actor_id) -> str;
+  TakeLoan : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  TransferTokens : (from: actor_id, to: actor_id, amount: u128) -> result (null, str);
+  UpdateAllCollateralAvailableToWithdraw : () -> null;
+  UpdateAllRewards : () -> null;
+  UpdateUserLtv : (user: actor_id) -> str;
+  WithdrawCollateral : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  WithdrawLiquidity : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  WithdrawRewards : (session_for_account: opt actor_id) -> result (null, str);
+  query AllUsers : () -> str;
+  query ContractInfo : () -> str;
+  query ContractOwner : () -> str;
+  query StateMut : () -> VstreetState;
+  query TotalDeposited : () -> str;
+  query UserBalance : (user: actor_id) -> str;
+  query UserInfo : (user: actor_id) -> str;
+  query UserRewards : (user: actor_id) -> str;
+  query VftContractId : () -> str;
+
+  events {
+    Deposit: struct {
+      amount: u128
+    };
+    VFTseted: actor_id;
+    WithdrawLiquidity: struct {
+      amount: u128
+    };
+    WithdrawRewards: struct {
+      amount_withdrawn: u128
+    };
+    Error: str;
+    TotalBorrowedModified: struct {
+      borrowed: u128
+    };
+    AvailableRewardsPoolModified: struct {
+      pool: u128
+    };
+    DepositedVara: struct {
+      amount: u128
+    };
+    WithdrawnVara: struct {
+      amount: u128
+    };
+    LoanTaken: struct {
+      amount: u128
+    };
+    LoanPayed: struct {
+      amount: u128
+    };
+  }
+};
+
+service Session {
+  CreateSession : (signature_data: SignatureData, signature: opt vec u8) -> null;
+  DeleteSessionFromAccount : () -> null;
+  DeleteSessionFromProgram : (session_for_account: actor_id) -> null;
+  query SessionForTheAccount : (account: actor_id) -> opt SessionData;
+  query Sessions : () -> vec struct { actor_id, SessionData };
+
+  events {
+    SessionCreated;
+    SessionDeleted;
+  }
+};
+

@@ -1,0 +1,43 @@
+{
+  "name": "galess-server-template",
+  "version": "1.0.0",
+  "description": "Vara gasless server using voucher-based transactions",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "keywords": [
+    "vara",
+    "gasless",
+    "voucher",
+    "server"
+  ],
+  "author": "A-mont",
+  "license": "ISC",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "dependencies": {
+    "@gear-js/api": "0.42.0",
+    "@polkadot/api": "16.0.1",
+    "@polkadot/keyring": "^12.6.2",
+    "@polkadot/types": "16.0.1",
+    "@polkadot/types-known": "10.13.1",
+    "@polkadot/wasm-crypto": "^7.3.2",
+    "bn.js": "^5.2.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.5.0",
+    "express": "^5.1.0",
+    "sails-js": "0.4.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.1",
+    "@types/node": "^22.14.1",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.8.3"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}

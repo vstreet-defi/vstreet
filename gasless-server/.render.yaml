@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: gasless-server
+    env: node
+    region: oregon  
+    plan: free
+    rootDir: .
+    buildCommand: yarn install && yarn build
+    startCommand: yarn start
+    envVars:
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true

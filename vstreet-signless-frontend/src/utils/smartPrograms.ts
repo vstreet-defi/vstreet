@@ -1,0 +1,248 @@
+import { ProgramMetadata } from "@gear-js/api";
+
+//Last Refactored Contract missing APR and Deposits (needed to deposit and borrow first to get APR)
+// "0x0e16095ec8aa2d4a32a881b74da54f6b0db407951597ca9b74a135a88a758c49"
+//user rewrds fix 5
+// "0xa13193606f0335101f0169fef005976b02accc0f5e7f2f8a7eb86b467e63cd39"
+
+//Working Contract with APR
+export const vstreetProgramID =
+  "0xe89c3a9781cb229d0f9768753ed6f7cd15ad247777995ceb8507142a398b03da";
+
+//This meta is not longer used, use idlVSTREET instead
+const vstreetMeta =
+  "0002000100000000000104000000010600000000000000000109000000911138000808696f34496e69744c69717569646974790000040148737461626c65636f696e5f6164647265737304011c4163746f724964000004082c677072696d6974697665731c4163746f724964000004000801205b75383b2033325d000008000003200000000c000c0000050300100808696f3c4c6971756964697479416374696f6e0001141c4465706f7369740400140110753132380000004457697468647261774c69717569646974790400140110753132380001003c5769746864726177526577617264730002004c4d6f64696679546f74616c426f72726f776564040014011075313238000300684d6f64696679417661696c61626c6552657761726473506f6f6c04001401107531323800040000140000050700180418526573756c74080454011c044501200108084f6b04001c000000000c45727204002000000100001c0808696f384c69717569646974794576656e740001182c496e697469616c697a6564000000244465706f7369746564040014011075313238000100484c697175696469747957697468647261776e040014011075313238000200405265776172647357697468647261776e04001401107531323800030054546f74616c426f72726f7765644d6f64696669656404001401107531323800040070417661696c61626c6552657761726473506f6f6c4d6f64696669656404001401107531323800050000200808696f144572726f72000114285a65726f416d6f756e7400000034496e76616c6964416d6f756e740001002c5a65726f5265776172647300020030557365724e6f74466f756e64000300385472616e736665724661696c656400040000240808696f344c6971756964697479506f6f6c00003401146f776e657204011c4163746f724964000148737461626c65636f696e5f6164647265737304011c4163746f72496400013c746f74616c5f6465706f736974656414011075313238000138746f74616c5f626f72726f77656414011075313238000158617661696c61626c655f726577617264735f706f6f6c14011075313238000164746f74616c5f726577617264735f646973747269627574656414011075313238000114757365727328016c42547265654d61703c4163746f7249642c2055736572496e666f3e000124626173655f726174651401107531323800013c7269736b5f6d756c7469706c696572140110753132380001487574696c697a6174696f6e5f666163746f721401107531323800011c6465765f66656514011075313238000134696e7465726573745f726174651401107531323800010c61707214011075313238000028042042547265654d617008044b01040456012c000400300000002c0808696f2055736572496e666f000014011c62616c616e63651401107531323800011c72657761726473140110753132380001306c6173745f757064617465641401107531323800013062616c616e63655f7573646314011075313238000130726577617264735f757364631401107531323800003000000234003400000408042c00";
+export const decodedVstreetMeta = ProgramMetadata.from(vstreetMeta);
+
+//vUSD Contract
+export const vstreetVFTProgramID =
+  "0x2156679a6147013e5217fa3b8210d0ce4986c54aaffcfa70c4a171c7a8b6afd9";
+
+//Same but different variable that was used before (not used in sails).
+export const fungibleTokenProgramID =
+  "0x2156679a6147013e5217fa3b8210d0ce4986c54aaffcfa70c4a171c7a8b6afd9";
+
+//IDL for the VFT contract (New Metadata Schema)
+export const idlVFT = `constructor {
+  New : (name: str, symbol: str, decimals: u8);
+};
+
+service Vft {
+  Burn : (from: actor_id, value: u256) -> bool;
+  GrantAdminRole : (to: actor_id) -> null;
+  GrantBurnerRole : (to: actor_id) -> null;
+  GrantMinterRole : (to: actor_id) -> null;
+  Mint : (to: actor_id, value: u256) -> bool;
+  RevokeAdminRole : (from: actor_id) -> null;
+  RevokeBurnerRole : (from: actor_id) -> null;
+  RevokeMinterRole : (from: actor_id) -> null;
+  Approve : (spender: actor_id, value: u256) -> bool;
+  Transfer : (to: actor_id, value: u256) -> bool;
+  TransferFrom : (from: actor_id, to: actor_id, value: u256) -> bool;
+  query Admins : () -> vec actor_id;
+  query Burners : () -> vec actor_id;
+  query Minters : () -> vec actor_id;
+  query Allowance : (owner: actor_id, spender: actor_id) -> u256;
+  query BalanceOf : (account: actor_id) -> u256;
+  query Decimals : () -> u8;
+  query Name : () -> str;
+  query Symbol : () -> str;
+  query TotalSupply : () -> u256;
+
+  events {
+    Minted: struct {
+      to: actor_id,
+      value: u256,
+    };
+    Burned: struct {
+      from: actor_id,
+      value: u256,
+    };
+    Approval: struct {
+      owner: actor_id,
+      spender: actor_id,
+      value: u256,
+    };
+    Transfer: struct {
+      from: actor_id,
+      to: actor_id,
+      value: u256,
+    };
+  }
+};`;
+
+//IDL for the working VSTREET contract
+export const idlVSTREET = `type VstreetAppConfig = struct {
+  gas_to_delete_session: u64,
+  minimum_session_duration_ms: u64,
+  ms_per_block: u64,
+};
+
+type VstreetStateConfig = struct {
+  decimals_factor: u128,
+  year_in_seconds: u128,
+  base_rate: u128,
+  risk_multiplier: u128,
+  one_tvara: u128,
+  vara_price: u128,
+  dev_fee: u128,
+  max_loan_amount: u128,
+  max_collateral_withdraw: u128,
+  max_liquidity_deposit: u128,
+  max_liquidity_withdraw: u128,
+  min_rewards_withdraw: u128,
+};
+
+type VstreetState = struct {
+  owner: actor_id,
+  admins: vec actor_id,
+  vft_contract_id: opt actor_id,
+  total_deposited: u128,
+  total_borrowed: u128,
+  available_rewards_pool: u128,
+  total_rewards_distributed: u128,
+  users: map (actor_id, UserInfo),
+  utilization_factor: u128,
+  interest_rate: u128,
+  apr: u128,
+  ltv: u128,
+  config: VstreetStateConfig,
+};
+
+type UserInfo = struct {
+  balance: u128,
+  rewards: u128,
+  rewards_withdrawn: u128,
+  liquidity_last_updated: u128,
+  borrow_last_updated: u128,
+  balance_usdc: u128,
+  rewards_usdc: u128,
+  rewards_usdc_withdrawn: u128,
+  balance_vara: u128,
+  mla: u128,
+  cv: u128,
+  available_to_withdraw_vara: u128,
+  loan_amount: u128,
+  loan_amount_usdc: u128,
+  is_loan_active: bool,
+  ltv: u128,
+};
+
+type SignatureData = struct {
+  key: actor_id,
+  duration: u64,
+  allowed_actions: vec ActionsForSession,
+};
+
+type ActionsForSession = enum {
+  AddAdmin,
+  RemoveAdmin,
+  SetVftContractId,
+  SetLtv,
+  ModifyAvailableRewardsPool,
+  SetVaraPrice,
+  DepositLiquidity,
+  WithdrawLiquidity,
+  WithdrawRewards,
+  DepositCollateral,
+  WithdrawCollateral,
+  TakeLoan,
+  PayAllLoan,
+  PayLoan,
+};
+
+type SessionData = struct {
+  key: actor_id,
+  expires: u64,
+  allowed_actions: vec ActionsForSession,
+  expires_at_block: u32,
+};
+
+constructor {
+  New : (owner: actor_id, admins: vec actor_id, vft_contract_id: opt actor_id, total_deposited: u128, total_borrowed: u128, available_rewards_pool: u128, total_rewards_distributed: u128, utilization_factor: u128, interest_rate: u128, apr: u128, ltv: u128, config: VstreetAppConfig, vstreetConfig: VstreetStateConfig);
+};
+
+service Service {
+  AddAdmin : (new_admin: actor_id, session_for_account: opt actor_id) -> result (null, str);
+  CalculateAllLoanInterestRateAmounts : () -> result (null, str);
+  CalculateApr : () -> u128;
+  CalculateCv : (user: actor_id) -> str;
+  CalculateMla : (user: actor_id) -> str;
+  CalculateUtilizationFactor : () -> u128;
+  DepositCollateral : (user_id: actor_id, session_for_account: opt actor_id) -> result (null, str);
+  DepositLiquidity : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  LiquidateUserLoan : (user: actor_id) -> result (null, str);
+  ModifyAvailableRewardsPool : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  PayAllLoan : (session_for_account: opt actor_id) -> result (null, str);
+  PayLoan : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  RemoveAdmin : (admin: actor_id, session_for_account: opt actor_id) -> result (null, str);
+  SetLtv : (ltv: u128, session_for_account: opt actor_id) -> str;
+  SetVaraPrice : (vara_price: u128, session_for_account: opt actor_id) -> str;
+  SetVftContractId : (vft_contract_id: actor_id, session_for_account: opt actor_id) -> str;
+  TakeLoan : (amount: u128, user_id: actor_id, session_for_account: opt actor_id) -> result (null, str);
+  TransferTokens : (from: actor_id, to: actor_id, amount: u128) -> result (null, str);
+  UpdateAllCollateralAvailableToWithdraw : () -> null;
+  UpdateAllRewards : () -> null;
+  UpdateUserLtv : (user: actor_id) -> str;
+  WithdrawCollateral : (user_id: actor_id, amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  WithdrawLiquidity : (amount: u128, session_for_account: opt actor_id) -> result (null, str);
+  WithdrawRewards : (session_for_account: opt actor_id) -> result (null, str);
+  query AllUsers : () -> str;
+  query ContractInfo : () -> str;
+  query ContractOwner : () -> str;
+  query StateMut : () -> VstreetState;
+  query TotalDeposited : () -> str;
+  query UserBalance : (user: actor_id) -> str;
+  query UserInfo : (user: actor_id) -> str;
+  query UserRewards : (user: actor_id) -> str;
+  query VftContractId : () -> str;
+
+  events {
+    Deposit: struct {
+      amount: u128
+    };
+    VFTseted: actor_id;
+    WithdrawLiquidity: struct {
+      amount: u128
+    };
+    WithdrawRewards: struct {
+      amount_withdrawn: u128
+    };
+    Error: str;
+    TotalBorrowedModified: struct {
+      borrowed: u128
+    };
+    AvailableRewardsPoolModified: struct {
+      pool: u128
+    };
+    DepositedVara: struct {
+      amount: u128
+    };
+    WithdrawnVara: struct {
+      amount: u128
+    };
+    LoanTaken: struct {
+      amount: u128
+    };
+    LoanPayed: struct {
+      amount: u128
+    };
+  }
+};
+
+service Session {
+  CreateSession : (signature_data: SignatureData, signature: opt vec u8) -> null;
+  DeleteSessionFromAccount : () -> null;
+  DeleteSessionFromProgram : (session_for_account: actor_id) -> null;
+  query SessionForTheAccount : (account: actor_id) -> opt SessionData;
+  query Sessions : () -> vec struct { actor_id, SessionData };
+
+  events {
+    SessionCreated;
+    SessionDeleted;
+  }
+};`;
+
+const fungibleTokenMeta =
+  "00010001000000000001030000000107000000000000000108000000a90b3400081466745f696f28496e6974436f6e66696700000c01106e616d65040118537472696e6700011873796d626f6c040118537472696e67000120646563696d616c73080108753800000400000502000800000503000c081466745f696f204654416374696f6e000118104d696e74040010011075313238000000104275726e040010011075313238000100205472616e736665720c011066726f6d14011c4163746f724964000108746f14011c4163746f724964000118616d6f756e74100110753132380002001c417070726f7665080108746f14011c4163746f724964000118616d6f756e74100110753132380003002c546f74616c537570706c790004002442616c616e63654f66040014011c4163746f724964000500001000000507001410106773746418636f6d6d6f6e287072696d6974697665731c4163746f724964000004001801205b75383b2033325d0000180000032000000008001c081466745f696f1c46544576656e74000110205472616e736665720c011066726f6d14011c4163746f724964000108746f14011c4163746f724964000118616d6f756e74100110753132380000001c417070726f76650c011066726f6d14011c4163746f724964000108746f14011c4163746f724964000118616d6f756e74100110753132380001002c546f74616c537570706c790400100110753132380002001c42616c616e63650400100110753132380003000020081466745f696f3c496f46756e6769626c65546f6b656e00001801106e616d65040118537472696e6700011873796d626f6c040118537472696e67000130746f74616c5f737570706c791001107531323800012062616c616e6365732401505665633c284163746f7249642c2075313238293e000128616c6c6f77616e6365732c01905665633c284163746f7249642c205665633c284163746f7249642c2075313238293e293e000120646563696d616c730801087538000024000002280028000004081410002c00000230003000000408142400";
+export const decodedFungibleTokenMeta = ProgramMetadata.from(fungibleTokenMeta);

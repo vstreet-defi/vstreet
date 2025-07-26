@@ -752,30 +752,30 @@ where VftClient: Vft, {
         supply::withdraw_rewards(self).await
     }
 
-    pub async fn deposit_collateral(&mut self, session_for_account: Option<ActorId>) -> Result<(), String> {
+    pub async fn deposit_collateral(&mut self, user_id: ActorId ,session_for_account: Option<ActorId>) -> Result<(), String> {
         let msg_src = msg::source();
         let sessions = Storage::get_session_map();
         let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::DepositCollateral);
 
-        supply::deposit_collateral(self).await
+        supply::deposit_collateral(self, user_id).await
     }
 
-    pub async fn withdraw_collateral(&mut self, amount: u128, session_for_account: Option<ActorId>) -> Result<(), String> {
+    pub async fn withdraw_collateral(&mut self, user_id: ActorId, amount: u128, session_for_account: Option<ActorId>) -> Result<(), String> {
         let msg_src = msg::source();
         let sessions = Storage::get_session_map();
         let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::WithdrawCollateral);
 
-        supply::withdraw_collateral(self, amount).await
+        supply::withdraw_collateral(self, amount,user_id ).await
     }
 
     // Borrow methods
 
-    pub async fn take_loan(&mut self, amount: u128, session_for_account: Option<ActorId>) -> Result<(), String> {
+    pub async fn take_loan(&mut self, amount: u128, user_id: ActorId, session_for_account: Option<ActorId>) -> Result<(), String> {
         let msg_src = msg::source();
         let sessions = Storage::get_session_map();
         let _actor = get_actor(&sessions, &msg_src, &session_for_account, ActionsForSession::TakeLoan);
 
-        borrow::take_loan(self, amount).await
+        borrow::take_loan(self, amount, user_id).await
     }
 
     pub async fn pay_all_loan(&mut self, session_for_account: Option<ActorId>) -> Result<(), String> {
