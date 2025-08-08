@@ -13,7 +13,7 @@ import { useLocation } from 'react-router-dom';
 import LoanInfo from '../organisms/LoanInfo/LoanInfo';
 import { FundsManagerBorrow } from '../organisms/FundsManagerBorrow/FundsManagerBorrow';
 import './Dapp.scss';
-
+import { Heading } from '@chakra-ui/react';
 
 function DappPage() {
   const location = useLocation();
@@ -39,6 +39,7 @@ function DappPage() {
           {
             <>
               <Header items={navBarItems} isMobile={isMobileDevice()} />
+
               <DappTemplate
                 bannerComponent={
                   <>

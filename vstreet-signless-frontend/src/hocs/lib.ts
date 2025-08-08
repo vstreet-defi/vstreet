@@ -26,22 +26,6 @@ export interface VstreetStateConfig {
   min_rewards_withdraw: number | string | bigint;
 }
 
-export interface VstreetState {
-  owner: ActorId;
-  admins: ActorId[];
-  vft_contract_id: ActorId | null;
-  total_deposited: number | string | bigint;
-  total_borrowed: number | string | bigint;
-  available_rewards_pool: number | string | bigint;
-  total_rewards_distributed: number | string | bigint;
-  users: Record<ActorId, UserInfo>;
-  utilization_factor: number | string | bigint;
-  interest_rate: number | string | bigint;
-  apr: number | string | bigint;
-  ltv: number | string | bigint;
-  config: VstreetStateConfig;
-}
-
 export interface UserInfo {
   balance: number | string | bigint;
   rewards: number | string | bigint;
@@ -61,10 +45,26 @@ export interface UserInfo {
   ltv: number | string | bigint;
 }
 
+export interface VstreetState {
+  owner: ActorId;
+  admins: Array<ActorId>;
+  vft_contract_id: ActorId | null;
+  total_deposited: number | string | bigint;
+  total_borrowed: number | string | bigint;
+  available_rewards_pool: number | string | bigint;
+  total_rewards_distributed: number | string | bigint;
+  users: Array<[ActorId, UserInfo]>;
+  utilization_factor: number | string | bigint;
+  interest_rate: number | string | bigint;
+  apr: number | string | bigint;
+  ltv: number | string | bigint;
+  config: VstreetStateConfig;
+}
+
 export interface SignatureData {
   key: ActorId;
   duration: number | string | bigint;
-  allowed_actions: ActionsForSession[];
+  allowed_actions: Array<ActionsForSession>;
 }
 
 export type ActionsForSession =
@@ -86,7 +86,7 @@ export type ActionsForSession =
 export interface SessionData {
   key: ActorId;
   expires: number | string | bigint;
-  allowed_actions: ActionsForSession[];
+  allowed_actions: Array<ActionsForSession>;
   expires_at_block: number;
 }
 
@@ -110,21 +110,6 @@ const types = {
     max_liquidity_withdraw: 'u128',
     min_rewards_withdraw: 'u128',
   },
-  VstreetState: {
-    owner: '[u8;32]',
-    admins: 'Vec<[u8;32]>',
-    vft_contract_id: 'Option<[u8;32]>',
-    total_deposited: 'u128',
-    total_borrowed: 'u128',
-    available_rewards_pool: 'u128',
-    total_rewards_distributed: 'u128',
-    users: 'BTreeMap<[u8;32], UserInfo>',
-    utilization_factor: 'u128',
-    interest_rate: 'u128',
-    apr: 'u128',
-    ltv: 'u128',
-    config: 'VstreetStateConfig',
-  },
   UserInfo: {
     balance: 'u128',
     rewards: 'u128',
@@ -143,11 +128,22 @@ const types = {
     is_loan_active: 'bool',
     ltv: 'u128',
   },
-  SignatureData: {
-    key: '[u8;32]',
-    duration: 'u64',
-    allowed_actions: 'Vec<ActionsForSession>',
+  VstreetState: {
+    owner: '[u8;32]',
+    admins: 'Vec<[u8;32]>',
+    vft_contract_id: 'Option<[u8;32]>',
+    total_deposited: 'u128',
+    total_borrowed: 'u128',
+    available_rewards_pool: 'u128',
+    total_rewards_distributed: 'u128',
+    users: 'BTreeMap<[u8;32], UserInfo>',
+    utilization_factor: 'u128',
+    interest_rate: 'u128',
+    apr: 'u128',
+    ltv: 'u128',
+    config: 'VstreetStateConfig',
   },
+  SignatureData: { key: '[u8;32]', duration: 'u64', allowed_actions: 'Vec<ActionsForSession>' },
   ActionsForSession: {
     _enum: [
       'AddAdmin',
@@ -172,33 +168,15 @@ const types = {
     allowed_actions: 'Vec<ActionsForSession>',
     expires_at_block: 'u32',
   },
-  Deposit: {
-    amount: 'u128',
-  },
-  WithdrawLiquidity: {
-    amount: 'u128',
-  },
-  WithdrawRewards: {
-    amount_withdrawn: 'u128',
-  },
-  TotalBorrowedModified: {
-    borrowed: 'u128',
-  },
-  AvailableRewardsPoolModified: {
-    pool: 'u128',
-  },
-  DepositedVara: {
-    amount: 'u128',
-  },
-  WithdrawnVara: {
-    amount: 'u128',
-  },
-  LoanTaken: {
-    amount: 'u128',
-  },
-  LoanPayed: {
-    amount: 'u128',
-  },
+  Deposit: { amount: 'u128' },
+  WithdrawLiquidity: { amount: 'u128' },
+  WithdrawRewards: { amount_withdrawn: 'u128' },
+  TotalBorrowedModified: { borrowed: 'u128' },
+  AvailableRewardsPoolModified: { pool: 'u128' },
+  DepositedVara: { amount: 'u128' },
+  WithdrawnVara: { amount: 'u128' },
+  LoanTaken: { amount: 'u128' },
+  LoanPayed: { amount: 'u128' },
 };
 
 export class Program {
@@ -226,7 +204,7 @@ export class Program {
   newCtorFromCode(
     code: Uint8Array | Buffer,
     owner: ActorId,
-    admins: ActorId[],
+    admins: Array<ActorId>,
     vft_contract_id: ActorId | null,
     total_deposited: number | string | bigint,
     total_borrowed: number | string | bigint,
@@ -270,7 +248,7 @@ export class Program {
   newCtorFromCodeId(
     codeId: `0x${string}`,
     owner: ActorId,
-    admins: ActorId[],
+    admins: Array<ActorId>,
     vft_contract_id: ActorId | null,
     total_deposited: number | string | bigint,
     total_borrowed: number | string | bigint,
@@ -406,14 +384,14 @@ export class Service {
     );
   }
 
-  public depositLiquidity(amount: number | string | bigint, session_for_account: ActorId | null): TransactionBuilder<[null, string]> {
+  public depositLiquidity(amount: number | string | bigint, user_id: ActorId, session_for_account: ActorId | null): TransactionBuilder<[null, string]> {
     if (!this._program.programId) throw new Error('Program ID is not set');
     return new TransactionBuilder<[null, string]>(
       this._program.api,
       this._program.registry,
       'send_message',
-      ['Service', 'DepositLiquidity', amount, session_for_account],
-      '(String, String, u128, Option<[u8;32]>)',
+      ['Service', 'DepositLiquidity', amount, user_id, session_for_account],
+      '(String, String, u128, [u8;32], Option<[u8;32]>)',
       'Result<Null, String>',
       this._program.programId,
     );
@@ -458,14 +436,14 @@ export class Service {
     );
   }
 
-  public payLoan(amount: number | string | bigint, session_for_account: ActorId | null): TransactionBuilder<[null, string]> {
+  public payLoan(amount: number | string | bigint, user_id: ActorId, session_for_account: ActorId | null): TransactionBuilder<[null, string]> {
     if (!this._program.programId) throw new Error('Program ID is not set');
     return new TransactionBuilder<[null, string]>(
       this._program.api,
       this._program.registry,
       'send_message',
-      ['Service', 'PayLoan', amount, session_for_account],
-      '(String, String, u128, Option<[u8;32]>)',
+      ['Service', 'PayLoan', amount, user_id, session_for_account],
+      '(String, String, u128, [u8;32], Option<[u8;32]>)',
       'Result<Null, String>',
       this._program.programId,
     );
@@ -601,37 +579,33 @@ export class Service {
     );
   }
 
-  public withdrawLiquidity(amount: number | string | bigint, session_for_account: ActorId | null): TransactionBuilder<[null, string]> {
+  public withdrawLiquidity(amount: number | string | bigint, user_id: ActorId, session_for_account: ActorId | null): TransactionBuilder<[null, string]> {
     if (!this._program.programId) throw new Error('Program ID is not set');
     return new TransactionBuilder<[null, string]>(
       this._program.api,
       this._program.registry,
       'send_message',
-      ['Service', 'WithdrawLiquidity', amount, session_for_account],
-      '(String, String, u128, Option<[u8;32]>)',
+      ['Service', 'WithdrawLiquidity', amount, user_id, session_for_account],
+      '(String, String, u128, [u8;32], Option<[u8;32]>)',
       'Result<Null, String>',
       this._program.programId,
     );
   }
 
-  public withdrawRewards(session_for_account: ActorId | null): TransactionBuilder<[null, string]> {
+  public withdrawRewards(session_for_account: ActorId | null, user_id: ActorId): TransactionBuilder<[null, string]> {
     if (!this._program.programId) throw new Error('Program ID is not set');
     return new TransactionBuilder<[null, string]>(
       this._program.api,
       this._program.registry,
       'send_message',
-      ['Service', 'WithdrawRewards', session_for_account],
-      '(String, String, Option<[u8;32]>)',
+      ['Service', 'WithdrawRewards', session_for_account, user_id],
+      '(String, String, Option<[u8;32]>, [u8;32])',
       'Result<Null, String>',
       this._program.programId,
     );
   }
 
-  public async allUsers(
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<string> {
+  public async allUsers(originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<string> {
     const payload = this._program.registry.createType('(String, String)', ['Service', 'AllUsers']).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
@@ -646,11 +620,7 @@ export class Service {
     return result[2].toString();
   }
 
-  public async contractInfo(
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<string> {
+  public async contractInfo(originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<string> {
     const payload = this._program.registry.createType('(String, String)', ['Service', 'ContractInfo']).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
@@ -665,11 +635,7 @@ export class Service {
     return result[2].toString();
   }
 
-  public async contractOwner(
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<string> {
+  public async contractOwner(originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<string> {
     const payload = this._program.registry.createType('(String, String)', ['Service', 'ContractOwner']).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
@@ -684,11 +650,7 @@ export class Service {
     return result[2].toString();
   }
 
-  public async stateMut(
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<VstreetState> {
+  public async stateMut(originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<VstreetState> {
     const payload = this._program.registry.createType('(String, String)', ['Service', 'StateMut']).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
@@ -703,11 +665,7 @@ export class Service {
     return result[2].toJSON() as unknown as VstreetState;
   }
 
-  public async totalDeposited(
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<string> {
+  public async totalDeposited(originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<string> {
     const payload = this._program.registry.createType('(String, String)', ['Service', 'TotalDeposited']).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
@@ -722,12 +680,7 @@ export class Service {
     return result[2].toString();
   }
 
-  public async userBalance(
-    user: ActorId,
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<string> {
+  public async userBalance(user: ActorId, originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<string> {
     const payload = this._program.registry.createType('(String, String, [u8;32])', ['Service', 'UserBalance', user]).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
@@ -742,12 +695,7 @@ export class Service {
     return result[2].toString();
   }
 
-  public async userInfo(
-    user: ActorId,
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<string> {
+  public async userInfo(user: ActorId, originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<string> {
     const payload = this._program.registry.createType('(String, String, [u8;32])', ['Service', 'UserInfo', user]).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
@@ -762,12 +710,7 @@ export class Service {
     return result[2].toString();
   }
 
-  public async userRewards(
-    user: ActorId,
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<string> {
+  public async userRewards(user: ActorId, originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<string> {
     const payload = this._program.registry.createType('(String, String, [u8;32])', ['Service', 'UserRewards', user]).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
@@ -782,11 +725,7 @@ export class Service {
     return result[2].toString();
   }
 
-  public async vftContractId(
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<string> {
+  public async vftContractId(originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<string> {
     const payload = this._program.registry.createType('(String, String)', ['Service', 'VftContractId']).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
@@ -801,156 +740,112 @@ export class Service {
     return result[2].toString();
   }
 
-  public subscribeToDepositEvent(
-    callback: (data: { amount: number | string | bigint }) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToDepositEvent(callback: (data: { amount: number | string | bigint }) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'Deposit') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, Deposit)', message.payload)[2].toJSON() as { amount: number | string | bigint }
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, Deposit)', message.payload)[2].toJSON() as { amount: number | string | bigint })).catch(console.error);
       }
     });
   }
 
-  public subscribeToVFTsetedEvent(
-    callback: (data: ActorId) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToVFTsetedEvent(callback: (data: ActorId) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'VFTseted') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, [u8;32])', message.payload)[2].toJSON() as ActorId
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, [u8;32])', message.payload)[2].toJSON())).catch(console.error);
       }
     });
   }
 
-  public subscribeToWithdrawLiquidityEvent(
-    callback: (data: { amount: number | string | bigint }) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToWithdrawLiquidityEvent(callback: (data: { amount: number | string | bigint }) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'WithdrawLiquidity') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, WithdrawLiquidity)', message.payload)[2].toJSON() as { amount: number | string | bigint }
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, WithdrawLiquidity)', message.payload)[2].toJSON() as { amount: number | string | bigint })).catch(console.error);
       }
     });
   }
 
-  public subscribeToWithdrawRewardsEvent(
-    callback: (data: { amount_withdrawn: number | string | bigint }) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToWithdrawRewardsEvent(callback: (data: { amount_withdrawn: number | string | bigint }) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'WithdrawRewards') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, WithdrawRewards)', message.payload)[2].toJSON() as { amount_withdrawn: number | string | bigint }
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, WithdrawRewards)', message.payload)[2].toJSON() as { amount_withdrawn: number | string | bigint })).catch(console.error);
       }
     });
   }
 
-  public subscribeToErrorEvent(
-    callback: (data: string) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToErrorEvent(callback: (data: string) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'Error') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, String)', message.payload)[2].toString()
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, String)', message.payload)[2].toString())).catch(console.error);
       }
     });
   }
 
-  public subscribeToTotalBorrowedModifiedEvent(
-    callback: (data: { borrowed: number | string | bigint }) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToTotalBorrowedModifiedEvent(callback: (data: { borrowed: number | string | bigint }) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'TotalBorrowedModified') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, TotalBorrowedModified)', message.payload)[2].toJSON() as { borrowed: number | string | bigint }
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, TotalBorrowedModified)', message.payload)[2].toJSON() as { borrowed: number | string | bigint })).catch(console.error);
       }
     });
   }
 
-  public subscribeToAvailableRewardsPoolModifiedEvent(
-    callback: (data: { pool: number | string | bigint }) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToAvailableRewardsPoolModifiedEvent(callback: (data: { pool: number | string | bigint }) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'AvailableRewardsPoolModified') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, AvailableRewardsPoolModified)', message.payload)[2].toJSON() as { pool: number | string | bigint }
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, AvailableRewardsPoolModified)', message.payload)[2].toJSON() as { pool: number | string | bigint })).catch(console.error);
       }
     });
   }
 
-  public subscribeToDepositedVaraEvent(
-    callback: (data: { amount: number | string | bigint }) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToDepositedVaraEvent(callback: (data: { amount: number | string | bigint }) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'DepositedVara') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, DepositedVara)', message.payload)[2].toJSON() as { amount: number | string | bigint }
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, DepositedVara)', message.payload)[2].toJSON() as { amount: number | string | bigint })).catch(console.error);
       }
     });
   }
 
-  public subscribeToWithdrawnVaraEvent(
-    callback: (data: { amount: number | string | bigint }) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToWithdrawnVaraEvent(callback: (data: { amount: number | string | bigint }) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'WithdrawnVara') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, WithdrawnVara)', message.payload)[2].toJSON() as { amount: number | string | bigint }
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, WithdrawnVara)', message.payload)[2].toJSON() as { amount: number | string | bigint })).catch(console.error);
       }
     });
   }
 
-  public subscribeToLoanTakenEvent(
-    callback: (data: { amount: number | string | bigint }) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToLoanTakenEvent(callback: (data: { amount: number | string | bigint }) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'LoanTaken') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, LoanTaken)', message.payload)[2].toJSON() as { amount: number | string | bigint }
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, LoanTaken)', message.payload)[2].toJSON() as { amount: number | string | bigint })).catch(console.error);
       }
     });
   }
 
-  public subscribeToLoanPayedEvent(
-    callback: (data: { amount: number | string | bigint }) => void | Promise<void>,
-  ): Promise<() => void> {
+  public subscribeToLoanPayedEvent(callback: (data: { amount: number | string | bigint }) => void | Promise<void>): Promise<() => void> {
     return this._program.api.gearEvents.subscribeToGearEvent('UserMessageSent', ({ data: { message } }) => {
       if (!message.source.eq(this._program.programId) || !message.destination.eq(ZERO_ADDRESS)) return;
       const payload = message.payload.toHex();
       if (getServiceNamePrefix(payload) === 'Service' && getFnNamePrefix(payload) === 'LoanPayed') {
-        void Promise.resolve(callback(
-          this._program.registry.createType('(String, String, LoanPayed)', message.payload)[2].toJSON() as { amount: number | string | bigint }
-        )).catch(console.error);
+        void Promise.resolve(callback(this._program.registry.createType('(String, String, LoanPayed)', message.payload)[2].toJSON() as { amount: number | string | bigint })).catch(console.error);
       }
     });
   }
@@ -998,15 +893,8 @@ export class Session {
     );
   }
 
-  public async sessionForTheAccount(
-    account: ActorId,
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<SessionData | null> {
-    const payload = this._program.registry
-      .createType('(String, String, [u8;32])', ['Session', 'SessionForTheAccount', account])
-      .toHex();
+  public async sessionForTheAccount(account: ActorId, originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<SessionData | null> {
+    const payload = this._program.registry.createType('(String, String, [u8;32])', ['Session', 'SessionForTheAccount', account]).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,
       origin: originAddress ? decodeAddress(originAddress) : ZERO_ADDRESS,
@@ -1020,11 +908,7 @@ export class Session {
     return result[2].toJSON() as SessionData | null;
   }
 
-  public async sessions(
-    originAddress?: string,
-    value?: number | string | bigint,
-    atBlock?: `0x${string}`,
-  ): Promise<Array<[ActorId, SessionData]>> {
+  public async sessions(originAddress?: string, value?: number | string | bigint, atBlock?: `0x${string}`): Promise<Array<[ActorId, SessionData]>> {
     const payload = this._program.registry.createType('(String, String)', ['Session', 'Sessions']).toHex();
     const reply = await this._program.api.message.calculateReply({
       destination: this._program.programId,

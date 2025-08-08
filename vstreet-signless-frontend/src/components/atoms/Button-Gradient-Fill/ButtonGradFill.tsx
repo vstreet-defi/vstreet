@@ -11,17 +11,18 @@ import { Codec, CodecClass } from '@polkadot/types/types';
 import { Signer } from '@polkadot/types/types';
 import { fungibleTokenProgramID, idlVFT, idlVSTREET, vstreetProgramID } from '../../../utils/smartPrograms';
 import { Loader } from '../../../components/molecules/alert-modal/AlertModal';
-import { GearApi, HexString } from '@gear-js/api';
+import { decodeAddress, GearApi, HexString } from '@gear-js/api';
 
 interface ButtonProps {
   label: string;
   amount: string;
   balance: number;
+  onSuccessCallback?: () => void;
 }
 
 type TransactionFunction = () => Promise<void>;
 
-const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
+const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance, onSuccessCallback }) => {
   const { account } = useAccount();
   const { fetchUserInfo } = useUserInfo();
   const alertModalContext = useContext(AlertModalContext);
@@ -56,7 +57,6 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     await web3Enable('vStreet');
 
     const gearApi = await GearApi.create({ providerAddress: 'wss://testnet.vara.network' });
-
     const program = new VFTProgram(gearApi, fungibleTokenProgramID as HexString);
     const service = new VFTService(program);
 
@@ -73,6 +73,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     return async () => {
       const { response, isFinalized } = await transaction.signAndSend();
       await isFinalized;
+      onSuccessCallback?.();
 
       try {
         await response();
@@ -93,12 +94,12 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     const service = new Service(program);
 
     const multiplyAmount = (amount: string): bigint => {
-      return BigInt(Math.floor(Number(amount) * 1e18));
+      return BigInt(Math.floor(Number(amount)));
     };
 
-    const multipliedAmount = BigInt(multiplyAmount(amount));
+    const multipliedAmount = BigInt(amount);
 
-    const transaction = await service.depositLiquidity(multipliedAmount, null);
+    const transaction = await service.depositLiquidity(multipliedAmount, decodeAddress(account.address), null);
 
     const { signer } = await web3FromSource(account.meta.source);
     transaction.withAccount(account.address, {
@@ -110,6 +111,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     return async () => {
       const { response, isFinalized } = await transaction.signAndSend();
       await isFinalized;
+      onSuccessCallback?.();
       try {
         await response();
       } catch (error) {
@@ -119,22 +121,18 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   };
 
   const createWithdrawTransaction = async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVSTREET);
-    sails.setProgramId(vstreetProgramID);
-
     if (!account) throw new Error('No account data found');
 
-    const gearApi = await GearApi.create({
-      providerAddress: 'wss://testnet.vara.network',
-    });
-    sails.setApi(gearApi);
+    await web3Enable('vStreet');
 
-    const multipliedAmount = multiplyAmount(amount);
+    const gearApi = await GearApi.create({ providerAddress: 'wss://testnet.vara.network' });
 
-    const transaction = await sails.services.service.functions.withdrawLiquidity(multipliedAmount);
+    const program = new Program(gearApi, vstreetProgramID);
+    const service = new Service(program);
+
+    const multipliedAmount = BigInt(amount);
+
+    const transaction = await service.withdrawLiquidity(multipliedAmount, decodeAddress(account.address), null);
     const { signer } = await web3FromSource(account.meta.source);
     transaction.withAccount(account.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
@@ -144,6 +142,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     return async () => {
       const { response, isFinalized } = await transaction.signAndSend();
       await isFinalized;
+      onSuccessCallback?.();
       try {
         await response();
       } catch (error) {

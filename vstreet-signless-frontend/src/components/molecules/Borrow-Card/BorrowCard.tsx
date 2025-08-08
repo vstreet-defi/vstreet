@@ -4,15 +4,16 @@ import styles from '../../../components/molecules/cards/Card.module.scss';
 import TokenSelectorBorrowUnder from '../../../components/atoms/Token-Selector-Borrow/TokenSelectorBorrowUnder';
 import { ButtonGradientBorderBorrow } from '../../../components/atoms/Button-Gradient-Border/Button-Gradient-Border-Borrow';
 import { useAccount, useApi } from '@gear-js/react-hooks';
-import { GearApi } from '@gear-js/api';
+import { GearApi, decodeAddress, HexString } from '@gear-js/api';
 import { Codec, CodecClass } from '@polkadot/types/types';
 import { Signer } from '@polkadot/types/types';
-import { web3FromSource } from '@polkadot/extension-dapp';
+import { web3FromSource, web3Enable } from '@polkadot/extension-dapp';
+import { Program as VFTProgram, Service as VFTService } from '@/hocs/vft';
 import { getVFTBalance } from '../../../smart-contracts-tools';
 import { idlVSTREET, idlVFT, vstreetProgramID, fungibleTokenProgramID } from '../../../utils/smartPrograms';
 import { AlertModalContext } from '../../../contexts/alertContext';
 import { useUserInfo } from '../../../contexts/userInfoContext';
-
+import { Program, Service } from '@/hocs/lib';
 import { Sails } from 'sails-js';
 import { SailsIdlParser } from 'sails-js-parser';
 import { useNativeBalance } from '@/hooks/useNativeBalance';
@@ -46,6 +47,7 @@ function BorrowCard() {
   useEffect(() => {
     if (userInfo) {
       const mla = Number(userInfo.mla);
+      console.log('mla', mla);
       setMaxLoanAmount(mla ?? 0);
       const la = Number(userInfo.loan_amount);
       setLoanAmount(la ?? 0);
@@ -87,21 +89,18 @@ function BorrowCard() {
   );
 
   const createApprovalTransaction = useCallback(async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-    sails.parseIdl(idlVFT);
-    sails.setProgramId(fungibleTokenProgramID);
+    const gearApi = await GearApi.create({ providerAddress: 'wss://testnet.vara.network' });
+    const program = new VFTProgram(gearApi, fungibleTokenProgramID as HexString);
+    const service = new VFTService(program);
+
+    const multipliedAmount = BigInt(Number(inputValue)) * 1000000n;
+
+    const transaction = await service.approve(vstreetProgramID as HexString, multipliedAmount);
 
     if (!account) throw new Error('No account data found');
 
-    const gearApi = await GearApi.create({
-      providerAddress: 'wss://testnet.vara.network',
-    });
-    sails.setApi(gearApi);
-
-    const multipliedAmount = multiplyAmountApprove(inputValue);
     const { signer } = await web3FromSource(account.meta.source);
-    const transaction = await sails.services.vft.functions.Approve(vstreetProgramID, multipliedAmount);
+
     transaction.withAccount(account.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
@@ -119,21 +118,19 @@ function BorrowCard() {
   }, [account, inputValue]);
 
   const createPayLoanTransaction = useCallback(async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-    sails.parseIdl(idlVSTREET);
-    sails.setProgramId(vstreetProgramID);
-
     if (!account) throw new Error('No account data found');
 
+    await web3Enable('vStreet');
     const gearApi = await GearApi.create({
       providerAddress: 'wss://testnet.vara.network',
     });
-    sails.setApi(gearApi);
+
+    const program = new Program(gearApi, vstreetProgramID);
+    const svc = new Service(program);
 
     const multipliedAmount = multiplyAmount(inputValue);
     const { signer } = await web3FromSource(account.meta.source);
-    const transaction = await sails.services.service.functions.PayLoan(inputValue);
+    const transaction = await svc.payLoan(inputValue, decodeAddress(account.address),decodeAddress(account.address));
     transaction.withAccount(account.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
@@ -152,21 +149,25 @@ function BorrowCard() {
   }, [account, inputValue]);
 
   const createTakeLoanTransaction = useCallback(async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-    sails.parseIdl(idlVSTREET);
-    sails.setProgramId(vstreetProgramID);
-
-    if (!account) throw new Error('No account data found');
-
+    await web3Enable('vStreet');
     const gearApi = await GearApi.create({
       providerAddress: 'wss://testnet.vara.network',
     });
-    sails.setApi(gearApi);
 
-    const multipliedAmount = multiplyAmount(inputValue);
+    const program = new Program(gearApi, vstreetProgramID);
+    const svc = new Service(program);
+
+    if (!account) throw new Error('No account data found');
+
+    const multipliedAmount = BigInt(Math.floor(Number(inputValue) * 1e18));
+    const U128_MAX = 340282366920938463463374607431768211455n;
+
+    if (multipliedAmount > U128_MAX) {
+      throw new Error('Amount too large for u128!');
+    }
+
     const { signer } = await web3FromSource(account.meta.source);
-    const transaction = await sails.services.service.functions.TakeLoan(multipliedAmount);
+    const transaction = await svc.takeLoan(multipliedAmount, decodeAddress(account.address), null);
     transaction.withAccount(account.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
@@ -241,29 +242,11 @@ function BorrowCard() {
     <div className={styles.ContainerBorrow}>
       <div className={styles.BasicCardBorrow}>
         <TokenSelectorBorrowUnder />
-        <BasicInput inputValue={inputValue} onInputChange={handleInputChange} balance={balanceVFT} />
-        <div style={{ display: 'flex', gap: '6rem', marginTop: '20px' }}>
-          <ButtonGradientBorderBorrow
-            text="Borrow"
-            isDisabled={
-              BigInt(inputValue) * BigInt(1000000000000000000) > maxLoanAmount ||
-              BigInt(inputValue) === BigInt(0) ||
-              isLoading
-            }
-            onClick={handleClickTakeLoan}
-            isLoading={isLoading}
-          />
+        <BasicInput inputValue={inputValue} onInputChange={handleInputChange} balance={Number(userInfo.mla) / 1e18} />
 
-          <ButtonGradientBorderBorrow
-            text="Pay Loan"
-            isDisabled={
-              BigInt(inputValue) * BigInt(1000000000000000000) > loanAmount ||
-              BigInt(inputValue) === BigInt(0) ||
-              isLoading
-            }
-            onClick={handleClickApproveAndPayLoan}
-            isLoading={isLoading}
-          />
+        <div style={{ display: 'flex', gap: '6rem', marginTop: '20px' }}>
+          <ButtonGradientBorderBorrow text="Borrow" onClick={handleClickTakeLoan} isLoading={isLoading} />
+          <ButtonGradientBorderBorrow text="Pay Loan" onClick={handleClickApproveAndPayLoan} isLoading={isLoading} />
         </div>
       </div>
     </div>

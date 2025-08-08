@@ -23,6 +23,8 @@ import { MdSavings } from 'react-icons/md';
 import { GiReceiveMoney } from 'react-icons/gi';
 import { useState } from 'react';
 import { web3FromSource, web3Enable } from '@polkadot/extension-dapp';
+import { useToast } from '@chakra-ui/react';
+import { Toast } from './Toast';
 
 function formatVaraBalance(balance: bigint | undefined): string {
   if (!balance) return '0.00';
@@ -45,8 +47,8 @@ export function RelayerInfo() {
   const balance = useNativeBalance(relayerAddress);
   const { account } = useAccount();
   const { api } = useApi();
+  const toast = useToast();
 
-  // Modal state
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [modalType, setModalType] = useState<'delegate' | 'return' | null>(null);
   const [amountInput, setAmountInput] = useState('');
@@ -58,7 +60,6 @@ export function RelayerInfo() {
     onOpen();
   }
 
-  // Delegar tokens al relayer
   async function handleDelegateTokens(amount: bigint) {
     if (!account) {
       alert('Wallet not connected');
@@ -75,6 +76,12 @@ export function RelayerInfo() {
         .transfer(relayerAddress, bnAmount)
         .signAndSend(account.decodedAddress, { signer: injector.signer }, ({ status }) => {
           if (status.isInBlock || status.isFinalized) {
+            toast({
+              position: 'bottom',
+              duration: 3000,
+              render: () => <Toast type="success" message="Token delegation successful!" />,
+            });
+
             setTxPending(null);
             unsub && unsub();
             onClose();
@@ -86,7 +93,6 @@ export function RelayerInfo() {
     }
   }
 
-  // Devolver tokens al usuario
   async function handleReturnTokens(amount: bigint) {
     if (!api || !signless.pair || !account) return;
     try {
@@ -94,6 +100,11 @@ export function RelayerInfo() {
       setTxPending('return');
       const unsub = await api.balance.transfer(account.address, bnAmount).signAndSend(signless.pair, ({ status }) => {
         if (status.isInBlock || status.isFinalized) {
+          toast({
+            position: 'bottom',
+            duration: 3000,
+            render: () => <Toast type="success" message="Withdrawal successful!" />,
+          });
           setTxPending(null);
           unsub && unsub();
           onClose();
@@ -156,7 +167,7 @@ export function RelayerInfo() {
             backgroundClip: 'padding-box, border-box',
           }}>
           {relayerAddress === undefined ? (
-            <span style={{ color: '#ff4747', fontWeight: 700 }}>Signless Mode: Inactive</span>
+            <span style={{ color: '#ff4747', fontWeight: 700 }}> Signless Mode: Inactive</span>
           ) : (
             <>
               <span style={gradientText}>{formatVaraBalance(balance)} TVARA</span>

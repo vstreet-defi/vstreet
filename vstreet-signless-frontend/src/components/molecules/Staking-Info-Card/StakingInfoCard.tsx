@@ -1,6 +1,7 @@
 import React, { useContext, useRef, useState, useCallback, useEffect } from 'react';
 import { useAccount, useApi } from '@gear-js/react-hooks';
 import { GearApi } from '@gear-js/api';
+import { Program, Service } from '@/hocs/lib';
 import { ButtonGradientBorder } from '../../../components/atoms/Button-Gradient-Border/Button-Gradient-Border';
 import InfoIcon from '../../../assets/images/icons/info_Icon.png';
 import {
@@ -13,7 +14,7 @@ import { AlertModalContext } from '../../../contexts/alertContext';
 import { useUserInfo } from '../../../contexts/userInfoContext';
 import { useLiquidity } from '../../../contexts/stateContext';
 import { idlVSTREET, vstreetProgramID } from '../../../utils/smartPrograms';
-import { web3FromSource } from '@polkadot/extension-dapp';
+import { web3FromSource, web3Enable } from '@polkadot/extension-dapp';
 import { Codec, CodecClass } from '@polkadot/types/types';
 import { Signer } from '@polkadot/types/types';
 
@@ -96,25 +97,19 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
 
   useOutsideClick(wrapperRef, () => setShowMessage(false));
 
-  // Firma con la cuenta activa (Polkadot.js)
   const createWithdrawRewardsTransaction = useCallback(async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVSTREET);
-    sails.setProgramId(vstreetProgramID);
-
     if (!account) {
       throw new Error('No account found');
     }
 
-    const gearApi = await GearApi.create({
-      providerAddress: 'wss://testnet.vara.network',
-    });
-    sails.setApi(gearApi);
+    await web3Enable('vStreet');
+    const gearApi = await GearApi.create({ providerAddress: 'wss://testnet.vara.network' });
+    const program = new Program(gearApi, vstreetProgramID);
+    const service = new Service(program);
 
     const { signer } = await web3FromSource(account.meta.source);
-    const transaction = await sails.services.service.functions.WithdrawRewards();
+    // Cambia solo aquí si tu función espera CERO argumentos:
+    const transaction = await service.withdrawRewards(account.address, account.address);
 
     transaction.withAccount(account.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
@@ -198,11 +193,15 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
     }
   };
 
+  const formatApr = (apr: number): string => {
+    return (apr / 100000000000).toFixed(2);
+  };
+
   return (
     <div>
       <div className="BasicCard">
         {showMessage && <Tooltip message="Minimum claim: $1 USD." />}
-        <InfoRow label="Total Deposited" value={`$${formatWithCommas(userInfo?.balance ?? 0)} vUSD`} />
+        <InfoRow label="Total Deposited" value={`$${userInfo?.balance / 12} vUSD`} />
         <InfoRow
           label="Total Earned"
           value={`$${formatWithCommas(userInfo?.rewards ?? 0)} vUSD`}

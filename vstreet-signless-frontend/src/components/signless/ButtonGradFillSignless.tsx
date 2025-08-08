@@ -6,15 +6,19 @@ import {
   EzTransactionsSwitch,
 } from 'gear-ez-transactions';
 import type { TransactionReturn, GenericTransactionReturn } from '@gear-js/react-hooks/dist/hooks/sails/types';
-import { usePrepareProgramTransaction, useProgram, useAccount } from '@gear-js/react-hooks';
+import { usePrepareProgramTransaction, useAccount, useProgram } from '@gear-js/react-hooks';
 import { useSignAndSend } from '@/hooks/use-sign-and-send';
 import { useUserInfo } from '@/contexts/userInfoContext';
 import { Program } from '@/hocs/lib';
-import { encodeAddress } from '@polkadot/util-crypto';
-import ButtonGradFillBorrow from '@/components/atoms/Button-Gradient-Fill/ButtonGradFillBorrow';
 import { useToast } from '@chakra-ui/react';
 import { Toast } from './Toast';
-
+import { encodeAddress } from '@polkadot/util-crypto';
+import { web3FromSource, web3Enable } from '@polkadot/extension-dapp';
+import { GearApi, HexString } from '@gear-js/api';
+import { Program as VFTProgram, Service as VFTService } from '@/hocs/vft';
+import { fungibleTokenProgramID, vstreetProgramID } from '../../utils/smartPrograms';
+import ButtonGradFill from '../atoms/Button-Gradient-Fill/ButtonGradFill';
+import { SignlessPanel } from './SignlessPanel';
 
 interface ButtonProps {
   label: string;
@@ -23,21 +27,15 @@ interface ButtonProps {
   onSuccessCallback?: () => void;
 }
 
-const ALLOWED_SIGNLESS_ACTIONS = [
-  'DepositCollateral',
-  'WithdrawCollateral',
-  'TakeLoan',
-  'PayLoan',
-  'DepositLiquidity',
-  'WithdrawLiquidity',
-];
+const ALLOWED_SIGNLESS_ACTIONS = ['DepositLiquidity', 'WithdrawLiquidity'];
 
-export const ButtonGradFillBorrowSignless: React.FC<ButtonProps> = ({ amount, label, balance, onSuccessCallback }) => {
+export const ButtonGradFillSignless: React.FC<ButtonProps> = ({ label, amount, balance, onSuccessCallback }) => {
   const { account } = useAccount();
   const toast = useToast();
   const { fetchUserInfo } = useUserInfo();
   const signless = useSignlessTransactions();
   const gasless = useGaslessTransactions();
+
   const { data: program } = useProgram({
     library: Program,
     id: import.meta.env.VITE_PROGRAMID,
@@ -46,12 +44,12 @@ export const ButtonGradFillBorrowSignless: React.FC<ButtonProps> = ({ amount, la
   const { prepareTransactionAsync: prepareDepositAsync } = usePrepareProgramTransaction({
     program,
     serviceName: 'service',
-    functionName: 'depositCollateral',
+    functionName: 'depositLiquidity',
   });
   const { prepareTransactionAsync: prepareWithdrawAsync } = usePrepareProgramTransaction({
     program,
     serviceName: 'service',
-    functionName: 'withdrawCollateral',
+    functionName: 'withdrawLiquidity',
   });
 
   const { prepareEzTransactionParams } = usePrepareEzTransactionParams();
@@ -61,6 +59,7 @@ export const ButtonGradFillBorrowSignless: React.FC<ButtonProps> = ({ amount, la
   const [voucherPending, setVoucherPending] = useState(false);
   const hasRequestedOnceRef = useRef(false);
 
+  // Solicitar voucher
   useEffect(() => {
     hasRequestedOnceRef.current = false;
   }, [account?.address]);
@@ -92,75 +91,80 @@ export const ButtonGradFillBorrowSignless: React.FC<ButtonProps> = ({ amount, la
     void requestVoucherSafely();
   }, [account?.address, gasless.isEnabled]);
 
-  const DECIMALS = 12;
+  const DECIMALS = 18;
 
-  const handleSendDeposit = async () => {
-    const relayerAddressVara = signless.pair ? encodeAddress(signless.pair.address, 137) : '';
+  const createApprovalTransaction = async () => {
+    if (!account) throw new Error('No account data found');
+    await web3Enable('vStreet');
+    const gearApi = await GearApi.create({ providerAddress: 'wss://testnet.vara.network' });
+    const program = new VFTProgram(gearApi, fungibleTokenProgramID as HexString);
+    const service = new VFTService(program);
 
-    if (!signless.isActive) {
-      alert('Signless session is not active');
-      return;
-    }
-    if (!amount || isNaN(Number(amount)) || BigInt(amount) <= 0n) {
-      alert('Enter a valid amount');
-      return;
-    }
-    setLoading(true);
-    try {
-      const { sessionForAccount, ...params } = await prepareEzTransactionParams(false);
-      if (!sessionForAccount) throw new Error('Missing sessionForAccount');
-      const amountToSend = BigInt(Math.floor(Number(amount) * 10 ** DECIMALS));
+    console.log('Cantidad', amount);
+    const transaction = await service.approve(vstreetProgramID as HexString, amount);
+    const { signer } = await web3FromSource(account.meta.source);
+    transaction.withAccount(account.address, {
+      signer: signer,
+    });
+    await transaction.calculateGas(true, 15);
 
-      const { transaction } = await prepareDepositAsync({
-        args: [sessionForAccount, sessionForAccount],
-        value: amountToSend,
-        ...params,
-      });
-
-      signAndSend(transaction as unknown as TransactionReturn<() => GenericTransactionReturn<null>>, {
-        onSuccess: () => {
-          toast({
-            position: 'bottom',
-            duration: 3000,
-            render: () => <Toast type="success" message="Transaction executed successfully!" />,
-          });
-          setLoading(false);
-          fetchUserInfo(sessionForAccount);
-          onSuccessCallback?.();
-        },
-        onError: () => setLoading(false),
-      });
-    } catch (err) {
-      setLoading(false);
-    }
+    return async () => {
+      const { response, isFinalized } = await transaction.signAndSend();
+      await isFinalized;
+      onSuccessCallback?.();
+      try {
+        await response();
+      } catch (error) {
+        console.error('Error executing message:', error);
+        throw error;
+      }
+    };
   };
 
-  const handleSendWithdraw = async () => {
+  // ----------- DEPOSIT -----------
+  const handleSendDeposit = async () => {
     if (!signless.isActive) {
-      alert('Signless session is not active');
+      toast({
+        position: 'bottom',
+        duration: 3000,
+        render: () => <Toast type="error" message="Signless session is not active." />,
+      });
       return;
     }
     if (!amount || isNaN(Number(amount)) || BigInt(amount) <= 0n) {
-      alert('Enter a valid amount');
+      toast({
+        position: 'bottom',
+        duration: 3000,
+        render: () => <Toast type="error" message="Enter a valid amount." />,
+      });
       return;
     }
     setLoading(true);
     try {
+      const approvalTx = await createApprovalTransaction();
+      await approvalTx();
+      toast({
+        position: 'bottom',
+        duration: 2000,
+        render: () => <Toast type="info" message="Tokens approved, sending deposit..." />,
+      });
+
       const { sessionForAccount, ...params } = await prepareEzTransactionParams(false);
       if (!sessionForAccount) throw new Error('Missing sessionForAccount');
+      const amountToSend = BigInt(Math.floor(Number(amount)));
 
-      const { transaction } = await prepareWithdrawAsync({
-        args: [sessionForAccount, amount, sessionForAccount],
+      const { transaction } = await prepareDepositAsync({
+        args: [amountToSend, sessionForAccount, sessionForAccount],
         value: 0n,
         ...params,
       });
-
-      signAndSend(transaction as unknown as TransactionReturn<() => GenericTransactionReturn<null>>, {
+      const executableTransaction = transaction;
+      signAndSend(executableTransaction as unknown as TransactionReturn<() => GenericTransactionReturn<null>>, {
         onSuccess: () => {
           toast({
             position: 'bottom',
             duration: 3000,
-            render: () => <Toast type="success" message="Transaction executed successfully!" />,
+            render: () => <Toast type="success" message="Deposit successful!" />,
           });
           setLoading(false);
           fetchUserInfo(sessionForAccount);
@@ -168,8 +172,65 @@ export const ButtonGradFillBorrowSignless: React.FC<ButtonProps> = ({ amount, la
         },
         onError: () => setLoading(false),
       });
-    } catch (err) {
+    } catch (err: any) {
       setLoading(false);
+      toast({
+        position: 'bottom',
+        duration: 3000,
+        render: () => <Toast type="error" message={err?.message || 'Transaction failed.'} />,
+      });
+    }
+  };
+
+  // ----------- WITHDRAW -----------
+  const handleSendWithdraw = async () => {
+    if (!signless.isActive) {
+      toast({
+        position: 'bottom',
+        duration: 3000,
+        render: () => <Toast type="error" message="Signless session is not active." />,
+      });
+      return;
+    }
+    if (!amount || isNaN(Number(amount)) || BigInt(amount) <= 0n) {
+      toast({
+        position: 'bottom',
+        duration: 3000,
+        render: () => <Toast type="error" message="Enter a valid amount." />,
+      });
+      return;
+    }
+    setLoading(true);
+    try {
+      const { sessionForAccount, ...params } = await prepareEzTransactionParams(false);
+      if (!sessionForAccount) throw new Error('Missing sessionForAccount');
+      const { transaction } = await prepareWithdrawAsync({
+        args: [BigInt(amount), sessionForAccount, sessionForAccount],
+        value: 0n,
+        ...params,
+      });
+      const executableTransaction = transaction;
+
+      signAndSend(executableTransaction as unknown as TransactionReturn<() => GenericTransactionReturn<null>>, {
+        onSuccess: () => {
+          toast({
+            position: 'bottom',
+            duration: 3000,
+            render: () => <Toast type="success" message="Withdrawal successful!" />,
+          });
+          setLoading(false);
+          fetchUserInfo(sessionForAccount);
+          onSuccessCallback?.();
+        },
+        onError: () => setLoading(false),
+      });
+    } catch (err: any) {
+      setLoading(false);
+      toast({
+        position: 'bottom',
+        duration: 3000,
+        render: () => <Toast type="error" message={err?.message || 'Transaction failed.'} />,
+      });
     }
   };
 
@@ -182,8 +243,6 @@ export const ButtonGradFillBorrowSignless: React.FC<ButtonProps> = ({ amount, la
     const action = actions[label];
     if (action) await action();
   };
-
-  const voucherEnabled = gasless.voucherStatus?.enabled;
 
   const disabled =
     loading ||
@@ -198,8 +257,11 @@ export const ButtonGradFillBorrowSignless: React.FC<ButtonProps> = ({ amount, la
       {signless.isActive ? (
         ''
       ) : (
-        <ButtonGradFillBorrow amount={amount} label={label} balance={balance} onSuccessCallback={onSuccessCallback} />
+        <>
+          <ButtonGradFill amount={amount} label={label} balance={balance} onSuccessCallback={onSuccessCallback} />
+        </>
       )}
+
       {signless.isActive ? (
         <button
           className={`btn-grad-fill ${loading ? 'btn-grad-fill--loading' : ''}`}
@@ -228,4 +290,4 @@ export const ButtonGradFillBorrowSignless: React.FC<ButtonProps> = ({ amount, la
   );
 };
 
-export default ButtonGradFillBorrowSignless;
+export default ButtonGradFillSignless;

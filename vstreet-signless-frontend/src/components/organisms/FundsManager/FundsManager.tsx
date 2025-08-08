@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { FundsCard } from "../../molecules/cards/FundsCard";
 import "./FundsManager.scss";
+import { Heading } from "@chakra-ui/react";
 
 const TABS = {
   DEPOSIT: "Deposit",
@@ -16,6 +17,7 @@ function FundsManager() {
 
   return (
     <div className="funds-manager">
+      
       <div className="funds-manager__tabs">
         {Object.values(TABS).map((tab) => (
           <button

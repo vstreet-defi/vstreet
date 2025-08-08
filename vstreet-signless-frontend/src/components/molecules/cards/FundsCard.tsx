@@ -3,6 +3,7 @@ import styles from './Card.module.scss';
 import TokenSelector from '../../atoms/Token-Selector/TokenSelector';
 import PercentageSelector from '../Percentage-Selector/PercentageSelector';
 import ButtonGradFill from '../../atoms/Button-Gradient-Fill/ButtonGradFill';
+import ButtonGradFillSignless from '@/components/signless/ButtonGradFillSignless';
 import { useEffect, useState } from 'react';
 import { useUserInfo } from '../../../contexts/userInfoContext';
 import { useAccount, useApi } from '@gear-js/react-hooks';
@@ -30,6 +31,8 @@ function FundsCard({ buttonLabel }: props) {
     setInputValue(value);
   };
 
+  const handleClearInput = () => setInputValue('');
+
   const convertHexToDecimal = (hexValue: string) => {
     return hexToBn(hexValue).toString();
   };
@@ -43,8 +46,10 @@ function FundsCard({ buttonLabel }: props) {
 
   useEffect(() => {
     if (userInfo) {
-      const formatedBalance = userInfo.balance ? userInfo.balance / 1e15 : 0;
-      const balanceFormatted = Number(formatedBalance / 1e18);
+      const formatedBalance = userInfo.balance ? userInfo.balance : 0;
+
+      const balanceFormatted = Number(formatedBalance / 12);
+      console.log('balance', balanceFormatted, 'Infobalance', userInfo.balance);
       setDepositedBalance(balanceFormatted);
     }
   }, [userInfo]);
@@ -56,17 +61,18 @@ function FundsCard({ buttonLabel }: props) {
         <BasicInput
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? Number((balanceVFT / 1e18).toFixed(2)) : depositedBalance}
+          balance={isDepositCard() ? Number(balanceVFT.toFixed(2)) : depositedBalance}
         />
         <PercentageSelector
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? Number((balanceVFT / 1e18).toFixed(2)) : depositedBalance}
+          balance={isDepositCard() ? Number(balanceVFT.toFixed(2)) : depositedBalance}
         />
-        <ButtonGradFill
+        <ButtonGradFillSignless
           amount={inputValue}
           label={buttonLabel}
-          balance={isDepositCard() ? Number((balanceVFT / 1e18).toFixed(2)) : depositedBalance}
+          balance={isDepositCard() ? Number(balanceVFT.toFixed(2)) : depositedBalance}
+          onSuccessCallback={handleClearInput}
         />
       </div>
     </div>
