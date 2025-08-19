@@ -37,7 +37,9 @@ use crate::services::utils::{
     EventNotifier,
     ERROR_INSUFFICIENT_ADMIN_PRIVILEGES,
     ERROR_ADMIN_ALREADY_EXISTS,
-    ERROR_ADMIN_DOESNT_EXIST
+    ERROR_ADMIN_DOESNT_EXIST,
+    ERROR_IN_SCALING_AVAILABLE_REWARDS,
+    ERROR_IN_NEW_REWARDS_POOL
 };
 
 static mut VSTREET_STATE: Option<VstreetState> = None;
@@ -351,12 +353,20 @@ where VftClient: Vft, {
 
         let state_mut = self.state_mut();
         let decimals_factor = state_mut.config.decimals_factor;
-        state_mut.available_rewards_pool = amount * decimals_factor;
+        state_mut.available_rewards_pool = amount.checked_mul(decimals_factor).ok_or_else(|| {
+            let error_message = ERROR_IN_SCALING_AVAILABLE_REWARDS.to_string();
+            self.emit_event(LiquidityEvent::Error(error_message.clone()))
+                .expect("Notification Error");
+            error_message
+        })?;
 
         // Notify the AvailableRewardsPoolModified event
-        let new_rewards_pool: u128 = amount * decimals_factor;
-        self.emit_event(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
+        let new_rewards_pool: u128 = amount.checked_mul(decimals_factor).ok_or_else(|| {
+            let error_message = ERROR_IN_NEW_REWARDS_POOL.to_string();
+            self.emit_event(LiquidityEvent::Error(error_message.clone()))
                 .expect("Notification Error");
+            error_message
+        })?;
 
         Ok(())
     }
@@ -507,7 +517,7 @@ where VftClient: Vft, {
 
         self.calculate_utilization_factor();
 
-        state_mut.interest_rate = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor * state_mut.config.risk_multiplier);
+        state_mut.interest_rate = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor.checked_mul(state_mut.config.risk_multiplier).unwrap_or_default());
 
         state_mut.interest_rate
     }
@@ -517,14 +527,14 @@ where VftClient: Vft, {
         let current_timestamp = exec::block_timestamp() as u128;
 
         // Seconds in the 3 seconds Vara Blocks Elapsed since last update
-        let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) * 3;
+        let time_elapsed = (current_timestamp.saturating_sub(user_info.liquidity_last_updated)).checked_mul(3).unwrap_or_default();
 
         if time_elapsed > 0 {
-            let interest_per_second = ((interest_rate * decimals_factor) / year_in_seconds) / decimals_factor as u128;
-            let rewards = interest_per_second * time_elapsed;
+            let interest_per_second = ((interest_rate.checked_mul(decimals_factor).unwrap_or_default()).checked_div(year_in_seconds).unwrap_or_default()).checked_div(decimals_factor).unwrap_or_default();
+            let rewards = interest_per_second.checked_mul(time_elapsed).unwrap_or_default();
             debug!("Calculated rewards: {}", rewards);
             user_info.rewards = user_info.rewards.saturating_add(rewards);
-            user_info.rewards_usdc = user_info.rewards / decimals_factor;
+            user_info.rewards_usdc = user_info.rewards.checked_div(decimals_factor).unwrap_or_default();
             user_info.liquidity_last_updated = current_timestamp;
         }
     }
@@ -554,7 +564,7 @@ where VftClient: Vft, {
         if user_info.is_loan_active == false {
             user_info.available_to_withdraw_vara = user_info.balance_vara;
         }else{
-            let locked = (user_info.balance_vara * user_info.ltv) / 100;
+            let locked = (user_info.balance_vara.checked_mul(user_info.ltv).unwrap_or_default()).checked_div(100).unwrap_or_default();
             let available = user_info.balance_vara.saturating_sub(locked);
             debug!("Calculated available: {}", available);
 
@@ -569,9 +579,9 @@ where VftClient: Vft, {
         let user_info = state_mut.users.get_mut(&user).unwrap();
         let vara_price = state_mut.config.vara_price;
 
-        let tvaras = user_info.balance_vara / state_mut.config.one_tvara;
+        let tvaras = user_info.balance_vara.checked_div(state_mut.config.one_tvara).unwrap_or_default();
 
-        let cv = tvaras * vara_price;
+        let cv = tvaras.checked_mul(vara_price).unwrap_or_default();
         user_info.cv = cv;
 
         format!("CV: {:?}", cv)
@@ -582,7 +592,7 @@ where VftClient: Vft, {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
-        let mla = (user_info.cv * state_mut.ltv) / 100;
+        let mla = (user_info.cv.checked_mul(state_mut.ltv).unwrap_or_default()).checked_div(100).unwrap_or_default();
         user_info.mla = mla;
 
         format!("MLA: {:?}", mla)
@@ -604,7 +614,7 @@ where VftClient: Vft, {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
-        user_info.ltv = (user_info.loan_amount * 100) / user_info.cv;
+        user_info.ltv = (user_info.loan_amount.checked_mul(100).unwrap_or_default()).checked_div(user_info.cv).unwrap_or_default();
 
         format!("LTV: {:?}", user_info.ltv)
     }
@@ -634,7 +644,7 @@ where VftClient: Vft, {
             return 0;
         }
 
-        let utilization_factor = (((total_borrowed * decimals_factor) / total_deposited) * 100) / decimals_factor;
+        let utilization_factor = (((total_borrowed.checked_mul(decimals_factor).unwrap_or_default()).checked_div(total_deposited).unwrap_or_default()).checked_mul(100).unwrap_or_default()).checked_div(decimals_factor).unwrap_or_default();
         state_mut.utilization_factor = utilization_factor;
         return utilization_factor;
     }
@@ -647,7 +657,7 @@ where VftClient: Vft, {
         let risk_multiplier = state_mut.config.risk_multiplier;
         let dev_fee = state_mut.config.dev_fee;
 
-        base_rate.saturating_add(utilization_factor * risk_multiplier) * (1 + dev_fee)
+        base_rate.saturating_add(utilization_factor.checked_mul(risk_multiplier).unwrap_or_default()).checked_mul(1_u128.saturating_add(dev_fee.try_into().unwrap())).unwrap_or_default()
     }
     
     //Calculate Loan Interest Rate Amount 
@@ -658,12 +668,12 @@ where VftClient: Vft, {
         let loan_amount = user_info.loan_amount;
         let interest_rate = self.calculate_interest_rate();
         let current_timestamp = exec::block_timestamp() as u128;
-        let time_diff_seconds = (current_timestamp - user_info.borrow_last_updated) / 1000;
+        let time_diff_seconds = (current_timestamp.saturating_sub(user_info.borrow_last_updated)).checked_div(1000).unwrap_or_default();
         let decimals_factor = state_mut.config.decimals_factor;
 
-        let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds) / (state_mut.config.year_in_seconds * decimals_factor);
+        let interest_rate_amount = (loan_amount.checked_mul(interest_rate).unwrap_or_default().checked_mul(time_diff_seconds).unwrap_or_default()).checked_div(state_mut.config.year_in_seconds.checked_mul(decimals_factor).unwrap_or_default()).unwrap_or_default();
         user_info.loan_amount = user_info.loan_amount.saturating_add(interest_rate_amount);
-        user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
+        user_info.loan_amount_usdc = user_info.loan_amount.checked_div(decimals_factor).unwrap_or_default();
         user_info.borrow_last_updated = current_timestamp;
 
         format!("Loan Interest Rate Amount: {:?}", interest_rate_amount)
@@ -691,8 +701,8 @@ where VftClient: Vft, {
 
         let loan_amount = user_info.loan_amount;
         let balance_vara = user_info.balance_vara;
-      
-        let locked = (balance_vara * user_info.ltv) / 100;
+
+        let locked = (balance_vara.checked_mul(user_info.ltv).unwrap_or_default()).checked_div(100).unwrap_or_default();
 
         //Condition to liquidate loan
         if user_info.ltv >= state_mut.ltv {

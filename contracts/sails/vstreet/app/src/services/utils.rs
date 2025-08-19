@@ -10,6 +10,9 @@ pub const ERROR_USER_REWARDS_INSUFFICIENT: &str = "Not enough rewards to withdra
 pub const ERROR_INSUFFICIENT_ADMIN_PRIVILEGES: &str = "Only an administrator can perform this action";
 pub const ERROR_ADMIN_ALREADY_EXISTS: &str = "Admin already exists";
 pub const ERROR_ADMIN_DOESNT_EXIST: &str = "Admin does not exist";
+pub const ERROR_IN_SCALING_AVAILABLE_REWARDS: &str = "Error in scaling available rewards";
+pub const ERROR_IN_NEW_REWARDS_POOL: &str = "Error in creating new rewards pool";
+
 
 pub trait EventNotifier {
     fn notify_deposit(&mut self, amount: u128);
