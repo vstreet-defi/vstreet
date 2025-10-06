@@ -32,6 +32,7 @@ function BorrowCard() {
   const { userInfo, fetchUserInfo } = useUserInfo();
   const [maxLoanAmount, setMaxLoanAmount] = useState<number>(0);
   const [loanAmount, setLoanAmount] = useState<number>(0);
+  const { api } = useApi();
 
   const { account } = useAccount();
   const nativeBalance = useNativeBalance(account?.address);
@@ -51,8 +52,21 @@ function BorrowCard() {
       setMaxLoanAmount(mla ?? 0);
       const la = Number(userInfo.loan_amount);
       setLoanAmount(la ?? 0);
+
+      const userBalance = userInfo.balance_usdc ? Number(userInfo.balance_usdc) / 1e18 : 0;
+      console.log('userBalance', userBalance);
     }
   }, [userInfo]);
+
+  //get vftBalance
+  useEffect(() => {
+    if (account?.address && api) {
+      getVFTBalance(setBalanceVFT, decodeAddress(account.address), api);
+      console.log('balanceVFT', balanceVFT);
+    }
+  }, [account?.address, api]);
+
+  // Handlers
 
   const handleInputChange = useCallback((value: string): void => {
     setInputValue(value);
@@ -242,11 +256,11 @@ function BorrowCard() {
     <div className={styles.ContainerBorrow}>
       <div className={styles.BasicCardBorrow}>
         <TokenSelectorBorrowUnder />
-        <BasicInput inputValue={inputValue} onInputChange={handleInputChange} balance={Number(userInfo.mla) / 1e18} />
+        <BasicInput inputValue={inputValue} onInputChange={handleInputChange} balance={Number(balanceVFT) / 1e18} />
 
         <div style={{ display: 'flex', gap: '6rem', marginTop: '20px' }}>
           <ButtonGradientBorderBorrow text="Borrow" onClick={handleClickTakeLoan} isLoading={isLoading} />
-          <ButtonGradientBorderBorrow text="Pay Loan" onClick={handleClickApproveAndPayLoan} isLoading={isLoading} />
+          <ButtonGradientBorderBorrow text="Pay Loan USDT" onClick={handleClickApproveAndPayLoan} isLoading={isLoading} />
         </div>
       </div>
     </div>

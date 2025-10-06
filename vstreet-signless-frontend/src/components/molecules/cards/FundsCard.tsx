@@ -41,15 +41,21 @@ function FundsCard({ buttonLabel }: props) {
     if (account?.address && api) {
       fetchUserInfo(account.address);
       getVFTBalance(setBalanceVFT, decodeAddress(account.address), api);
+      console.log('balanceVFT', balanceVFT);
+      
+     
     }
   }, [account?.address, api]);
+
+    // Ajuste: dividir balanceVFT entre 100000 para renderizar correctamente
+  const displayedBalanceVFT = balanceVFT / 1000000;
 
   useEffect(() => {
     if (userInfo) {
       const formatedBalance = userInfo.balance ? userInfo.balance : 0;
 
       const balanceFormatted = Number(formatedBalance / 12);
-      console.log('balance', balanceFormatted, 'Infobalance', userInfo.balance);
+      console.log('balance from funds card', balanceFormatted, 'Infobalance', userInfo.balance);
       setDepositedBalance(balanceFormatted);
     }
   }, [userInfo]);
@@ -61,17 +67,17 @@ function FundsCard({ buttonLabel }: props) {
         <BasicInput
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? Number(balanceVFT.toFixed(2)) : depositedBalance}
+          balance={isDepositCard() ? Number(displayedBalanceVFT.toFixed(2)) : depositedBalance}
         />
         <PercentageSelector
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? Number(balanceVFT.toFixed(2)) : depositedBalance}
+          balance={isDepositCard() ? Number(displayedBalanceVFT.toFixed(2)) : depositedBalance}
         />
         <ButtonGradFillSignless
           amount={inputValue}
           label={buttonLabel}
-          balance={isDepositCard() ? Number(balanceVFT.toFixed(2)) : depositedBalance}
+          balance={isDepositCard() ? Number(displayedBalanceVFT.toFixed(2)) : depositedBalance}
           onSuccessCallback={handleClearInput}
         />
       </div>

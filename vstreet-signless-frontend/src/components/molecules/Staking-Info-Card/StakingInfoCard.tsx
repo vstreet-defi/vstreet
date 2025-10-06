@@ -87,6 +87,10 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
 
   const { fetchUserInfo, userInfo } = useUserInfo();
 
+  // Ajuste: dividir userInfo.balance entre 100000 para renderizar correctamente (igual que FundsCard)
+  const displayedBalance = (userInfo?.balance ?? 0) / 100000;
+  const depositedBalance = displayedBalance / 12;
+
   // Sincroniza userInfo al address activo
   useEffect(() => {
     if (account?.address) {
@@ -201,7 +205,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
     <div>
       <div className="BasicCard">
         {showMessage && <Tooltip message="Minimum claim: $1 USD." />}
-        <InfoRow label="Total Deposited" value={`$${userInfo?.balance / 12} vUSD`} />
+        <InfoRow label="Total Deposited" value={`$${depositedBalance.toFixed(2)} vUSD`} />
         <InfoRow
           label="Total Earned"
           value={`$${formatWithCommas(userInfo?.rewards ?? 0)} vUSD`}

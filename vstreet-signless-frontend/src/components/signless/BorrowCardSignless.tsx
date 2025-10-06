@@ -3,7 +3,7 @@ import BasicInput from '../molecules/Basic-Input/BasicInput';
 import styles from '../molecules/cards/Card.module.scss';
 import TokenSelectorBorrowUnder from '../atoms/Token-Selector-Borrow/TokenSelectorBorrowUnder';
 import { ButtonGradientBorderBorrow } from '../atoms/Button-Gradient-Border/Button-Gradient-Border-Borrow';
-import { useAccount } from '@gear-js/react-hooks';
+import { useAccount,  useApi } from '@gear-js/react-hooks';
 import { AlertModalContext } from '../../contexts/alertContext';
 import { useUserInfo } from '../../contexts/userInfoContext';
 import { Program } from '@/hocs/lib';
@@ -15,6 +15,9 @@ import { useSignlessTransactions, useGaslessTransactions, usePrepareEzTransactio
 import type { TransactionReturn, GenericTransactionReturn } from '@gear-js/react-hooks/dist/hooks/sails/types';
 import { useSignAndSend } from '@/hooks/use-sign-and-send';
 import { usePrepareProgramTransaction } from '@gear-js/react-hooks';
+import { getVFTBalance } from '@/smart-contracts-tools';
+import { decodeAddress } from '@gear-js/api';
+
 
 const ALLOWED_SIGNLESS_ACTIONS = ['DepositCollateral', 'WithdrawCollateral', 'TakeLoan', 'PayLoan'];
 
@@ -27,6 +30,7 @@ function BorrowCardSignless() {
   const [maxLoanAmount, setMaxLoanAmount] = useState<number>(0);
   const [loanAmount, setLoanAmount] = useState<number>(0);
   const toast = useToast();
+  const { api } = useApi();
 
   const { account } = useAccount();
   const nativeBalance = useNativeBalance(account?.address);
@@ -91,12 +95,14 @@ function BorrowCardSignless() {
   // ------------------------
 
   useEffect(() => {
-    if (account?.address) {
-      fetchUserInfo(account.address);
-      setBalanceVFT(Number(nativeBalance ? nativeBalance / BigInt(1e12) : 0));
-    }
-  }, [account?.address, nativeBalance, fetchUserInfo]);
-
+     if (account?.address && api) {
+       fetchUserInfo(account.address);
+       getVFTBalance(setBalanceVFT, decodeAddress(account.address), api);
+       console.log('balanceVFT', balanceVFT);
+       
+      
+     }
+   }, [account?.address, api]);
   useEffect(() => {
     if (userInfo) {
       const mla = Number(userInfo.mla);
@@ -225,7 +231,7 @@ function BorrowCardSignless() {
     <div className={styles.ContainerBorrow}>
       <div className={styles.BasicCardBorrow}>
         <TokenSelectorBorrowUnder />
-        <BasicInput inputValue={inputValue} onInputChange={handleInputChange} balance={Number(userInfo.mla) / 1e6} />
+        <BasicInput inputValue={inputValue} onInputChange={handleInputChange} balance={Number(balanceVFT)/ 1000000} />
         <div style={{ display: 'flex', gap: '6rem', marginTop: '20px' }}>
           {signless.isActive ? (
             <>
