@@ -57,6 +57,13 @@ where
             error_message
         })?;
 
+    // Ensure user has collateral before allowing loan
+    if user_info.cv == 0 {
+        let error_message = "Insufficient collateral: cv is 0".to_string();
+        service.notify_error(error_message.clone());
+        return Err(error_message);
+    }
+
     if amount > state_mut.config.max_loan_amount || amount == 0 || future_loan_amount > mla {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
@@ -171,22 +178,23 @@ where
     }
 
     // Update loan amount and total borrowed
+    // Calculate the amount to subtract before zeroing the loan_amount
+    let loan_amount_scaled = user_info
+        .loan_amount
+        .checked_mul(decimals_factor)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
     user_info.is_loan_active = false;
     user_info.loan_amount = 0;
     user_info.loan_amount_usdc = 0;
 
     state_mut.total_borrowed = state_mut
         .total_borrowed
-        .checked_sub(
-            user_info
-                .loan_amount
-                .checked_mul(decimals_factor)
-                .ok_or_else(|| {
-                    let error_message = ERROR_INVALID_AMOUNT.to_string();
-                    service.notify_error(error_message.clone());
-                    error_message
-                })?,
-        )
+        .checked_sub(loan_amount_scaled)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());

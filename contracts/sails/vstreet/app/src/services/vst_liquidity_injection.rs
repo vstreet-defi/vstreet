@@ -34,6 +34,7 @@ pub enum LiquidityEvent {
     WithdrawnVara{amount:u128},
     LoanTaken{amount:u128},
     LoanPayed{amount:u128},
+    LoanLiquidated{user:ActorId, loan_amount:u128, collateral_seized:u128},
 }
 
 pub struct LiquidityInjectionService<VftClient>{
@@ -343,16 +344,15 @@ where VftClient: Vft, {
     // State mutable & ref functions
     pub fn state_mut(&self) -> &'static mut VstreetState {
         let state = unsafe { VSTREET_STATE.as_mut() };
-        debug_assert!(state.is_none(), "state is not started!");
+        debug_assert!(state.is_some(), "state is not started!");
         unsafe { state.unwrap_unchecked() }
     }
 
     fn state_ref(&self) -> &'static VstreetState {
         let state = unsafe { VSTREET_STATE.as_ref() };
-        debug_assert!(state.is_none(), "state is not started!");
+        debug_assert!(state.is_some(), "state is not started!");
         unsafe { state.unwrap_unchecked() }
     }
-
 
     // Internal methods
 
@@ -506,7 +506,12 @@ where VftClient: Vft, {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
-        user_info.ltv = (user_info.loan_amount * 100) / user_info.cv;
+        // Prevent division by zero
+        if user_info.cv == 0 {
+            user_info.ltv = 0;
+        } else {
+            user_info.ltv = (user_info.loan_amount * 100) / user_info.cv;
+        }
 
         format!("LTV: {:?}", user_info.ltv)
     }
@@ -608,6 +613,14 @@ where VftClient: Vft, {
             self.calculate_mla(user);
             state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(loan_amount);
             Self::update_user_available_to_withdraw_vara(user_info);
+            
+            // Emit liquidation event for off-chain tracking
+            self.notify_on(LiquidityEvent::LoanLiquidated { 
+                user, 
+                loan_amount, 
+                collateral_seized: locked 
+            })
+            .expect("Notification Error");
         }
 
         Ok(())      
