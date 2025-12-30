@@ -18,6 +18,8 @@ function FundsCard({ buttonLabel }: props) {
   const [balanceVFT, setBalanceVFT] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
   const { userInfo, fetchUserInfo, balance } = useUserInfo();
+  const [formatBalanceVUSD, setFormatBalanceVUSD] = useState("");
+  const [formatDepositedVUSD, setFormatDepositedVUSD] = useState("");
 
   const { selectedAccount, hexAddress } = useWallet();
 
@@ -37,16 +39,21 @@ function FundsCard({ buttonLabel }: props) {
       fetchUserInfo(hexAddress);
 
       const balanceConverted = convertHexToDecimal(balance.toString());
-      setBalanceVFT(Number(balanceConverted));
+      setBalanceVFT(Number(balanceConverted)/1000000);
     }
   }, [selectedAccount, hexAddress, balance]);
 
   useEffect(() => {
     if (userInfo) {
       const formatedBalance = userInfo.balance ? userInfo.balance / 1000000 : 0;
-      setDepositedBalance(formatedBalance);
+      setDepositedBalance(formatedBalance /1000000);
+      setFormatBalanceVUSD(formatWithCommasVUSD(balanceVFT));
+      setFormatDepositedVUSD(formatWithCommasVUSD(formatedBalance));
+
     }
   }, [userInfo]);
+
+console.log("Deposited Balance:", depositedBalance);
 
   return (
     <div className={styles.Container}>

@@ -88,9 +88,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       throw new Error("No account found");
     }
 
+    const amountConverted = Number(amount) * 1000000;
+
     const transaction = await sails.services.Vft.functions.Approve(
       vstreetProgramID,
-      Number(amount)
+      Number(amountConverted)
     );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
@@ -134,9 +136,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       throw new Error("No account found");
     }
 
+    const amountConverted = Number(amount) * 1000000;
+
     const transaction =
       await sails.services.LiquidityInjectionService.functions.DepositLiquidity(
-        Number(amount)
+        Number(amountConverted)
       );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
@@ -181,9 +185,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       throw new Error("No account found");
     }
 
+    const amountConverted = Number(amount) * 1000000;
+
     const transaction =
       await sails.services.LiquidityInjectionService.functions.WithdrawLiquidity(
-        Number(amount)
+        Number(amountConverted)
       );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {

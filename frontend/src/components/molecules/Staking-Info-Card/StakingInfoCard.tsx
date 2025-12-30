@@ -98,6 +98,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   const [showMessage, setShowMessage] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const wrapperRef = useRef<HTMLDivElement>(null);
+  const [depositedBalance, setDepositedBalance] = useState<number>(0);
 
   const { fetchUserInfo, userInfo, balance } = useUserInfo();
 
@@ -231,13 +232,20 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
     }
   };
 
+  useEffect(() => {
+    if (userInfo) {
+      const formatedBalance = userInfo.balance ? userInfo.balance / 1000000 : 0;
+      setDepositedBalance(formatedBalance);
+    }
+  }, [userInfo]);
+
   return (
     <div>
       <div className="BasicCard">
         {showMessage && <Tooltip message="Minimum claim: $1 USD." />}
         <InfoRow
           label="Total Deposited"
-          value={`$${formatWithCommas(userInfo?.balance ?? 0)} vUSD`}
+          value={`$${formatWithCommas(depositedBalance)} vUSD`}
         />
         <InfoRow
           label="Total Earned"

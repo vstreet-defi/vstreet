@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 type BasicInputProps = {
   inputValue: string;
   onInputChange: (value: string) => void;
-  balance: number;
+  balance: number | string;
 };
 
 function BasicInput({ inputValue, onInputChange, balance }: BasicInputProps) {
