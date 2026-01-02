@@ -26,7 +26,6 @@ function TokenSelector() {
 
   return (
     <div className="Token-Selector">
-      <p className="TS-Label">Token</p>
       <div className="select-wrapper" onClick={handleClick} ref={wrapperRef}>
         <select disabled>
           <option value="">vUSD</option>

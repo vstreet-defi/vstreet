@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { AlertModalContext, AlertType } from "contexts/alertContext";
+import CornerAccent from "../../atoms/CornerAccent/CornerAccent";
 
 export function Loader() {
   return (
@@ -12,25 +13,7 @@ export function Loader() {
 }
 
 export function GreenLoader() {
-  return (
-    <div className="lds-facebook">
-      <div
-        style={{
-          backgroundColor: "#00ffc4",
-        }}
-      ></div>
-      <div
-        style={{
-          backgroundColor: "#00ffc4",
-        }}
-      ></div>
-      <div
-        style={{
-          backgroundColor: "#00ffc4",
-        }}
-      ></div>
-    </div>
-  );
+  return <Loader />;
 }
 
 function AlertModal() {
@@ -89,12 +72,25 @@ function AlertModal() {
     }
   };
 
+  const getAccentColor = () => {
+    switch (alertType) {
+      case AlertType.Success: return "#4fff4b";
+      case AlertType.Warning: return "#fff500";
+      case AlertType.Error: return "#ff0f00";
+      case AlertType.Info: return "#00ffc4";
+      default: return "#00ffc4";
+    }
+  };
+
   return (
     <div className="Alert-Modal">
       <div className={`Alert-Modal-Box ${getModalClass()}`}>
+        <CornerAccent position="top-left" color={getAccentColor()} length={30} />
+        <CornerAccent position="bottom-right" color={getAccentColor()} length={30} />
+
         <h1>{alertType.charAt(0).toUpperCase() + alertType.slice(1)}!</h1>
         <p>{getModalText()}</p>
-        {alertType === AlertType.Info && <Loader />}
+        {(alertType === AlertType.Info || alertType === AlertType.Success) && <Loader />}
       </div>
     </div>
   );

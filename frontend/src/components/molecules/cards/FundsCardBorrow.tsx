@@ -1,82 +1,111 @@
 import BasicInput from "components/molecules/Basic-Input/BasicInput";
 import TokenSelectorBorrow from "components/atoms/Token-Selector-Borrow/TokenSelectorBorrow";
+import TokenSelectorBorrowUnder from "components/atoms/Token-Selector-Borrow/TokenSelectorBorrowUnder";
 import styles from "./Card.module.scss";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFillBorrow from "components/atoms/Button-Gradient-Fill/ButtonGradFillBorrow";
 import { useEffect, useState } from "react";
-import { useAccount, useApi } from "@gear-js/react-hooks";
-import { FullState, FullStateVST } from "smart-contracts-tools";
 import { useWallet } from "contexts/accountContext";
 import { useUserInfo } from "contexts/userInfoContext";
-import { formatWithDecimalsVARA } from "utils";
+import { formatWithDecimalsVARA, formatWithCommasVUSD } from "utils";
+import { hexToBn } from "@polkadot/util";
 
-type props = {
+interface Props {
   buttonLabel: string;
-};
+  mode: string;
+}
 
-function FundsCardBorrow({ buttonLabel }: props) {
+function FundsCardBorrow({ buttonLabel, mode }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [balanceVara, setBalanceVara] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
-  const [fullState, setFullState] = useState<FullStateVST | FullState>();
-  const { selectedAccount, hexAddress, balance } = useWallet();
-  const { api } = useApi();
-  const { account } = useAccount();
-  const { fetchBalance } = useWallet();
+  const [loanAmount, setLoanAmount] = useState<number>(0);
+  const [mla, setMla] = useState<number>(0);
+
+  const { selectedAccount, hexAddress, balance, fetchBalance } = useWallet();
   const { userInfo, fetchUserInfo } = useUserInfo();
-  const isDepositCard = () => {
-    return buttonLabel === "Deposit";
-  };
+
+  const isCollateralMode = mode === "Collateral";
+  const isDeposit = buttonLabel === "Deposit";
+  const isBorrow = buttonLabel === "Borrow";
+  const isPay = buttonLabel === "Pay";
+
   const handleInputChange = (value: string) => {
     setInputValue(value);
+  };
+
+  const convertHexToDecimal = (hexValue: string) => {
+    return hexToBn(hexValue).toString();
   };
 
   useEffect(() => {
     if (selectedAccount) {
       fetchBalance();
-      setBalanceVara(Number(balance));
-      console.log("balance vara", balance);
       fetchUserInfo(hexAddress);
+
+      const balanceConverted = convertHexToDecimal(balance.toString());
+      setBalanceVara(Number(balanceConverted));
     }
   }, [selectedAccount, balance, hexAddress]);
 
   useEffect(() => {
     if (userInfo) {
-      setDepositedBalance(userInfo.available_to_withdraw_vara);
+      setDepositedBalance(userInfo.available_to_withdraw_vara || 0);
+      setLoanAmount(userInfo.loan_amount || 0);
+      setMla(userInfo.mla || 0);
     }
-  }, [selectedAccount, hexAddress, userInfo]);
+  }, [userInfo]);
+
+  const getActiveBalance = () => {
+    if (isCollateralMode) {
+      return isDeposit ? balanceVara / 1e12 : depositedBalance / 1e12;
+    } else {
+      return isBorrow ? mla / 1e6 : loanAmount / 1e6;
+    }
+  };
+
+  const getFormattedBalance = () => {
+    const bal = getActiveBalance();
+    return isCollateralMode ? formatWithDecimalsVARA(bal * 1e12) : formatWithCommasVUSD(bal);
+  };
+
+  const getSymbol = () => (isCollateralMode ? "TVARA" : "vUSD");
+
   return (
-    <div className={styles.Container}>
-      <div className={styles.BasicCard}>
-        <TokenSelectorBorrow />
-        <BasicInput
-          inputValue={inputValue}
-          onInputChange={handleInputChange}
-          balance={
-            isDepositCard()
-              ? formatWithDecimalsVARA(balanceVara)
-              : formatWithDecimalsVARA(depositedBalance)
-          }
-        />
+    <div className={styles.fundsCard}>
+      <div className={styles.inputSection}>
+        <div className={styles.availableBalance}>
+          {isBorrow ? "Available to Borrow" : isPay ? "Current Debt" : "Available"}: <span>{getFormattedBalance()} {getSymbol()}</span>
+        </div>
+
+        <div className={styles.inputRow}>
+          <div className={styles.inputWrapper}>
+            <div className={styles.inputLabel}>Token</div>
+            {isCollateralMode ? <TokenSelectorBorrow /> : <TokenSelectorBorrowUnder />}
+          </div>
+
+          <div className={styles.inputWrapper}>
+            <div className={styles.inputLabel}>Amount</div>
+            <BasicInput
+              inputValue={inputValue}
+              onInputChange={handleInputChange}
+              balance={getActiveBalance()}
+            />
+          </div>
+        </div>
+
         <PercentageSelector
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={
-            isDepositCard()
-              ? formatWithDecimalsVARA(balanceVara)
-              : formatWithDecimalsVARA(depositedBalance)
-          }
-        />
-        <ButtonGradFillBorrow
-          amount={inputValue}
-          label={buttonLabel}
-          balance={
-            isDepositCard()
-              ? formatWithDecimalsVARA(balanceVara)
-              : formatWithDecimalsVARA(depositedBalance)
-          }
+          balance={getActiveBalance()}
         />
       </div>
+
+      <ButtonGradFillBorrow
+        amount={inputValue}
+        label={buttonLabel}
+        balance={getActiveBalance()}
+      />
     </div>
   );
 }

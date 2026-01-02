@@ -6,24 +6,25 @@ import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill
 import { useEffect, useState } from "react";
 import { useUserInfo } from "contexts/userInfoContext";
 import { useWallet } from "contexts/accountContext";
-import { getVFTBalance } from "smart-contracts-tools";
 import { hexToBn } from "@polkadot/util";
 import { formatWithCommasVUSD } from "utils";
-type props = {
-  buttonLabel: string;
-};
 
-function FundsCard({ buttonLabel }: props) {
+interface Props {
+  buttonLabel: string;
+}
+
+function FundsCard({ buttonLabel }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [balanceVFT, setBalanceVFT] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
   const { userInfo, fetchUserInfo, balance } = useUserInfo();
+  const [formatBalanceVUSD, setFormatBalanceVUSD] = useState("");
+  const [formatDepositedVUSD, setFormatDepositedVUSD] = useState("");
 
   const { selectedAccount, hexAddress } = useWallet();
 
-  const isDepositCard = () => {
-    return buttonLabel === "Deposit";
-  };
+  const isDepositCard = () => buttonLabel === "Deposit";
+
   const handleInputChange = (value: string) => {
     setInputValue(value);
   };
@@ -35,39 +36,55 @@ function FundsCard({ buttonLabel }: props) {
   useEffect(() => {
     if (selectedAccount) {
       fetchUserInfo(hexAddress);
-
       const balanceConverted = convertHexToDecimal(balance.toString());
-      setBalanceVFT(Number(balanceConverted));
+      setBalanceVFT(Number(balanceConverted) / 1000000);
     }
   }, [selectedAccount, hexAddress, balance]);
 
   useEffect(() => {
     if (userInfo) {
-      const formatedBalance = userInfo.balance ? userInfo.balance / 1000000 : 0;
-      setDepositedBalance(formatedBalance);
+      const formattedBalance = userInfo.balance ? userInfo.balance / 1000000 : 0;
+      setDepositedBalance(formattedBalance / 1000000);
+      setFormatBalanceVUSD(formatWithCommasVUSD(balanceVFT));
+      setFormatDepositedVUSD(formatWithCommasVUSD(formattedBalance));
     }
   }, [userInfo]);
 
   return (
-    <div className={styles.Container}>
-      <div className={styles.BasicCard}>
-        <TokenSelector />
-        <BasicInput
-          inputValue={inputValue}
-          onInputChange={handleInputChange}
-          balance={isDepositCard() ? balanceVFT : depositedBalance}
-        />
+    <div className={styles.fundsCard}>
+      <div className={styles.inputSection}>
+        <div className={styles.availableBalance}>
+          Available: <span>{isDepositCard() ? formatBalanceVUSD : formatDepositedVUSD} vUSD</span>
+        </div>
+
+        <div className={styles.inputRow}>
+          <div className={styles.inputWrapper}>
+            <div className={styles.inputLabel}>Token</div>
+            <TokenSelector />
+          </div>
+
+          <div className={styles.inputWrapper}>
+            <div className={styles.inputLabel}>Amount</div>
+            <BasicInput
+              inputValue={inputValue}
+              onInputChange={handleInputChange}
+              balance={isDepositCard() ? balanceVFT : depositedBalance}
+            />
+          </div>
+        </div>
+
         <PercentageSelector
           inputValue={inputValue}
           onInputChange={handleInputChange}
           balance={isDepositCard() ? balanceVFT : depositedBalance}
         />
-        <ButtonGradFill
-          amount={inputValue}
-          label={buttonLabel}
-          balance={isDepositCard() ? balanceVFT : depositedBalance}
-        />
       </div>
+
+      <ButtonGradFill
+        amount={inputValue}
+        label={buttonLabel}
+        balance={isDepositCard() ? balanceVFT : depositedBalance}
+      />
     </div>
   );
 }

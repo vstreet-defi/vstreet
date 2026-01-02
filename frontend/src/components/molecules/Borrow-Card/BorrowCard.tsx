@@ -55,15 +55,16 @@ function BorrowCard() {
     if (selectedAccount) {
       fetchUserInfo(hexAddress);
       const balanceConverted = convertHexToDecimal(balance.toString());
-      setBalanceVFT(Number(balanceConverted));
+      setBalanceVFT(Number(balanceConverted) / 1000000);
     }
   }, [selectedAccount, hexAddress, balance]);
 
   useEffect(() => {
     if (userInfo) {
+      console.log("User Info in BorrowCard:", userInfo);
       const mla = Number(userInfo.mla);
       setMaxLoanAmount(mla ?? 0);
-      const la = Number(userInfo.loan_amount);
+      const la = Number(userInfo.loan_amount_usdc) ;
       setLoanAmount(la ?? 0);
     }
   }, [userInfo]);
@@ -116,9 +117,11 @@ function BorrowCard() {
       throw new Error("No account found");
     }
 
+    const amountConverted = Number(inputValue) * 1000000;
+
     const transaction = await sails.services.Vft.functions.Approve(
       vstreetProgramID,
-      Number(inputValue)
+      amountConverted
     );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
@@ -162,10 +165,13 @@ function BorrowCard() {
       throw new Error("No account found");
     }
 
+  const amountConverted = Number(inputValue) * 1000000;
+
     const transaction =
       await sails.services.LiquidityInjectionService.functions.PayLoan(
-        Number(inputValue)
+        amountConverted
       );
+      console.log("PayLoan amount:", amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
@@ -208,11 +214,13 @@ function BorrowCard() {
     if (allAccounts.length === 0) {
       throw new Error("No account found");
     }
+    const amountConverted = Number(inputValue) * 1000000;
 
     const transaction =
       await sails.services.LiquidityInjectionService.functions.TakeLoan(
-        Number(inputValue)
+        amountConverted
       );
+      console.log("TakeLoan amount:", amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
@@ -316,7 +324,7 @@ function BorrowCard() {
           <ButtonGradientBorderBorrow
             text="Pay Loan"
             isDisabled={
-              Number(inputValue) * 1000000 > loanAmount ||
+              Number(inputValue)  > loanAmount ||
               Number(inputValue) === 0 ||
               isLoading
             }

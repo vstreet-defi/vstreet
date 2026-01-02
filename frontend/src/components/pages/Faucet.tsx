@@ -20,7 +20,7 @@ function Faucet() {
     DappTab.Supply,
     DappTab.Borrow,
 
-    DappTab.Markets,
+    DappTab.Vaults,
   ];
 
   const isAccountReady = allAccounts.length > 0;
