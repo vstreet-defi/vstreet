@@ -20,6 +20,7 @@ import StatsPanel from "components/organisms/StatsPanel/StatsPanel";
 import StakingInfo from "components/organisms/StakingInfo/StakingInfo";
 import LoanInfo from "components/organisms/LoanInfo/LoanInfo";
 import ComingSoon from "components/atoms/ComingSoon/ComingSoon";
+import VaultsManager from "components/organisms/VaultsManager/VaultsManager";
 
 // Utilities
 import { isMobileDevice } from "utils/isMobile";
@@ -91,7 +92,13 @@ function DappPage() {
               }
               sidebarLeft={isBorrowTab || isVaultsTab ? null : <StatsPanel />}
               mainContent={
-                isSupplyTab ? <FundsManager /> : isVaultsTab ? <ComingSoon /> : <FundsManagerBorrow />
+                isSupplyTab ? (
+                  <FundsManager />
+                ) : isVaultsTab ? (
+                  <VaultsManager />
+                ) : (
+                  <FundsManagerBorrow />
+                )
               }
               sidebarRight={
                 isSupplyTab ? <StakingInfo /> : isVaultsTab ? null : <LoanInfo />

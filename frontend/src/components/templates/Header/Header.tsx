@@ -87,13 +87,6 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   };
 
   const renderFlag = (item: string) => {
-    if (item === DappTab.Vaults && isDapp) {
-      return (
-        <div className={styles.flag}>
-          <Flag text="Coming Soon" />
-        </div>
-      );
-    }
     return null;
   };
 

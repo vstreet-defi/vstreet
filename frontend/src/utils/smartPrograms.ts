@@ -22,6 +22,10 @@ export const vstreetVFTProgramID =
 export const fungibleTokenProgramID =
   "0x464511231a1afe9108a689ed3dbbb047ca308d6f5dfb86453e4df5612a2d668a";
 
+//VST Token Contract (For Staking)
+export const vstTokenProgramID =
+  "0xf95e6e247054e898a15395715503a9343fd80f95c6a516bf63f17e10e7d144be";
+
 //IDL for the VFT contract (New Metadata Schema)
 export const idlVFT = `constructor {
   New : (name: str, symbol: str, decimals: u8);

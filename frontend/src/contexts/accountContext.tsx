@@ -191,6 +191,15 @@ const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
   useEffect(() => {
     const account = allAccounts.find((acc) => acc.address === selectedAccount);
     setAccountData(account);
+    if (selectedAccount) {
+      try {
+        setHexAddress(u8aToHex(decodeAddress(selectedAccount)));
+      } catch (error) {
+        console.error("Error decoding address:", error);
+      }
+    } else {
+      setHexAddress("");
+    }
   }, [selectedAccount, allAccounts]);
 
   const formatAccount = (account: string) =>
