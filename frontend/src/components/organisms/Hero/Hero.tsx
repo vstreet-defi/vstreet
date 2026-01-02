@@ -65,17 +65,7 @@ function Hero({ isMobile }: Props) {
             </Text>
             {!isMobile && (
               <>
-                <Stack
-                  display={"flex"}
-                  flexDirection={{ sm: "row", base: "column" }}
-                  gap={"172px"}
-                  paddingLeft={"36px"}
-                  marginBottom={"-30px"}
-                  marginTop={"36px"}
-                >
-                  <Flag text="Coming Soon" />
-                  <Flag text="Coming Soon" />
-                </Stack>
+
                 <Stack
                   spacing={{ base: 4, sm: 6 }}
                   direction={{ base: "column", sm: "row" }}
@@ -89,7 +79,6 @@ function Hero({ isMobile }: Props) {
                     bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
                     _hover={{ bg: "gray.200" }}
                     onClick={() => navigate("/dapp")}
-                    isDisabled={true}
                   >
                     Launch App
                   </Button>
@@ -114,9 +103,7 @@ function Hero({ isMobile }: Props) {
                 direction={{ base: "column", sm: "row" }}
                 marginTop={"20px"}
               >
-                <Flex justifyContent={"center"}>
-                  <Flag text="Coming Soon" />
-                </Flex>
+
                 <Button
                   borderRadius="0"
                   size="lg"
@@ -126,14 +113,11 @@ function Hero({ isMobile }: Props) {
                   bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
                   _hover={{ bg: "gray.200" }}
                   onClick={() => navigate("/dapp")}
-                  isDisabled={true}
                   marginBottom={"10px"}
                 >
                   Launch App
                 </Button>
-                <Flex justifyContent={"center"}>
-                  <Flag text="Coming Soon" />
-                </Flex>
+
                 <Button
                   variant="outline"
                   colorScheme="white"

@@ -3,11 +3,9 @@ import { AlertModalContext } from "contexts/alertContext";
 import { useAccount } from "@gear-js/react-hooks";
 import { web3FromSource } from "@polkadot/extension-dapp";
 
-//Sails-js Imports
 import { Sails } from "sails-js";
 import { SailsIdlParser } from "sails-js-parser";
 
-//Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
 import { useUserInfo } from "contexts/userInfoContext";
 
@@ -23,7 +21,6 @@ import {
 
 import { Loader } from "components/molecules/alert-modal/AlertModal";
 import { GearApi } from "@gear-js/api";
-import { getVFTBalance } from "smart-contracts-tools";
 
 interface ButtonProps {
   label: string;
@@ -38,17 +35,14 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   const { fetchUserInfo } = useUserInfo();
   const alertModalContext = useContext(AlertModalContext);
 
-  const { accountData, hexAddress, selectedAccount, fetchBalance } =
-    useWallet();
+  const { accountData, hexAddress } = useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
 
   const handleTransaction = async (
     transactions: { transaction: TransactionFunction; infoText: string }[]
   ) => {
-    for (let i = 0; i < transactions.length; i++) {
-      const { transaction, infoText } = transactions[i];
-
+    for (const { transaction, infoText } of transactions) {
       alertModalContext?.showInfoModal(infoText);
 
       try {
@@ -61,7 +55,6 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     alertModalContext?.showSuccessModal();
     setTimeout(() => {
       alertModalContext?.hideAlertModal();
-
       fetchUserInfo(hexAddress);
     }, 3000);
   };
@@ -101,16 +94,8 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     await transaction.calculateGas(true, 15);
 
     return async () => {
-      const { msgId, blockHash, txHash, response, isFinalized } =
-        await transaction.signAndSend();
-
-      const finalized = await isFinalized;
-
-      try {
-        const result = await response();
-      } catch (error) {
-        console.error("Error executing message:", error);
-      }
+      const { isFinalized } = await transaction.signAndSend();
+      await isFinalized;
     };
   };
 
@@ -150,16 +135,8 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     await transaction.calculateGas(true, 15);
 
     return async () => {
-      const { msgId, blockHash, txHash, response, isFinalized } =
-        await transaction.signAndSend();
-
-      const finalized = await isFinalized;
-
-      try {
-        const result = await response();
-      } catch (error) {
-        console.error("Error executing message:", error);
-      }
+      const { isFinalized } = await transaction.signAndSend();
+      await isFinalized;
     };
   };
 
@@ -199,16 +176,8 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     await transaction.calculateGas(true, 15);
 
     return async () => {
-      const { msgId, blockHash, txHash, response, isFinalized } =
-        await transaction.signAndSend();
-
-      const finalized = await isFinalized;
-
-      try {
-        const result = await response();
-      } catch (error) {
-        console.error("Error executing message:", error);
-      }
+      const { isFinalized } = await transaction.signAndSend();
+      await isFinalized;
     };
   };
 
@@ -218,13 +187,11 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     await handleTransaction([
       {
         transaction: approvalTransaction,
-        infoText:
-          "Approval in progress. Please check your wallet to approve the transaction.",
+        infoText: "Approval in progress. Please check your wallet to approve the transaction.",
       },
       {
         transaction: depositTransaction,
-        infoText:
-          "Deposit in progress. Please check your wallet to sign the transaction.",
+        infoText: "Deposit in progress. Please check your wallet to sign the transaction.",
       },
     ]);
   };
@@ -234,8 +201,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     await handleTransaction([
       {
         transaction,
-        infoText:
-          "Withdrawal in progress. Please check your wallet to sign the transaction.",
+        infoText: "Withdrawal in progress. Please check your wallet to sign the transaction.",
       },
     ]);
   };

@@ -1,0 +1,73 @@
+@import "../../../App.scss";
+
+.banner {
+    grid-area: banner;
+    width: 100%;
+    min-height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* Glassmorphism */
+    background: linear-gradient(135deg,
+            rgba(27, 27, 31, 0.8),
+            rgba(18, 18, 21, 0.6));
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+
+    /* Border con gradient sutil */
+    border: 1px solid rgba(0, 255, 196, 0.15);
+    border-radius: 12px;
+
+    /* Shadow sutil */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    /* Position para corner accents */
+    position: relative;
+    overflow: hidden;
+
+    /* Padding */
+    padding: 0 32px;
+
+    /* Transition para interactions */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bannerContent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+}
+
+.neonText {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #00ffc4;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    margin: 0;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 196, 0.5));
+    text-shadow: 0 0 15px rgba(0, 255, 196, 0.3);
+    text-align: center;
+
+    @media (max-width: 768px) {
+        font-size: 12px;
+        letter-spacing: 2px;
+    }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .banner {
+        padding: 20px 32px;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner {
+        min-height: auto;
+        padding: 16px 20px;
+    }
+}

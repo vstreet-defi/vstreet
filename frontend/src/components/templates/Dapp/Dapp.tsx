@@ -1,31 +1,57 @@
-import * as PropTypes from "prop-types";
+import React from "react";
+import styles from "./Dapp.module.scss";
 
 interface DappTemplateProps {
-  bannerComponent: React.ReactNode;
-  leftSectionComponent: React.ReactNode;
-  rightSectionComponent: React.ReactNode;
+  bannerComponent?: React.ReactNode;
+  sidebarLeft?: React.ReactNode;
+  mainContent: React.ReactNode;
+  sidebarRight?: React.ReactNode;
 }
 
-function Dapp({
+/**
+ * DappTemplate Component
+ * Provides the structural layout for the dApp pages.
+ * Supports conditional rendering of sidebars and banners, automatically
+ * adjusting the layout (e.g., centering content) when sidebars are absent.
+ */
+function DappTemplate({
   bannerComponent,
-  leftSectionComponent,
-  rightSectionComponent,
+  sidebarLeft,
+  mainContent,
+  sidebarRight,
 }: DappTemplateProps) {
+
+  // Determine layout classes based on provided sidebars
+  const isCentered = !sidebarLeft && sidebarRight;
+  const noSidebars = !sidebarLeft && !sidebarRight;
+
+  const containerClasses = [
+    styles.dappContainer,
+    isCentered ? styles.centered : "",
+    noSidebars ? styles.noSidebars : "",
+  ].filter(Boolean).join(" ");
+
   return (
-    <>
-      <div className="dapp-banner">{bannerComponent}</div>
-      <div className="section-container">
-        <div className="left-section">{leftSectionComponent}</div>
-        <div className="right-section">{rightSectionComponent}</div>
+    <div className={containerClasses}>
+      {bannerComponent && <div className={styles.banner}>{bannerComponent}</div>}
+
+      {sidebarLeft && (
+        <div className={styles.sidebarLeft}>
+          {sidebarLeft}
+        </div>
+      )}
+
+      <div className={styles.mainContent}>
+        {mainContent}
       </div>
-    </>
+
+      {sidebarRight && (
+        <div className={styles.sidebarRight}>
+          {sidebarRight}
+        </div>
+      )}
+    </div>
   );
 }
 
-Dapp.propTypes = {
-  bannerComponent: PropTypes.element.isRequired,
-  leftSectionComponent: PropTypes.element.isRequired,
-  rightSectionComponent: PropTypes.element.isRequired,
-};
-
-export default Dapp;
+export default DappTemplate;

@@ -1,16 +1,18 @@
 import React from "react";
-import "./CollateralAndBorrowBanner.scss";
+import styles from "./CollateralAndBorrowBanner.module.scss";
+import CornerAccent from "../CornerAccent/CornerAccent";
 
-const CollateralAndBorrowBanner: React.FC = () => {
+interface Props {
+  text?: string;
+}
+
+const CollateralAndBorrowBanner: React.FC<Props> = ({ text = "UNLOCK YOUR LIQUIDITY POTENTIAL" }) => {
   return (
-    <div className="BannerContainer">
-      <div className="BannerLeft">
-        Deposit Synthetic Tokens <br /> as{" "}
-        <span className="HighlightCollateral">Collateral</span>
-      </div>
-      <div className="BannerCenter">and</div>
-      <div className="BannerRight">
-        <div className="Highlight">Borrow USDC</div>
+    <div className={styles.banner}>
+      <div className={styles.bannerContent}>
+        <p className={styles.neonText}>
+          {text}
+        </p>
       </div>
     </div>
   );

@@ -1,4 +1,7 @@
+import React from "react";
 import { useLiquidity } from "contexts/stateContext";
+import styles from "./TotalLiquidityPool.module.scss";
+import CornerAccent from "../CornerAccent/CornerAccent";
 
 const formatWithCommas = (number: number | undefined): string => {
   if (number === undefined) {
@@ -23,21 +26,29 @@ const TotalLiquidityPool: React.FC = () => {
   const tvl = calculateTvl(liquidityData?.TotalDeposited || 0);
 
   return (
-    <div className="Container">
-      <div>
-        <h2 className="Heading-Deposit">Deposit your $vUSD and earn</h2>
-        <p className="DataAPY">
-          {liquidityData ? formatApr(liquidityData.APR) : "loading"}% Annual
-          Interest (APR)
-        </p>
+    <div className={styles.banner}>
+      <div className={styles.bannerContent}>
+        <div className={styles.leftSection}>
+          <p className={styles.description}>Deposit your $vUSD and earn</p>
+        </div>
+
+        <div className={styles.centerSection}>
+          <p className={styles.label}>ANNUAL INTEREST (APR)</p>
+          <p className={styles.value}>
+            {liquidityData ? formatApr(liquidityData.APR) : "..."}%
+          </p>
+        </div>
+
+        <div className={styles.rightSection}>
+          <p className={styles.label}>TOTAL LIQUIDITY POOL</p>
+          <p className={styles.value}>
+            ${liquidityData ? formatWithCommas(tvl) : "..."} vUSD
+          </p>
+        </div>
       </div>
-      <div className="Box">
-        <h2 className="Heading">Total Liquidity Pool:</h2>
-        <p className="Data">
-          ${liquidityData ? formatWithCommas(tvl) : "loading"}
-          vUSD
-        </p>
-      </div>
+
+      <CornerAccent position="top-left" color="#00ffc4" length={30} />
+      <CornerAccent position="bottom-right" color="#4fff4b" length={30} />
     </div>
   );
 };

@@ -1,0 +1,138 @@
+@import "../../../App.scss";
+
+.banner {
+    grid-area: banner;
+    width: 100%;
+    min-height: 80px;
+
+    /* Glassmorphism */
+    background: linear-gradient(135deg,
+            rgba(27, 27, 31, 0.8),
+            rgba(18, 18, 21, 0.6));
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+
+    /* Border con gradient sutil */
+    border: 1px solid rgba(0, 255, 196, 0.15);
+    border-radius: 12px;
+
+    /* Shadow sutil */
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+
+    /* Position para corner accents */
+    position: relative;
+    overflow: hidden;
+
+    /* Padding */
+    padding: 12px 32px;
+
+    /* Transition para interactions */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bannerContent {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 40px;
+    width: 100%;
+}
+
+.leftSection {
+    flex: 0 0 auto;
+    text-align: left;
+
+    .description {
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #00ffc4;
+        margin: 0;
+        line-height: 1.4;
+        filter: drop-shadow(0 0 8px rgba(0, 255, 196, 0.4));
+        text-shadow: 0 0 15px rgba(0, 255, 196, 0.2);
+    }
+
+    .subdescription {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.5);
+        margin: 0;
+    }
+}
+
+.centerSection,
+.rightSection {
+    flex: 1 1 auto;
+    text-align: center;
+
+    .label {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin: 0 0 4px 0;
+    }
+
+    .value {
+        font-family: 'Roboto Mono', monospace;
+        font-size: 24px;
+        font-weight: 700;
+        margin: 0;
+    }
+}
+
+.centerSection .value {
+    color: #00ffc4;
+    filter: drop-shadow(0 0 12px rgba(0, 255, 196, 0.5));
+    text-shadow: 0 0 20px rgba(0, 255, 196, 0.3);
+}
+
+.rightSection .value {
+    color: #ffffff;
+    font-size: 22px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .banner {
+        padding: 28px 32px;
+    }
+
+    .bannerContent {
+        gap: 24px;
+    }
+
+    .centerSection .value,
+    .rightSection .value {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .banner {
+        min-height: auto;
+        padding: 24px 20px;
+    }
+
+    .bannerContent {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
+    }
+
+    .leftSection {
+        text-align: center;
+    }
+
+    .centerSection .value {
+        font-size: 28px;
+    }
+
+    .rightSection .value {
+        font-size: 24px;
+    }
+}

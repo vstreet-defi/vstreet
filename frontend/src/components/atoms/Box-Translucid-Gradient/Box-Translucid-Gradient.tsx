@@ -1,20 +1,15 @@
-import { Flex } from "@chakra-ui/react";
+import React from "react";
+import styles from "./BoxTranslucidGradient.module.scss";
 
-function BoxTranslucidGradient() {
+interface Props {
+  children?: React.ReactNode;
+}
+
+function BoxTranslucidGradient({ children }: Props) {
   return (
-    <Flex
-      w="100%"
-      flexDirection="row"
-      border="1px"
-      h="4rem"
-      p="1rem"
-      justify="space-around"
-      bgColor="rgba(18, 18, 18, 0.74)"
-      style={{
-        backdropFilter: "blur(5.4px)",
-        borderImage: "linear-gradient(141deg, rgb(0, 255, 196), #4fff4b) 1",
-      }}
-    ></Flex>
+    <div className={styles.container}>
+      {children}
+    </div>
   );
 }
 

@@ -1,0 +1,110 @@
+@import "../../../App.scss";
+
+.statCard {
+    width: 100%;
+    height: 160px;
+    position: relative;
+
+    /* Glassmorphism */
+    background: linear-gradient(135deg,
+            rgba(27, 27, 31, 0.9),
+            rgba(18, 18, 21, 0.7));
+    backdrop-filter: blur(12px) saturate(180%);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+
+    /* Border */
+    border: 1px solid rgba(0, 255, 196, 0.2);
+    border-radius: 8px;
+
+    /* Shadow */
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+
+    /* Padding */
+    padding: 24px;
+
+    /* Display */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    /* Overflow for corner accents */
+    overflow: visible;
+
+    /* Transition */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    &:hover {
+        border-color: rgba(0, 255, 196, 0.4);
+        transform: translateY(-2px);
+        box-shadow:
+            0 8px 24px rgba(0, 0, 0, 0.3),
+            0 12px 32px rgba(0, 255, 196, 0.15);
+    }
+}
+
+.content {
+    flex: 1;
+}
+
+.label {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 16px 0;
+}
+
+.value {
+    font-family: 'Roboto Mono', monospace;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin: 0 0 12px 0;
+}
+
+.subtext {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0;
+}
+
+.decoration {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    opacity: 0.3;
+    transition: opacity 0.3s ease;
+}
+
+.statCard:hover .decoration {
+    opacity: 0.6;
+}
+
+/* Variants */
+.primary {
+    .value {
+        color: #00ffc4;
+        filter: drop-shadow(0 0 8px rgba(0, 255, 196, 0.4));
+    }
+
+    .subtext {
+        color: rgba(79, 255, 75, 0.7);
+    }
+}
+
+.secondary {
+    .value {
+        color: #4fff4b;
+        filter: drop-shadow(0 0 8px rgba(79, 255, 75, 0.4));
+    }
+}
+
+.neutral {
+    .value {
+        color: #ffffff;
+    }
+}

@@ -31,6 +31,13 @@ function PercentageSelector({
 
   return (
     <div className="slider-container">
+      {/* Connecting Lines */}
+      <div className="track-background" />
+      <div
+        className="track-progress"
+        style={{ width: `${percentage}%` }}
+      />
+
       <input
         type="range"
         min="0"
@@ -45,12 +52,11 @@ function PercentageSelector({
         }}
         className="slider"
       />
+
       <div className="slider-labels">
         {percentages.map((value) => (
           <button
-            className={`slider-button ${
-              value === 50 ? "slider-button--center" : ""
-            } ${value === 25 ? "slider-button--left" : ""}`}
+            className="slider-button"
             key={value}
             onClick={() => {
               setPercentage(value);
@@ -58,19 +64,12 @@ function PercentageSelector({
             }}
           >
             <div
-              className={`circle ${
-                Math.round(percentage) >= Math.round(value)
+              className={`circle ${Math.round(percentage) >= Math.round(value)
                   ? "circle--active"
                   : ""
-              } ${value === 100 ? "circle--end" : ""} ${
-                value === 75 ? "circle--left" : ""
-              }`}
-            ></div>
-            <div
-              className={`percentage-label ${
-                value === 75 ? "percentage-label--left" : ""
-              }`}
-            >
+                }`}
+            />
+            <div className="percentage-label">
               {value}%
             </div>
           </button>
