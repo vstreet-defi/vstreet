@@ -11,6 +11,8 @@ const ModalBurgerMenu = ({ isOpen, items, selectedTab }: any) => {
       navigate("/");
     } else if (item === DappTab.Borrow) {
       navigate("/dapp?tab=borrow");
+    } else if (item === DappTab.VST) {
+      navigate("/vst");
     } else if (item === DappTab.Supply) {
       navigate("/dapp?tab=supply");
     } else if (item === DappTab.Vaults) {
@@ -39,9 +41,8 @@ const ModalBurgerMenu = ({ isOpen, items, selectedTab }: any) => {
             {renderFlag(item)}
             <li key={index}>
               <button
-                className={`${
-                  item.toLowerCase() === selectedTab && isDapp ? "active" : ""
-                }`}
+                className={`${(item.toLowerCase() === selectedTab || (item === DappTab.VST && location.pathname === "/vst")) && isDapp ? "active" : ""
+                  }`}
                 onClick={() => handleClick(item)}
               >
                 {item}

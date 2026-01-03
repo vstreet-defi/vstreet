@@ -6,6 +6,7 @@ import DappPage from "./pages/Dapp";
 const routes = [
   { path: "/", Page: Home },
   { path: "/dapp", Page: DappPage },
+  { path: "/vst", Page: DappPage },
   //{ path: "/faucet", Page: Faucet },
 ];
 

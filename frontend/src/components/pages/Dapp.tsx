@@ -21,6 +21,7 @@ import StakingInfo from "components/organisms/StakingInfo/StakingInfo";
 import LoanInfo from "components/organisms/LoanInfo/LoanInfo";
 import ComingSoon from "components/atoms/ComingSoon/ComingSoon";
 import VaultsManager from "components/organisms/VaultsManager/VaultsManager";
+import ForgeManager from "components/organisms/ForgeManager/ForgeManager";
 
 // Utilities
 import { isMobileDevice } from "utils/isMobile";
@@ -34,10 +35,13 @@ function DappPage() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
-  // Determine current tab from URL or default to Supply
-  const tab = searchParams.get("tab") || DappTab.Supply.toLowerCase();
+  // Determine current tab from URL path or search params, default to Supply
+  const isVSTPath = location.pathname === "/vst";
+  const tab = isVSTPath ? "$vst" : (searchParams.get("tab") || DappTab.Supply.toLowerCase());
+
   const isSupplyTab = tab === DappTab.Supply.toLowerCase();
   const isBorrowTab = tab === DappTab.Borrow.toLowerCase();
+  const isVSTTab = tab === "$vst";
   const isVaultsTab = tab === DappTab.Vaults.toLowerCase();
 
   // Framer-motion variants for the 'Cyber-Slide' page transition
@@ -53,6 +57,7 @@ function DappPage() {
   const NAV_ITEMS = [
     DappTab.Supply,
     DappTab.Borrow,
+    DappTab.VST,
     DappTab.Vaults,
   ];
 
@@ -79,7 +84,7 @@ function DappPage() {
           >
             <DappTemplate
               bannerComponent={
-                isVaultsTab ? null : (
+                isVaultsTab || isVSTTab ? null : (
                   <>
                     <AlertModal />
                     {isSupplyTab ? (
@@ -90,18 +95,20 @@ function DappPage() {
                   </>
                 )
               }
-              sidebarLeft={isBorrowTab || isVaultsTab ? null : <StatsPanel />}
+              sidebarLeft={isBorrowTab || isVaultsTab || isVSTTab ? null : <StatsPanel />}
               mainContent={
                 isSupplyTab ? (
                   <FundsManager />
                 ) : isVaultsTab ? (
                   <VaultsManager />
+                ) : isVSTTab ? (
+                  <ForgeManager />
                 ) : (
                   <FundsManagerBorrow />
                 )
               }
               sidebarRight={
-                isSupplyTab ? <StakingInfo /> : isVaultsTab ? null : <LoanInfo />
+                isSupplyTab ? <StakingInfo /> : (isVaultsTab || isVSTTab) ? null : <LoanInfo />
               }
             />
           </motion.div>

@@ -10,6 +10,7 @@ export enum DappTab {
   Home = "Home",
   Supply = "Supply",
   Borrow = "Borrow",
+  VST = "$VST",
   Vaults = "Vaults",
 }
 
@@ -32,13 +33,15 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isTablet = window.innerWidth < 822;
-  const isDapp = location.pathname.startsWith("/dapp");
+  const isDapp = location.pathname.startsWith("/dapp") || location.pathname === "/vst";
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab") as DappTab | null;
 
-    if (isDapp && !tab) {
+    if (location.pathname === "/vst") {
+      setActiveTab(DappTab.VST.toLowerCase());
+    } else if (isDapp && !tab) {
       navigate("/dapp?tab=supply", { replace: true });
       setActiveTab(DappTab.Supply.toLowerCase());
     } else if (isDapp) {
@@ -60,6 +63,10 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
     [DappTab.Supply]: () => {
       navigate("/dapp?tab=supply");
       setActiveTab(DappTab.Supply.toLowerCase());
+    },
+    [DappTab.VST]: () => {
+      navigate("/vst");
+      setActiveTab(DappTab.VST.toLowerCase());
     },
     [DappTab.Vaults]: () => {
       navigate("/dapp?tab=vaults");

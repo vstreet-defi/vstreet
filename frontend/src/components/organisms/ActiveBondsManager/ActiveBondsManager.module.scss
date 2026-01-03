@@ -1,0 +1,257 @@
+.container {
+    width: 100%;
+}
+
+.tabs {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 24px;
+
+    @media (max-width: 768px) {
+        gap: 12px;
+    }
+}
+
+.tab {
+    min-width: 160px;
+    height: 50px;
+
+    /* Reset button styles */
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+
+    /* Text */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+
+    /* Cursor */
+    cursor: pointer;
+
+    /* Transition */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Clip path for angular shape - Matched with FundsManager */
+    clip-path: polygon(0 0, 95% 0, 100% 100%, 5% 100%);
+
+    &:hover {
+        background: rgba(0, 255, 196, 0.05);
+        border-color: rgba(0, 255, 196, 0.3);
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    &.active {
+        background: rgba(0, 255, 196, 0.12);
+        border: 2px solid #00ffc4;
+        color: #00ffc4;
+        position: relative;
+        box-shadow: none;
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 5%;
+            right: 5%;
+            height: 2px;
+            background: #00ffc4;
+            filter: drop-shadow(0 0 8px rgba(0, 255, 196, 0.6));
+        }
+    }
+
+    /* Responsive tab styles */
+    @media (max-width: 768px) {
+        min-width: 120px;
+        height: 45px;
+        font-size: 14px;
+        clip-path: none;
+    }
+}
+
+.bondList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.bondCard {
+    /* Glassmorphism - Matched with FundsManager */
+    background: linear-gradient(135deg,
+            rgba(27, 27, 31, 0.8),
+            rgba(18, 18, 21, 0.6));
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+
+    /* Border with gradient - Matched with FundsManager */
+    border: 1px solid;
+    border-image: linear-gradient(135deg,
+            rgba(0, 255, 196, 0.2),
+            rgba(79, 255, 75, 0.1)) 1;
+    border-radius: 12px;
+
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    overflow: hidden;
+
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.cardHeader {
+    display: flex;
+    justify-content: space-between;
+}
+
+.infoGroup {
+    display: flex;
+    flex-direction: column;
+}
+
+.alignRight {
+    text-align: right;
+    align-items: flex-end;
+}
+
+.label {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+
+.value {
+    font-family: "Orbitron", sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.neonGreen {
+    color: #4fff4b;
+}
+
+.vestingArea {
+    display: flex;
+    flex-direction: column;
+}
+
+.vestingLabels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.vestingSub {
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+.vestingBar {
+    position: relative;
+    height: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.moltenFill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(255, 69, 0, 0.2); // Reddish molten
+}
+
+.cooledFill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: #00ffc4; // Teal cooled
+    box-shadow: 0 0 10px #00ffc4;
+    transition: width 1s linear;
+}
+
+.toonGloss {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    pointer-events: none;
+}
+
+.barLegends {
+    display: flex;
+    gap: 20px;
+}
+
+.legend {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+}
+
+.dotCooled {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #00ffc4;
+}
+
+.dotMolten {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: rgba(255, 69, 0, 0.3);
+}
+
+.claimBtn {
+    align-self: flex-end;
+    background: transparent;
+    border: 1px solid rgba(0, 255, 196, 0.5);
+    color: #00ffc4;
+    padding: 8px 24px;
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(0, 255, 196, 0.1);
+        box-shadow: 0 0 10px rgba(0, 255, 196, 0.3);
+    }
+}
+
+.historyTable {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+
+    th {
+        padding: 12px;
+        font-size: 0.65rem;
+        color: rgba(255, 255, 255, 0.4);
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    td {
+        padding: 16px 12px;
+        font-size: 0.9rem;
+        color: #fff;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+}
