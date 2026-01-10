@@ -37,6 +37,26 @@
   box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
   animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   --loader-color: #00ffc4;
+  --gradient-color: rgba(0, 255, 196, 0.15);
+
+  // Animated gradient background
+  &::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 100%;
+    background: linear-gradient(90deg,
+        transparent 0%,
+        var(--gradient-color) 25%,
+        rgba(0, 0, 0, 0.3) 50%,
+        var(--gradient-color) 75%,
+        transparent 100%);
+    animation: gradientSweep 2s linear infinite;
+    pointer-events: none;
+    z-index: 1;
+  }
 
   &::before {
     content: "";
@@ -76,6 +96,16 @@
   }
 }
 
+@keyframes gradientSweep {
+  0% {
+    transform: translateX(-50%);
+  }
+
+  100% {
+    transform: translateX(0%);
+  }
+}
+
 @keyframes slideUp {
   from {
     transform: translateY(20px);
@@ -92,6 +122,7 @@
   border: 1px solid rgba(79, 255, 75, 0.3);
   box-shadow: 0 0 30px rgba(79, 255, 75, 0.15);
   --loader-color: #4fff4b;
+  --gradient-color: rgba(79, 255, 75, 0.15);
 
   h1 {
     color: #4fff4b;
@@ -103,6 +134,7 @@
   border: 1px solid rgba(255, 245, 0, 0.3);
   box-shadow: 0 0 30px rgba(255, 245, 0, 0.15);
   --loader-color: #fff500;
+  --gradient-color: rgba(255, 245, 0, 0.15);
 
   h1 {
     color: #fff500;
@@ -114,6 +146,7 @@
   border: 1px solid rgba(255, 15, 0, 0.3);
   box-shadow: 0 0 30px rgba(255, 15, 0, 0.15);
   --loader-color: #ff0f00;
+  --gradient-color: rgba(255, 15, 0, 0.15);
 
   h1 {
     color: #ff0f00;
