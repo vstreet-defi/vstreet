@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { hexToBn } from "@polkadot/util";
 import { useUserInfo } from "contexts/userInfoContext";
 import { useWallet } from "contexts/accountContext";
+import { useLiquidity } from "contexts/stateContext";
 import { formatWithCommasVUSD } from "utils";
 import styles from "./StatsPanel.module.scss";
 
@@ -15,12 +16,26 @@ const StatsPanel: React.FC = () => {
   const { selectedAccount } = useWallet();
   const [formatBalanceVUSD, setFormatBalanceVUSD] = useState("0.00");
 
+  const formatApr = (apr: number): string => {
+    return (apr / 1000000).toFixed(2);
+  };
+
   /**
    * Converts a hex balance value to a human-readable decimal string.
    */
   const convertHexToDecimal = (hexValue: string) => {
     return hexToBn(hexValue).toString();
   };
+
+  const calculateTvl = (totalLiquidityPool: number): number => {
+    return totalLiquidityPool / 1000000000000;
+  };
+
+  //Get Contract Info Data From Context
+  const { liquidityData } = useLiquidity();
+
+  //Format TVL
+  const tvl = calculateTvl(liquidityData?.TotalDeposited || 0);
 
   useEffect(() => {
     if (selectedAccount) {
@@ -49,12 +64,15 @@ const StatsPanel: React.FC = () => {
 
         <div className={styles.statItem}>
           <p className={styles.statLabel}>TOTAL LIQUIDITY POOL</p>
-          <p className={styles.statValue}>$3,000,001 wUSDT</p>
+          <p className={styles.statValue}>${tvl.toLocaleString()} wUSDT</p>
         </div>
 
         <div className={styles.statItem}>
           <p className={styles.statLabel}>ANNUAL INTEREST (APR)</p>
-          <p className={styles.statValue}>0.01%</p>
+          <p className={styles.statValue}>
+            {" "}
+            {liquidityData ? formatApr(liquidityData.APR) : "..."}%
+          </p>
         </div>
       </div>
     </div>
