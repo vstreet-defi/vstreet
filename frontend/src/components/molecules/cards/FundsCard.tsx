@@ -17,6 +17,7 @@ function FundsCard({ buttonLabel }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [balanceVFT, setBalanceVFT] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
+  const [convertedBalanceVUSD, setConvertedBalanceVUSD] = useState<number>(0);
   const { userInfo, fetchUserInfo, balance } = useUserInfo();
   const [formatBalanceVUSD, setFormatBalanceVUSD] = useState("");
   const [formatDepositedVUSD, setFormatDepositedVUSD] = useState("");
@@ -43,18 +44,29 @@ function FundsCard({ buttonLabel }: Props) {
 
   useEffect(() => {
     if (userInfo) {
-      const formattedBalance = userInfo.balance ? userInfo.balance / 1000000 : 0;
-      setDepositedBalance(formattedBalance / 1000000);
-      setFormatBalanceVUSD(formatWithCommasVUSD(balanceVFT));
-      setFormatDepositedVUSD(formatWithCommasVUSD(formattedBalance));
+      const vUSDWalletBalance = userInfo.balance ? userInfo.balance : 0;
+      const vUSDDepositedBalance = userInfo.balance_usdc
+        ? userInfo.balance_usdc
+        : 0;
+      setDepositedBalance(vUSDDepositedBalance / 1000000);
+      setConvertedBalanceVUSD(balance / 1000000);
+      setFormatBalanceVUSD(formatWithCommasVUSD(balance));
+      setFormatDepositedVUSD(vUSDDepositedBalance.toLocaleString());
     }
   }, [userInfo]);
+
+  console.log("VUSD Balance:", balanceVFT);
+  console.log("userINFO:", userInfo);
+  console.log("formatBalancevUSD:", formatBalanceVUSD);
 
   return (
     <div className={styles.fundsCard}>
       <div className={styles.inputSection}>
         <div className={styles.availableBalance}>
-          Available: <span>{isDepositCard() ? formatBalanceVUSD : formatDepositedVUSD} vUSD</span>
+          Available:{" "}
+          <span>
+            {isDepositCard() ? formatBalanceVUSD : depositedBalance} wUSDT
+          </span>
         </div>
 
         <div className={styles.inputRow}>
@@ -68,7 +80,7 @@ function FundsCard({ buttonLabel }: Props) {
             <BasicInput
               inputValue={inputValue}
               onInputChange={handleInputChange}
-              balance={isDepositCard() ? balanceVFT : depositedBalance}
+              balance={isDepositCard() ? formatBalanceVUSD : depositedBalance}
             />
           </div>
         </div>
@@ -76,14 +88,14 @@ function FundsCard({ buttonLabel }: Props) {
         <PercentageSelector
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? balanceVFT : depositedBalance}
+          balance={isDepositCard() ? convertedBalanceVUSD : depositedBalance}
         />
       </div>
 
       <ButtonGradFill
         amount={inputValue}
         label={buttonLabel}
-        balance={isDepositCard() ? balanceVFT : depositedBalance}
+        balance={isDepositCard() ? convertedBalanceVUSD : depositedBalance}
       />
     </div>
   );

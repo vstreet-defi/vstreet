@@ -29,7 +29,7 @@ const TotalLiquidityPool: React.FC = () => {
     <div className={styles.banner}>
       <div className={styles.bannerContent}>
         <div className={styles.leftSection}>
-          <p className={styles.description}>Deposit your $vUSD and earn</p>
+          <p className={styles.description}>Deposit your $wUSDT and earn</p>
         </div>
 
         <div className={styles.centerSection}>
@@ -42,7 +42,7 @@ const TotalLiquidityPool: React.FC = () => {
         <div className={styles.rightSection}>
           <p className={styles.label}>TOTAL LIQUIDITY POOL</p>
           <p className={styles.value}>
-            ${liquidityData ? formatWithCommas(tvl) : "..."} vUSD
+            ${liquidityData ? formatWithCommas(tvl) : "..."} wUSDT
           </p>
         </div>
       </div>

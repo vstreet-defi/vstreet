@@ -28,12 +28,12 @@ function TokenSelector() {
     <div className="Token-Selector">
       <div className="select-wrapper" onClick={handleClick} ref={wrapperRef}>
         <select disabled>
-          <option value="">vUSD</option>
+          <option value="">wUSDT</option>
         </select>
         <span className="custom-arrow"></span>
       </div>
       {showMessage && (
-        <Tooltip message="At the moment we only allow vUSD Liquidity Deposits." />
+        <Tooltip message="At the moment we only allow wUSDT Liquidity Deposits." />
       )}
     </div>
   );
