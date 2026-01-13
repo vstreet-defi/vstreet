@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
 import { getUserInfo, UserInfo, getVFTBalance, getVFTDecimals } from "smart-contracts-tools";
 import { fungibleTokenProgramID, vstTokenProgramID } from "../utils/smartPrograms";
 
@@ -42,7 +42,7 @@ export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
   const [balanceVST, setBalanceVST] = useState<number>(0);
   const [vstDecimals, setVstDecimals] = useState<number>(18);
 
-  const fetchUserInfo = async (hexAddress: string, overrideID?: string) => {
+  const fetchUserInfo = useCallback(async (hexAddress: string, overrideID?: string) => {
     if (!hexAddress) return;
     console.log("UserInfoContext: Starting fetch for", hexAddress, overrideID ? `with override ${overrideID}` : "");
 
@@ -76,7 +76,7 @@ export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
     } catch (e) {
       console.error("Failed to fetch VST balance/decimals:", e);
     }
-  };
+  }, []);
 
   return (
     <UserInfoContext.Provider value={{ userInfo, fetchUserInfo, balance: balanceVUSD, vstBalance: balanceVST, vstDecimals }}>
