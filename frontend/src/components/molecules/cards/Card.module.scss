@@ -1,133 +1,195 @@
-@use "@gear-js/ui/variables" as *;
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+@import "../../../App.scss";
 
-.OutsideContainer {
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: flex-end;
-  margin-top: 3.3rem;
-}
-
-.BasicCard {
-  border-width: 2px;
-  border-image: linear-gradient(141deg, rgb(0, 255, 196), rgba(86, 86, 86, 0)) 1;
-  background-image: linear-gradient(
-    90deg,
-    rgba(28, 28, 28, 0.79),
-    rgba(18, 18, 18, 0.79)
-  );
-
-  width: 30rem;
-  padding: 1.8rem;
-  @media screen and (max-width: 480px) {
-    width: 22rem;
-  }
-}
-
-.CardFeature {
-  border-width: 1px;
-  background: rgb(18, 18, 18);
-  background: linear-gradient(
-    27deg,
-    rgba(18, 18, 18, 0.74) 0%,
-    rgba(18, 18, 18, 0.742734593837535) 100%
-  );
-  border-image: linear-gradient(141deg, rgb(0, 255, 196), #4fff4b) 1;
-}
-
-.FundsCard {
-  display: flex;
-  align-items: center;
-  width: 90%;
-  margin: auto;
-  max-width: 22em;
-  padding: 30% 2em;
-  box-sizing: border-box;
-  $border: 1px;
-  color: #fff;
-  background: #000;
-  background-clip: padding-box;
-  border: solid $border transparent;
-  border-radius: 1em;
-
-  &:before {
-    content: "";
-    z-index: -1;
-    margin: -$border;
-    border-radius: inherit;
-    background: linear-gradient(
-      141deg,
-      rgb(0, 255, 196),
-      rgba(0, 255, 98, 0.177)
-    );
-  }
-}
-
-.Moduleborderwrap {
-  padding: 1rem;
-  position: relative;
-  background: linear-gradient(
-    141deg,
-    rgb(0, 255, 196),
-    rgba(0, 255, 145, 0.049)
-  );
-  padding: 1px;
-  border-radius: 1em;
-}
-
-.module {
-  background: linear-gradient(141deg, #1b1b1f, #2f2f37);
-  color: white;
-  padding: 2rem;
-  border-radius: 1em;
-}
-
-.modulePositions {
-  background-image: url(../../../assets/images/backgrounds/FeaturesBG.svg);
-  color: white;
-  padding: 2rem;
-  border-radius: 1em;
-}
-
-.ContainerBorrow {
+.fundsCard {
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  margin-top: 1rem;
-  margin-left: 3rem;
-  align-items: center;
-  width: 30rem;
-  margin: auto;
+  height: 100%;
+  width: 100%;
+  gap: 16px;
+  padding-top: 8px;
 
   @media (max-width: 768px) {
-    margin-left: 0;
+    gap: 12px;
   }
 
-  @media screen and (max-width: 480px) {
-    width: 22rem;
-    margin-left: 0rem;
-    margin-top: 1rem;
+  @media (max-width: 480px) {
+    gap: 10px;
   }
 }
 
-.BasicCardBorrow {
-  position: relative;
-  margin-top: 2rem;
-  margin-left: 3rem;
-  align-self: center;
-  font-family: "Roboto Mono", monospace;
-  color: #ffffff;
-  font-size: 15px;
-  width: 29rem;
-  padding-right: 1.5rem;
-  padding-left: 1rem;
+.infoRow {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-bottom: 8px;
+
   @media (max-width: 768px) {
-    margin-left: 0;
+    grid-template-columns: repeat(2, 1fr);
   }
 
-  @media screen and (max-width: 480px) {
-    width: 22rem;
-    margin-left: 0rem;
-    margin-top: 1rem;
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
   }
+}
+
+.infoCard {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(0, 255, 196, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .label {
+    font-family: "Inter", sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.4);
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    @media (max-width: 480px) {
+      font-size: 10px;
+    }
+  }
+
+  .value {
+    font-family: "Roboto Mono", monospace;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+    }
+
+    &.highlight {
+      color: var(--color-primary);
+      text-shadow: 0 0 8px rgba(0, 255, 196, 0.4);
+    }
+  }
+}
+
+.inputSection {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    gap: 10px;
+  }
+}
+
+.availableBalance {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.6);
+  text-align: right;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+    text-align: left;
+  }
+
+  span {
+    color: var(--color-primary);
+    font-family: 'Roboto Mono', monospace;
+    margin-left: 4px;
+
+    @media (max-width: 480px) {
+      font-size: 12px;
+    }
+  }
+}
+
+.inputRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 16px;
+  width: 100%;
+  align-items: flex-end;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  @media (max-width: 480px) {
+    gap: 10px;
+  }
+}
+
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  @media (max-width: 480px) {
+    gap: 6px;
+  }
+}
+
+.inputLabel {
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  margin-left: 4px;
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+    margin-left: 2px;
+  }
+}
+
+.balanceLabel {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.4);
+
+  @media (max-width: 768px) {
+    font-size: 11px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 10px;
+  }
+
+  span {
+    color: var(--color-primary);
+    font-family: "Roboto Mono", monospace;
+    margin-left: 4px;
+
+    @media (max-width: 480px) {
+      font-size: 11px;
+    }
+  }
+}
+
+// Keep existing classes if needed for other components, but FundsCard will use the above
+.BasicCard {
+  // Legacy support if needed
+  width: 100%;
 }

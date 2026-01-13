@@ -1,13 +1,11 @@
 import React, { useContext, useState } from "react";
 import { AlertModalContext } from "contexts/alertContext";
-import { useAccount, useApi } from "@gear-js/react-hooks";
-import { web3Accounts, web3FromSource } from "@polkadot/extension-dapp";
+import { useAccount } from "@gear-js/react-hooks";
+import { web3FromSource } from "@polkadot/extension-dapp";
 
-//Sails-js Imports
 import { Sails } from "sails-js";
 import { SailsIdlParser } from "sails-js-parser";
 
-//Import useWallet from contexts
 import { useWallet } from "contexts/accountContext";
 import { useUserInfo } from "contexts/userInfoContext";
 
@@ -18,16 +16,10 @@ import {
   vstreetProgramID,
 } from "../../../utils/smartPrograms";
 
-import {
-  createApproveMessage,
-  createDepositMessage,
-  createWithdrawMessage,
-} from "smart-contracts-tools";
 import { Loader } from "components/molecules/alert-modal/AlertModal";
 import { GearApi } from "@gear-js/api";
-import { MessageSendOptions } from "@gear-js/api/types";
+import { Codec, CodecClass } from "@polkadot/types/types";
 import { Signer } from "@polkadot/types/types";
-import { Codec, CodecClass, IKeyringPair } from "@polkadot/types/types";
 
 interface ButtonProps {
   label: string;
@@ -47,18 +39,14 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   const alertModalContext = useContext(AlertModalContext);
   const { fetchUserInfo } = useUserInfo();
 
-  //Polkadot Extension Wallet-Hook by PSYLABS
-  const { accountData, selectedAccount, hexAddress, fetchBalance } =
-    useWallet();
+  const { accountData, hexAddress, fetchBalance } = useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
 
   const handleTransaction = async (
     transactions: { transaction: TransactionFunction; infoText: string }[]
   ) => {
-    for (let i = 0; i < transactions.length; i++) {
-      const { transaction, infoText } = transactions[i];
-
+    for (const { transaction, infoText } of transactions) {
       alertModalContext?.showInfoModal(infoText);
 
       try {
@@ -108,16 +96,8 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     await transaction.calculateGas(true, 15);
 
     return async () => {
-      const { msgId, blockHash, txHash, response, isFinalized } =
-        await transaction.signAndSend();
-
-      const finalized = await isFinalized;
-
-      try {
-        const result = await response();
-      } catch (error) {
-        console.error("Error executing message:", error);
-      }
+      const { isFinalized } = await transaction.signAndSend();
+      await isFinalized;
     };
   };
 
@@ -154,16 +134,128 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     await transaction.calculateGas(true, 15);
 
     return async () => {
-      const { msgId, blockHash, txHash, response, isFinalized } =
-        await transaction.signAndSend();
+      const { isFinalized } = await transaction.signAndSend();
+      await isFinalized;
+    };
+  };
 
-      const finalized = await isFinalized;
+  const createTakeLoanTransaction = async () => {
+    const parser = await SailsIdlParser.new();
+    const sails = new Sails(parser);
 
-      try {
-        const result = await response();
-      } catch (error) {
-        console.error("Error executing message:", error);
-      }
+    sails.parseIdl(idlVSTREET);
+    sails.setProgramId(vstreetProgramID);
+
+    const accountWEB = accountData;
+    if (!accountWEB) {
+      throw new Error("No account data found");
+    }
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+
+    sails.setApi(gearApi);
+
+    if (accounts.length === 0) {
+      throw new Error("No account found");
+    }
+
+    const amountConverted = Number(amount) * 1000000;
+
+    const transaction =
+      await sails.services.LiquidityInjectionService.functions.TakeLoan(
+        amountConverted
+      );
+    const { signer } = await web3FromSource(accountWEB.meta.source);
+    transaction.withAccount(accountWEB.address, {
+      signer: signer as string | CodecClass<Codec, any[]> as Signer,
+    });
+    await transaction.calculateGas(true, 15);
+
+    return async () => {
+      const { isFinalized } = await transaction.signAndSend();
+      await isFinalized;
+    };
+  };
+
+  const createPayLoanTransaction = async () => {
+    const parser = await SailsIdlParser.new();
+    const sails = new Sails(parser);
+
+    sails.parseIdl(idlVSTREET);
+    sails.setProgramId(vstreetProgramID);
+
+    const accountWEB = accountData;
+    if (!accountWEB) {
+      throw new Error("No account data found");
+    }
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+
+    sails.setApi(gearApi);
+
+    if (accounts.length === 0) {
+      throw new Error("No account found");
+    }
+
+    const amountConverted = Number(amount) * 1000000;
+
+    const transaction =
+      await sails.services.LiquidityInjectionService.functions.PayLoan(
+        amountConverted
+      );
+    const { signer } = await web3FromSource(accountWEB.meta.source);
+    transaction.withAccount(accountWEB.address, {
+      signer: signer as string | CodecClass<Codec, any[]> as Signer,
+    });
+    await transaction.calculateGas(true, 15);
+
+    return async () => {
+      const { isFinalized } = await transaction.signAndSend();
+      await isFinalized;
+    };
+  };
+
+  const createApprovalTransaction = async () => {
+    const parser = await SailsIdlParser.new();
+    const sails = new Sails(parser);
+
+    sails.parseIdl(idlVFT);
+    sails.setProgramId(fungibleTokenProgramID);
+
+    const accountWEB = accountData;
+    if (!accountWEB) {
+      throw new Error("No account data found");
+    }
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+
+    sails.setApi(gearApi);
+
+    if (accounts.length === 0) {
+      throw new Error("No account found");
+    }
+
+    const amountConverted = Number(amount) * 1000000;
+
+    const transaction = await sails.services.Vft.functions.Approve(
+      vstreetProgramID,
+      amountConverted
+    );
+    const { signer } = await web3FromSource(accountWEB.meta.source);
+    transaction.withAccount(accountWEB.address, {
+      signer: signer as string | CodecClass<Codec, any[]> as Signer,
+    });
+    await transaction.calculateGas(true, 15);
+
+    return async () => {
+      const { isFinalized } = await transaction.signAndSend();
+      await isFinalized;
     };
   };
 
@@ -172,8 +264,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     await handleTransaction([
       {
         transaction,
-        infoText:
-          "Deposit in progress. Please check your wallet to sign the transaction.",
+        infoText: "Deposit in progress. Please check your wallet to sign the transaction.",
       },
     ]);
   };
@@ -183,8 +274,32 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     await handleTransaction([
       {
         transaction,
-        infoText:
-          "Withdrawal in progress. Please check your wallet to sign the transaction.",
+        infoText: "Withdrawal in progress. Please check your wallet to sign the transaction.",
+      },
+    ]);
+  };
+
+  const handleBorrow = async () => {
+    const transaction = await createTakeLoanTransaction();
+    await handleTransaction([
+      {
+        transaction,
+        infoText: "Loan taking in progress. Please check your wallet to sign the transaction.",
+      },
+    ]);
+  };
+
+  const handlePay = async () => {
+    const approvalTransaction = await createApprovalTransaction();
+    const payLoanTransaction = await createPayLoanTransaction();
+    await handleTransaction([
+      {
+        transaction: approvalTransaction,
+        infoText: "Approval in progress. Please check your wallet to approve the transaction.",
+      },
+      {
+        transaction: payLoanTransaction,
+        infoText: "Loan pay in progress. Please check your wallet to sign the transaction.",
       },
     ]);
   };
@@ -192,6 +307,8 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   const actions: { [key: string]: () => Promise<void> } = {
     Deposit: handleDeposit,
     Withdraw: handleWithdraw,
+    Borrow: handleBorrow,
+    Pay: handlePay,
   };
 
   const handleClick = async () => {

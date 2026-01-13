@@ -6,24 +6,26 @@ import ButtonGradFill from "components/atoms/Button-Gradient-Fill/ButtonGradFill
 import { useEffect, useState } from "react";
 import { useUserInfo } from "contexts/userInfoContext";
 import { useWallet } from "contexts/accountContext";
-import { getVFTBalance } from "smart-contracts-tools";
 import { hexToBn } from "@polkadot/util";
 import { formatWithCommasVUSD } from "utils";
-type props = {
-  buttonLabel: string;
-};
 
-function FundsCard({ buttonLabel }: props) {
+interface Props {
+  buttonLabel: string;
+}
+
+function FundsCard({ buttonLabel }: Props) {
   const [inputValue, setInputValue] = useState("");
   const [balanceVFT, setBalanceVFT] = useState<number>(0);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
+  const [convertedBalanceVUSD, setConvertedBalanceVUSD] = useState<number>(0);
   const { userInfo, fetchUserInfo, balance } = useUserInfo();
+  const [formatBalanceVUSD, setFormatBalanceVUSD] = useState("");
+  const [formatDepositedVUSD, setFormatDepositedVUSD] = useState("");
 
   const { selectedAccount, hexAddress } = useWallet();
 
-  const isDepositCard = () => {
-    return buttonLabel === "Deposit";
-  };
+  const isDepositCard = () => buttonLabel === "Deposit";
+
   const handleInputChange = (value: string) => {
     setInputValue(value);
   };
@@ -35,39 +37,66 @@ function FundsCard({ buttonLabel }: props) {
   useEffect(() => {
     if (selectedAccount) {
       fetchUserInfo(hexAddress);
-
       const balanceConverted = convertHexToDecimal(balance.toString());
-      setBalanceVFT(Number(balanceConverted));
+      setBalanceVFT(Number(balanceConverted) / 1000000);
     }
   }, [selectedAccount, hexAddress, balance]);
 
   useEffect(() => {
     if (userInfo) {
-      const formatedBalance = userInfo.balance ? userInfo.balance / 1000000 : 0;
-      setDepositedBalance(formatedBalance);
+      const vUSDWalletBalance = userInfo.balance ? userInfo.balance : 0;
+      const vUSDDepositedBalance = userInfo.balance_usdc
+        ? userInfo.balance_usdc
+        : 0;
+      setDepositedBalance(vUSDDepositedBalance / 1000000);
+      setConvertedBalanceVUSD(balance / 1000000);
+      setFormatBalanceVUSD(formatWithCommasVUSD(balance));
+      setFormatDepositedVUSD(vUSDDepositedBalance.toLocaleString());
     }
   }, [userInfo]);
 
+  console.log("VUSD Balance:", balanceVFT);
+  console.log("userINFO:", userInfo);
+  console.log("formatBalancevUSD:", formatBalanceVUSD);
+
   return (
-    <div className={styles.Container}>
-      <div className={styles.BasicCard}>
-        <TokenSelector />
-        <BasicInput
-          inputValue={inputValue}
-          onInputChange={handleInputChange}
-          balance={isDepositCard() ? balanceVFT : depositedBalance}
-        />
+    <div className={styles.fundsCard}>
+      <div className={styles.inputSection}>
+        <div className={styles.availableBalance}>
+          Available:{" "}
+          <span>
+            {isDepositCard() ? formatBalanceVUSD : depositedBalance} wUSDT
+          </span>
+        </div>
+
+        <div className={styles.inputRow}>
+          <div className={styles.inputWrapper}>
+            <div className={styles.inputLabel}>Token</div>
+            <TokenSelector />
+          </div>
+
+          <div className={styles.inputWrapper}>
+            <div className={styles.inputLabel}>Amount</div>
+            <BasicInput
+              inputValue={inputValue}
+              onInputChange={handleInputChange}
+              balance={isDepositCard() ? formatBalanceVUSD : depositedBalance}
+            />
+          </div>
+        </div>
+
         <PercentageSelector
           inputValue={inputValue}
           onInputChange={handleInputChange}
-          balance={isDepositCard() ? balanceVFT : depositedBalance}
-        />
-        <ButtonGradFill
-          amount={inputValue}
-          label={buttonLabel}
-          balance={isDepositCard() ? balanceVFT : depositedBalance}
+          balance={isDepositCard() ? convertedBalanceVUSD : depositedBalance}
         />
       </div>
+
+      <ButtonGradFill
+        amount={inputValue}
+        label={buttonLabel}
+        balance={isDepositCard() ? convertedBalanceVUSD : depositedBalance}
+      />
     </div>
   );
 }

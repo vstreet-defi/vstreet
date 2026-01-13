@@ -26,15 +26,14 @@ function TokenSelector() {
 
   return (
     <div className="Token-Selector">
-      <p className="TS-Label">Token</p>
       <div className="select-wrapper" onClick={handleClick} ref={wrapperRef}>
         <select disabled>
-          <option value="">vUSD</option>
+          <option value="">wUSDT</option>
         </select>
         <span className="custom-arrow"></span>
       </div>
       {showMessage && (
-        <Tooltip message="At the moment we only allow vUSD borrows." />
+        <Tooltip message="At the moment we only allow wUSDT borrows." />
       )}
     </div>
   );

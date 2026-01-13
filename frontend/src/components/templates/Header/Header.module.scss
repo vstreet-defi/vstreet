@@ -1,0 +1,189 @@
+@import "../../../App.scss";
+
+.header {
+    display: flex;
+    width: 100%;
+    height: 5rem;
+    padding: 0 2rem;
+    justify-content: space-between;
+    align-items: center;
+    background-color: rgba(10, 12, 18, 0.7);
+    backdrop-filter: blur(15px);
+    position: relative;
+    border-bottom: 1px solid rgba(0, 255, 196, 0.2);
+    z-index: 100;
+
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(0, 255, 196, 0.5) 50%,
+                transparent 100%);
+        box-shadow: 0 0 15px rgba(0, 255, 196, 0.3);
+    }
+
+    @media screen and (max-width: 480px) {
+        padding: 0 1rem;
+    }
+}
+
+.logo {
+    cursor: pointer;
+    width: 10.125rem;
+    height: 2.3125rem;
+    flex-shrink: 0;
+    transition: var(--transition-default);
+
+    &:hover {
+        filter: drop-shadow(0 0 8px rgba(0, 255, 196, 0.3));
+    }
+}
+
+.itemsContainer {
+    display: flex;
+    height: 100%;
+    align-items: center;
+    gap: 1rem;
+}
+
+.itemWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.navTab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 1.5rem;
+    min-width: 140px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: var(--color-text-secondary);
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+    transition: var(--transition-default);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+
+    &:hover {
+        border-color: rgba(0, 255, 196, 0.3);
+        color: var(--color-text-primary);
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    &.active {
+        background: rgba(0, 255, 196, 0.1);
+        border: 2px solid var(--color-primary);
+        color: var(--color-primary);
+        font-weight: 600;
+        filter: drop-shadow(0 0 5px rgba(0, 255, 196, 0.2));
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 20%;
+            width: 60%;
+            height: 2px;
+            background: var(--gradient-primary);
+            filter: blur(2px);
+        }
+    }
+}
+
+.flag {
+    position: absolute;
+    top: -10px;
+    left: 10%;
+    transform: translateX(-50%);
+    z-index: 10;
+    margin-top: 4px;
+}
+
+.walletContainer {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    min-width: 180px;
+    transition: var(--transition-default);
+}
+
+.walletContent {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--color-primary);
+    box-shadow: 0 0 10px var(--color-primary);
+    animation: pulseIndicator 2s infinite;
+}
+
+.balanceInfo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+
+    .label {
+        font-size: 0.65rem;
+        color: var(--color-text-tertiary);
+        font-family: "Inter", sans-serif;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .value {
+        font-size: 0.95rem;
+        color: var(--color-text-primary);
+        font-family: "Roboto Mono", monospace;
+        font-weight: 600;
+        text-shadow: 0 0 8px rgba(0, 255, 196, 0.2);
+    }
+}
+
+.connectButton {
+    background: rgba(0, 255, 196, 0.1);
+    border: 1px solid rgba(0, 255, 196, 0.3);
+    border-radius: 6px;
+    color: var(--color-primary);
+    padding: 0.6rem 1.25rem;
+    font-family: "Montserrat", sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: var(--transition-default);
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+        background: rgba(0, 255, 196, 0.2);
+        border-color: var(--color-primary);
+        box-shadow: 0 0 15px rgba(0, 255, 196, 0.3);
+        transform: translateY(-1px);
+    }
+
+    &:active:not(:disabled) {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+}

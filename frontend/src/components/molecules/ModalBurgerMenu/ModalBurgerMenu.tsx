@@ -11,8 +11,12 @@ const ModalBurgerMenu = ({ isOpen, items, selectedTab }: any) => {
       navigate("/");
     } else if (item === DappTab.Borrow) {
       navigate("/dapp?tab=borrow");
+    } else if (item === DappTab.VST) {
+      navigate("/vst");
     } else if (item === DappTab.Supply) {
       navigate("/dapp?tab=supply");
+    } else if (item === DappTab.Vaults) {
+      navigate("/dapp?tab=vaults");
     } /*else if (item === DappTab.Faucet) {
       navigate("/faucet");
     }*/ else if (item === "GitHub") {
@@ -25,7 +29,7 @@ const ModalBurgerMenu = ({ isOpen, items, selectedTab }: any) => {
   };
   const renderFlag = (item: string) => {
     if (item !== DappTab.Home && isDapp) {
-      return <Flag text={item === DappTab.Markets ? "Coming Soon" : "New"} />;
+      return <Flag text={item === DappTab.Vaults ? "Coming Soon" : "New"} />;
     }
     return null;
   };
@@ -37,9 +41,8 @@ const ModalBurgerMenu = ({ isOpen, items, selectedTab }: any) => {
             {renderFlag(item)}
             <li key={index}>
               <button
-                className={`${
-                  item.toLowerCase() === selectedTab && isDapp ? "active" : ""
-                }`}
+                className={`${(item.toLowerCase() === selectedTab || (item === DappTab.VST && location.pathname === "/vst")) && isDapp ? "active" : ""
+                  }`}
                 onClick={() => handleClick(item)}
               >
                 {item}

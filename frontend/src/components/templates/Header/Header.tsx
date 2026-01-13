@@ -3,14 +3,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { DisplayWallet } from "components/organisms/Wallet/DisplayWallet";
 import Flag from "../../atoms/Flag/Flag";
 import Logo from "../../../assets/images/icons/vStreet-Navbar-Color-White.png";
-import styles from "../../molecules/wallet/Wallet.module.scss";
+import styles from "./Header.module.scss";
 import BurgerMenu from "components/organisms/BurgerMenu";
 
 export enum DappTab {
   Home = "Home",
   Supply = "Supply",
   Borrow = "Borrow",
-  Markets = "Markets",
+  VST = "$VST",
+  Vaults = "Vaults",
 }
 
 export enum HomeTab {
@@ -32,13 +33,15 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const isTablet = window.innerWidth < 822;
-  const isDapp = location.pathname.startsWith("/dapp");
+  const isDapp = location.pathname.startsWith("/dapp") || location.pathname === "/vst";
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
     const tab = searchParams.get("tab") as DappTab | null;
 
-    if (isDapp && !tab) {
+    if (location.pathname === "/vst") {
+      setActiveTab(DappTab.VST.toLowerCase());
+    } else if (isDapp && !tab) {
       navigate("/dapp?tab=supply", { replace: true });
       setActiveTab(DappTab.Supply.toLowerCase());
     } else if (isDapp) {
@@ -61,7 +64,14 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
       navigate("/dapp?tab=supply");
       setActiveTab(DappTab.Supply.toLowerCase());
     },
-    [DappTab.Markets]: () => {},
+    [DappTab.VST]: () => {
+      navigate("/vst");
+      setActiveTab(DappTab.VST.toLowerCase());
+    },
+    [DappTab.Vaults]: () => {
+      navigate("/dapp?tab=vaults");
+      setActiveTab(DappTab.Vaults.toLowerCase());
+    },
   };
 
   const homeTabActions: Record<HomeTab, () => void> = {
@@ -84,23 +94,19 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   };
 
   const renderFlag = (item: string) => {
-    if (item !== DappTab.Home && isDapp) {
-      return <Flag text={item === DappTab.Markets ? "Coming Soon" : "New"} />;
-    }
     return null;
   };
 
   const renderItems = () =>
     items.map((item, index) => (
-      <div className="item-wrapper" key={index}>
+      <div className={styles.itemWrapper} key={index}>
         {renderFlag(item)}
         <button
-          className={`item${
-            item.toLowerCase() === activeTab && isDapp ? "-active" : ""
-          }`}
+          className={`${styles.navTab} ${item.toLowerCase() === activeTab && isDapp ? styles.active : ""
+            }`}
           onClick={() => handleClick(item)}
         >
-          <p>{item}</p>
+          {item}
         </button>
       </div>
     ));
@@ -112,18 +118,22 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
 
     return (
       <>
-        <div className="items-container">{renderItems()}</div>
+        <div className={styles.itemsContainer}>{renderItems()}</div>
         {isAccountVisible || location.pathname === "/dapp" ? (
-          <DisplayWallet />
+          <div className={styles.walletContainer}>
+            {/* Note: DisplayWallet might need internal refactoring to fully match the design, 
+                 but wrapping it here allows us to apply the container styles. 
+                 Ideally DisplayWallet should be broken down or styled via props/context.
+                 For now, we wrap it. */}
+            <DisplayWallet />
+          </div>
         ) : (
           <button
-            className={styles.connectWallet}
+            className={styles.connectButton}
             type="button"
             onClick={() => navigate("/dapp?tab=borrow")}
-            disabled={true}
-            style={{ opacity: 0.4, cursor: "not-allowed" }}
           >
-            <p>Launch App</p>
+            Launch App
           </button>
         )}
       </>
@@ -131,9 +141,9 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   };
 
   return (
-    <header>
+    <header className={styles.header}>
       <img
-        className="NavBar-Logo"
+        className={styles.logo}
         src={Logo}
         alt="Logo"
         onClick={() => navigate("/")}
