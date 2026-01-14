@@ -121,7 +121,7 @@ export const getVFTDecimals = async (programId: string) => {
   try {
     const sails = await getSails(programId, idlVFT);
     const result = await sails.services.Vft.queries.Decimals(
-      "0x" + "0".repeat(64) as `0x${string}`, // anonymous caller
+      ("0x" + "0".repeat(64)) as `0x${string}`, // anonymous caller
       undefined,
       undefined
     );
@@ -145,7 +145,9 @@ export const getVFTBalance = async (
 
   try {
     const sails = await getSails(programId, idlVFT);
-    console.log(`[CONTRACT BALANCE QUERY] Checking: ${accountAddress} on ${programId}`);
+    console.log(
+      `[CONTRACT BALANCE QUERY] Checking: ${accountAddress} on ${programId}`
+    );
 
     const result = await sails.services.Vft.queries.BalanceOf(
       accountAddress as `0x${string}`, // caller (origin)
@@ -154,7 +156,11 @@ export const getVFTBalance = async (
       accountAddress as `0x${string}` // target address
     );
 
-    console.log(`[CONTRACT BALANCE RESULT] ${programId} for ${accountAddress} ->`, result, typeof result);
+    console.log(
+      `[CONTRACT BALANCE RESULT] ${programId} for ${accountAddress} ->`,
+      result,
+      typeof result
+    );
 
     if (result !== undefined && result !== null) {
       // Use string conversion to avoid BigInt to Number issues if huge
@@ -181,18 +187,21 @@ export const getUserInfo = async (
     const sails = await getSails(vstreetProgramID, idlVSTREET);
     console.log(`[CONTRACT USERINFO QUERY] Checking: ${accountAddress}`);
 
-    const result = await sails.services.LiquidityInjectionService.queries.UserInfo(
-      accountAddress as `0x${string}`,
-      undefined,
-      undefined,
-      accountAddress as `0x${string}`
-    );
+    const result =
+      await sails.services.LiquidityInjectionService.queries.UserInfo(
+        accountAddress as `0x${string}`,
+        undefined,
+        undefined,
+        accountAddress as `0x${string}`
+      );
 
     const userInfoStr = result as string;
 
     // Improved parser logic
     const parseUserInfo = (dataString: string): UserInfo => {
-      const cleanedString = dataString.substring(dataString.indexOf("{")).trim();
+      const cleanedString = dataString
+        .substring(dataString.indexOf("{"))
+        .trim();
       const jsonString = cleanedString
         .replace(/(\w+):/g, '"$1":')
         .replace(/'/g, '"');
@@ -204,5 +213,34 @@ export const getUserInfo = async (
     console.log("[CONTRACT USERINFO RESULT]", parsedData);
   } catch (error) {
     console.error("[CONTRACT USERINFO ERROR]:", error);
+
+    // If user doesn't exist in contract yet (panicked with Option::unwrap on None),
+    // set default empty values
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (
+      errorMessage.includes("panicked") ||
+      errorMessage.includes("Option::unwrap")
+    ) {
+      console.log(
+        "[CONTRACT USERINFO] User not found in contract, using default values"
+      );
+      setUserInfo({
+        balance: 0,
+        rewards: 0,
+        rewards_withdrawn: 0,
+        liquidity_last_updated: 0,
+        borrow_last_updated: 0,
+        available_to_withdraw_vara: 0,
+        balance_usdc: 0,
+        balance_vara: 0,
+        is_loan_active: false,
+        loan_amount: 0,
+        loan_amount_usdc: 0,
+        ltv: 0,
+        mla: 0,
+        rewards_usdc: 0,
+        rewards_usdc_withdrawn: 0,
+      });
+    }
   }
 };

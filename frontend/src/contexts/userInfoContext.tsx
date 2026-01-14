@@ -1,6 +1,20 @@
-import React, { createContext, useContext, useState, ReactNode, useCallback } from "react";
-import { getUserInfo, UserInfo, getVFTBalance, getVFTDecimals } from "smart-contracts-tools";
-import { fungibleTokenProgramID, vstTokenProgramID } from "../utils/smartPrograms";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  ReactNode,
+  useCallback,
+} from "react";
+import {
+  getUserInfo,
+  UserInfo,
+  getVFTBalance,
+  getVFTDecimals,
+} from "smart-contracts-tools";
+import {
+  fungibleTokenProgramID,
+  vstTokenProgramID,
+} from "../utils/smartPrograms";
 
 interface UserInfoContextProps {
   userInfo: UserInfo;
@@ -42,44 +56,57 @@ export const UserInfoProvider: React.FC<UserInfoProviderProps> = ({
   const [balanceVST, setBalanceVST] = useState<number>(0);
   const [vstDecimals, setVstDecimals] = useState<number>(18);
 
-  const fetchUserInfo = useCallback(async (hexAddress: string, overrideID?: string) => {
-    if (!hexAddress) return;
-    console.log("UserInfoContext: Starting fetch for", hexAddress, overrideID ? `with override ${overrideID}` : "");
+  const fetchUserInfo = useCallback(
+    async (hexAddress: string, overrideID?: string) => {
+      if (!hexAddress) return;
+      console.log(
+        "UserInfoContext: Starting fetch for",
+        hexAddress,
+        overrideID ? `with override ${overrideID}` : ""
+      );
 
-    // 1. Fetch main UserInfo
-    try {
+      // 1. Fetch main UserInfo (handles errors internally)
       await getUserInfo(hexAddress, setUserInfo);
-    } catch (e) {
-      console.error("Failed to fetch UserInfo:", e);
-    }
 
-    // 2. Fetch vUSD Balance
-    try {
-      await getVFTBalance(hexAddress, fungibleTokenProgramID, (val) => {
-        console.log("vUSD Context State Update:", val);
-        setBalanceVUSD(val);
-      });
-    } catch (e) {
-      console.error("Failed to fetch vUSD balance:", e);
-    }
+      // 2. Fetch vUSD Balance
+      try {
+        await getVFTBalance(hexAddress, fungibleTokenProgramID, (val) => {
+          console.log("vUSD Context State Update:", val);
+          setBalanceVUSD(val);
+        });
+      } catch (e) {
+        console.error("Failed to fetch vUSD balance:", e);
+        setBalanceVUSD(0);
+      }
 
-    // 3. Fetch VST Balance and Decimals
-    const targetID = overrideID || vstTokenProgramID;
-    try {
-      const decimals = await getVFTDecimals(targetID);
-      setVstDecimals(decimals);
+      // 3. Fetch VST Balance and Decimals
+      const targetID = overrideID || vstTokenProgramID;
+      try {
+        const decimals = await getVFTDecimals(targetID);
+        setVstDecimals(decimals);
 
-      await getVFTBalance(hexAddress, targetID, (val) => {
-        console.log("VST Context State Update:", val);
-        setBalanceVST(val);
-      });
-    } catch (e) {
-      console.error("Failed to fetch VST balance/decimals:", e);
-    }
-  }, []);
+        await getVFTBalance(hexAddress, targetID, (val) => {
+          console.log("VST Context State Update:", val);
+          setBalanceVST(val);
+        });
+      } catch (e) {
+        console.error("Failed to fetch VST balance/decimals:", e);
+        setBalanceVST(0);
+      }
+    },
+    []
+  );
 
   return (
-    <UserInfoContext.Provider value={{ userInfo, fetchUserInfo, balance: balanceVUSD, vstBalance: balanceVST, vstDecimals }}>
+    <UserInfoContext.Provider
+      value={{
+        userInfo,
+        fetchUserInfo,
+        balance: balanceVUSD,
+        vstBalance: balanceVST,
+        vstDecimals,
+      }}
+    >
       {children}
     </UserInfoContext.Provider>
   );
