@@ -26,6 +26,10 @@ export const fungibleTokenProgramID =
 export const vstTokenProgramID =
   "0xf95e6e247054e898a15395715503a9343fd80f95c6a516bf63f17e10e7d144be";
 
+//Vault Service Contract (For Staking Vaults)
+export const vaultProgramID =
+  "0x42fd0436f6d8ede8b0097c81e814a1f107ad3e1025add3be9ba7fe1a884b52e2";
+
 //IDL for the VFT contract (New Metadata Schema)
 export const idlVFT = `constructor {
   New : (name: str, symbol: str, decimals: u8);
@@ -111,3 +115,70 @@ service LiquidityInjectionService {
 const fungibleTokenMeta =
   "00010001000000000001030000000107000000000000000108000000a90b3400081466745f696f28496e6974436f6e66696700000c01106e616d65040118537472696e6700011873796d626f6c040118537472696e67000120646563696d616c73080108753800000400000502000800000503000c081466745f696f204654416374696f6e000118104d696e74040010011075313238000000104275726e040010011075313238000100205472616e736665720c011066726f6d14011c4163746f724964000108746f14011c4163746f724964000118616d6f756e74100110753132380002001c417070726f7665080108746f14011c4163746f724964000118616d6f756e74100110753132380003002c546f74616c537570706c790004002442616c616e63654f66040014011c4163746f724964000500001000000507001410106773746418636f6d6d6f6e287072696d6974697665731c4163746f724964000004001801205b75383b2033325d0000180000032000000008001c081466745f696f1c46544576656e74000110205472616e736665720c011066726f6d14011c4163746f724964000108746f14011c4163746f724964000118616d6f756e74100110753132380000001c417070726f76650c011066726f6d14011c4163746f724964000108746f14011c4163746f724964000118616d6f756e74100110753132380001002c546f74616c537570706c790400100110753132380002001c42616c616e63650400100110753132380003000020081466745f696f3c496f46756e6769626c65546f6b656e00001801106e616d65040118537472696e6700011873796d626f6c040118537472696e67000130746f74616c5f737570706c791001107531323800012062616c616e6365732401505665633c284163746f7249642c2075313238293e000128616c6c6f77616e6365732c01905665633c284163746f7249642c205665633c284163746f7249642c2075313238293e293e000120646563696d616c730801087538000024000002280028000004081410002c00000230003000000408142400";
 export const decodedFungibleTokenMeta = ProgramMetadata.from(fungibleTokenMeta);
+
+//IDL for the Vault Service Contract
+export const idlVAULT = `
+type ConvictionLevel = enum {
+  Day1,
+  Day7,
+  Day14,
+  Day28,
+  Day90,
+};
+
+type VaultPosition = struct {
+  id: u128,
+  user: actor_id,
+  amount: u128,
+  conviction_level: ConvictionLevel,
+  multiplier: u128,
+  power: u128,
+  start_timestamp: u128,
+  unlock_timestamp: u128,
+  is_active: bool,
+  claimed: bool,
+};
+
+type GlobalVaultStats = struct {
+  total_vst_locked: u128,
+  total_power: u128,
+  active_positions_count: u128,
+};
+
+type UserVaultInfo = struct {
+  total_staked_vst: u128,
+  total_power: u128,
+  active_positions: vec u128,
+  matured_positions: vec u128,
+  position_history: vec u128,
+};
+
+constructor {
+  NewWithVft : (vft_contract_id: actor_id, ltv: u128);
+};
+
+service VaultService {
+  AddAdmin : (new_admin: actor_id) -> result (null, str);
+  ClaimMultiplePositions : (position_ids: vec u128) -> result (null, str);
+  SetVstTokenId : (vst_token_id: actor_id) -> result (null, str);
+  StakeVst : (amount: u128, conviction_level: ConvictionLevel) -> result (VaultPosition, str);
+  UnlockAndClaimPosition : (position_id: u128) -> result (null, str);
+  query GlobalStats : () -> GlobalVaultStats;
+  query PositionDetails : (position_id: u128) -> opt VaultPosition;
+  query TimeUntilUnlock : (position_id: u128) -> u128;
+  query UserActivePositions : (user: actor_id) -> vec VaultPosition;
+  query UserMaturedPositions : (user: actor_id) -> vec VaultPosition;
+  query UserPositions : (user: actor_id) -> vec VaultPosition;
+  query UserTotalPower : (user: actor_id) -> u128;
+  query UserTotalStaked : (user: actor_id) -> u128;
+  query UserVaultInfo : (user: actor_id) -> UserVaultInfo;
+
+  events {
+    Staked: struct { position_id: u128, user: actor_id, amount: u128, conviction_level: ConvictionLevel, power: u128, unlock_timestamp: u128 };
+    Unlocked: struct { position_id: u128, user: actor_id, amount: u128, power: u128 };
+    PositionClaimed: struct { position_id: u128, user: actor_id, amount: u128 };
+    MultiplePositionsClaimed: struct { user: actor_id, total_amount: u128, positions_count: u128 };
+    Error: str;
+  }
+};
+`;

@@ -2,6 +2,7 @@ import { createRoot } from "react-dom/client";
 import { ChakraProvider } from "@chakra-ui/react";
 import { WalletProvider } from "../src/contexts/accountContext";
 import { UserInfoProvider } from "contexts/userInfoContext";
+import { VaultProvider } from "contexts/vaultContext";
 import { App } from "./App";
 
 const container = document.getElementById("root");
@@ -11,7 +12,9 @@ root.render(
   <ChakraProvider>
     <WalletProvider>
       <UserInfoProvider>
-        <App />
+        <VaultProvider>
+          <App />
+        </VaultProvider>
       </UserInfoProvider>
     </WalletProvider>
   </ChakraProvider>

@@ -1,9 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import styles from "./StakingConsole.module.scss";
 import { CornerAccent } from "../../atoms/CornerAccent/CornerAccent";
 import { useUserInfo } from "contexts/userInfoContext";
 import { useWallet } from "contexts/accountContext";
-import { vstTokenProgramID } from "../../../utils/smartPrograms";
+import { useVault } from "contexts/vaultContext";
+import { AlertModalContext } from "contexts/alertContext";
+import { vstTokenProgramID, vaultProgramID, idlVFT, idlVAULT } from "../../../utils/smartPrograms";
+import { mapConvictionToEnum, ConvictionLevel } from "smart-contracts-tools";
+
+import { useAccount } from "@gear-js/react-hooks";
+import { web3FromSource } from "@polkadot/extension-dapp";
+import { Sails } from "sails-js";
+import { SailsIdlParser } from "sails-js-parser";
+import { GearApi } from "@gear-js/api";
+import { Codec, CodecClass } from "@polkadot/types/types";
+import { Signer } from "@polkadot/types/types";
 
 const CONVICTION_OPTIONS = [
     { id: "x1", label: "1D", multiplier: 1, color: "#00ffc4", status: "Manual" },
@@ -20,15 +31,20 @@ const CONVICTION_OPTIONS = [
  */
 const StakingConsole: React.FC = () => {
     const { vstBalance, vstDecimals, fetchUserInfo } = useUserInfo();
-    const { hexAddress, selectedAccount } = useWallet();
+    const { hexAddress, selectedAccount, accountData } = useWallet();
+    const { fetchVaultData, totalPower, totalStaked } = useVault();
+    const alertModalContext = useContext(AlertModalContext);
+    const { accounts } = useAccount();
 
     const [selectedConviction, setSelectedConviction] = useState(CONVICTION_OPTIONS[0]);
     const [amount, setAmount] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (selectedAccount && hexAddress) {
             console.log("Vaults: Triggering fetch for", hexAddress);
             fetchUserInfo(hexAddress);
+            fetchVaultData(hexAddress);
         }
     }, [selectedAccount, hexAddress]);
 
@@ -47,7 +63,10 @@ const StakingConsole: React.FC = () => {
     };
 
     const handleManualRefresh = () => {
-        if (hexAddress) fetchUserInfo(hexAddress);
+        if (hexAddress) {
+            fetchUserInfo(hexAddress);
+            fetchVaultData(hexAddress);
+        }
     };
 
     const handleSelect = (option: typeof CONVICTION_OPTIONS[0]) => {
@@ -57,6 +76,92 @@ const StakingConsole: React.FC = () => {
     const calculateSVsST = (val: string, multiplier: number) => {
         const num = parseFloat(val) || 0;
         return (num * multiplier).toFixed(2);
+    };
+
+    // Execute Ignition (Stake VST)
+    const handleExecuteIgnition = async () => {
+        if (!amount || parseFloat(amount) <= 0) {
+            alertModalContext?.showErrorModal("Please enter a valid amount");
+            return;
+        }
+
+        if (!accountData || accounts.length === 0) {
+            alertModalContext?.showErrorModal("Please connect your wallet");
+            return;
+        }
+
+        setIsLoading(true);
+
+        try {
+            const parser = await SailsIdlParser.new();
+            const gearApi = await GearApi.create({
+                providerAddress: "wss://testnet.vara.network",
+            });
+
+            // Convert amount to raw value (with decimals)
+            const rawAmount = BigInt(Math.floor(parseFloat(amount) * divisor));
+            const convictionLevel = mapConvictionToEnum(selectedConviction.id);
+
+            // Step 1: Approve VST token transfer to Vault contract
+            alertModalContext?.showInfoModal("Approving VST tokens...");
+
+            const sailsVFT = new Sails(parser);
+            sailsVFT.parseIdl(idlVFT);
+            sailsVFT.setProgramId(vstTokenProgramID);
+            sailsVFT.setApi(gearApi);
+
+            const { signer } = await web3FromSource(accountData.meta.source);
+            
+            const approveTransaction = sailsVFT.services.Vft.functions.Approve(
+                vaultProgramID as `0x${string}`,
+                rawAmount
+            );
+            approveTransaction.withAccount(accountData.address, {
+                signer: signer as string | CodecClass<Codec, any[]> as Signer,
+            });
+            await approveTransaction.calculateGas(true, 15);
+
+            const { isFinalized: approveFinalized } = await approveTransaction.signAndSend();
+            await approveFinalized;
+
+            // Step 2: Stake VST in Vault
+            alertModalContext?.showInfoModal("Staking VST tokens...");
+
+            const sailsVault = new Sails(parser);
+            sailsVault.parseIdl(idlVAULT);
+            sailsVault.setProgramId(vaultProgramID);
+            sailsVault.setApi(gearApi);
+
+            const stakeTransaction = sailsVault.services.VaultService.functions.StakeVst(
+                rawAmount,
+                convictionLevel
+            );
+            stakeTransaction.withAccount(accountData.address, {
+                signer: signer as string | CodecClass<Codec, any[]> as Signer,
+            });
+            await stakeTransaction.calculateGas(true, 15);
+
+            const { isFinalized: stakeFinalized } = await stakeTransaction.signAndSend();
+            await stakeFinalized;
+
+            alertModalContext?.showSuccessModal();
+            setAmount("");
+            
+            // Refresh data after successful stake
+            setTimeout(() => {
+                alertModalContext?.hideAlertModal();
+                fetchUserInfo(hexAddress);
+                fetchVaultData(hexAddress);
+            }, 3000);
+
+        } catch (error) {
+            console.error("Staking error:", error);
+            alertModalContext?.showErrorModal(
+                error instanceof Error ? error.message : "Transaction failed"
+            );
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -102,7 +207,13 @@ const StakingConsole: React.FC = () => {
                         <div className={styles.availableBalance}>
                             Available: <span onClick={handleManualRefresh} style={{ cursor: 'pointer' }} title="Click to refresh balance">{formattedBalance} $VST</span>
                         </div>
-                        <button className={styles.stakeBtn}>Execute Ignition</button>
+                        <button 
+                            className={styles.stakeBtn} 
+                            onClick={handleExecuteIgnition}
+                            disabled={isLoading || !amount || parseFloat(amount) <= 0}
+                        >
+                            {isLoading ? "Processing..." : "Execute Ignition"}
+                        </button>
                     </div>
                 </div>
 

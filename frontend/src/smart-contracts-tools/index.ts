@@ -13,6 +13,9 @@ import {
   decodedFungibleTokenMeta,
   idlVFT,
   idlVSTREET,
+  vaultProgramID,
+  idlVAULT,
+  vstTokenProgramID,
 } from "../utils/smartPrograms";
 
 export interface FullState {
@@ -243,4 +246,330 @@ export const getUserInfo = async (
       });
     }
   }
+};
+
+// ============================================
+// VAULT SERVICE TYPES AND FUNCTIONS
+// ============================================
+
+// Conviction levels for staking
+export type ConvictionLevel = "Day1" | "Day7" | "Day14" | "Day28" | "Day90";
+
+// Vault position interface
+export interface VaultPosition {
+  id: bigint;
+  user: string;
+  amount: bigint;
+  conviction_level: ConvictionLevel;
+  multiplier: bigint;
+  power: bigint;
+  start_timestamp: bigint;
+  unlock_timestamp: bigint;
+  is_active: boolean;
+  claimed: boolean;
+}
+
+// Global vault stats interface
+export interface GlobalVaultStats {
+  total_vst_locked: bigint;
+  total_power: bigint;
+  active_positions_count: bigint;
+}
+
+// User vault info interface
+export interface UserVaultInfo {
+  total_staked_vst: bigint;
+  total_power: bigint;
+  active_positions: bigint[];
+  matured_positions: bigint[];
+  position_history: bigint[];
+}
+
+// Helper to get Vault Sails instance
+export const getVaultSails = async () => {
+  return getSails(vaultProgramID, idlVAULT);
+};
+
+// Get global vault statistics
+export const getGlobalVaultStats = async (): Promise<GlobalVaultStats | null> => {
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.GlobalStats(
+      ("0x" + "0".repeat(64)) as `0x${string}`,
+      undefined,
+      undefined
+    );
+    console.log("[VAULT GLOBAL STATS]", result);
+    return result as GlobalVaultStats;
+  } catch (error) {
+    console.error("[VAULT GLOBAL STATS ERROR]:", error);
+    return null;
+  }
+};
+
+// Get user's active positions
+export const getUserActivePositions = async (
+  accountAddress: string
+): Promise<VaultPosition[]> => {
+  if (!accountAddress) return [];
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserActivePositions(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT ACTIVE POSITIONS]", result);
+    return (result as VaultPosition[]) || [];
+  } catch (error) {
+    console.error("[VAULT ACTIVE POSITIONS ERROR]:", error);
+    return [];
+  }
+};
+
+// Get user's matured positions (ready to claim)
+export const getUserMaturedPositions = async (
+  accountAddress: string
+): Promise<VaultPosition[]> => {
+  if (!accountAddress) return [];
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserMaturedPositions(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT MATURED POSITIONS]", result);
+    return (result as VaultPosition[]) || [];
+  } catch (error) {
+    console.error("[VAULT MATURED POSITIONS ERROR]:", error);
+    return [];
+  }
+};
+
+// Get all user positions (for history)
+export const getUserAllPositions = async (
+  accountAddress: string
+): Promise<VaultPosition[]> => {
+  if (!accountAddress) return [];
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserPositions(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT ALL POSITIONS]", result);
+    return (result as VaultPosition[]) || [];
+  } catch (error) {
+    console.error("[VAULT ALL POSITIONS ERROR]:", error);
+    return [];
+  }
+};
+
+// Get user vault info with categorization
+export const getUserVaultInfo = async (
+  accountAddress: string
+): Promise<UserVaultInfo | null> => {
+  if (!accountAddress) return null;
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserVaultInfo(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT USER INFO]", result);
+    return result as UserVaultInfo;
+  } catch (error) {
+    console.error("[VAULT USER INFO ERROR]:", error);
+    return null;
+  }
+};
+
+// Get user total power (sVST)
+export const getUserTotalPower = async (
+  accountAddress: string
+): Promise<bigint> => {
+  if (!accountAddress) return BigInt(0);
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserTotalPower(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT USER POWER]", result);
+    return BigInt(result?.toString() || "0");
+  } catch (error) {
+    console.error("[VAULT USER POWER ERROR]:", error);
+    return BigInt(0);
+  }
+};
+
+// Get user total staked VST
+export const getUserTotalStaked = async (
+  accountAddress: string
+): Promise<bigint> => {
+  if (!accountAddress) return BigInt(0);
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserTotalStaked(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT USER STAKED]", result);
+    return BigInt(result?.toString() || "0");
+  } catch (error) {
+    console.error("[VAULT USER STAKED ERROR]:", error);
+    return BigInt(0);
+  }
+};
+
+// Get time until position unlocks
+export const getTimeUntilUnlock = async (
+  positionId: bigint
+): Promise<bigint> => {
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.TimeUntilUnlock(
+      ("0x" + "0".repeat(64)) as `0x${string}`,
+      undefined,
+      undefined,
+      positionId
+    );
+    console.log("[VAULT TIME UNTIL UNLOCK]", result);
+    return BigInt(result?.toString() || "0");
+  } catch (error) {
+    console.error("[VAULT TIME UNTIL UNLOCK ERROR]:", error);
+    return BigInt(0);
+  }
+};
+
+// Get position details
+export const getPositionDetails = async (
+  positionId: bigint
+): Promise<VaultPosition | null> => {
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.PositionDetails(
+      ("0x" + "0".repeat(64)) as `0x${string}`,
+      undefined,
+      undefined,
+      positionId
+    );
+    console.log("[VAULT POSITION DETAILS]", result);
+    return result as VaultPosition | null;
+  } catch (error) {
+    console.error("[VAULT POSITION DETAILS ERROR]:", error);
+    return null;
+  }
+};
+
+// Map conviction ID to contract enum
+export const mapConvictionToEnum = (convictionId: string): ConvictionLevel => {
+  const mapping: Record<string, ConvictionLevel> = {
+    "x1": "Day1",
+    "x7": "Day7",
+    "x14": "Day14",
+    "x28": "Day28",
+    "x90": "Day90",
+  };
+  return mapping[convictionId] || "Day1";
+};
+
+// Stake VST tokens (returns transaction builder for signing)
+export const stakeVst = async (
+  accountAddress: string,
+  amount: bigint,
+  convictionLevel: ConvictionLevel
+) => {
+  if (!accountAddress) throw new Error("No account address provided");
+
+  const sails = await getVaultSails();
+  console.log("[VAULT STAKE VST] Preparing transaction:", {
+    accountAddress,
+    amount: amount.toString(),
+    convictionLevel,
+  });
+
+  // Build the transaction
+  const tx = sails.services.VaultService.functions.StakeVst(
+    amount,
+    convictionLevel
+  );
+
+  return tx;
+};
+
+// Create approval message for VST token to Vault contract
+export const createVstApproveForVault = async (
+  accountAddress: string,
+  amount: bigint
+) => {
+  const sails = await getSails(vstTokenProgramID, idlVFT);
+  console.log("[VAULT VST APPROVE] Preparing approval:", {
+    spender: vaultProgramID,
+    amount: amount.toString(),
+  });
+
+  const tx = sails.services.Vft.functions.Approve(
+    vaultProgramID as `0x${string}`,
+    amount
+  );
+
+  return tx;
+};
+
+// Unlock and claim a single position
+export const unlockAndClaimPosition = async (
+  accountAddress: string,
+  positionId: bigint
+) => {
+  if (!accountAddress) throw new Error("No account address provided");
+
+  const sails = await getVaultSails();
+  console.log("[VAULT UNLOCK POSITION] Preparing transaction:", {
+    accountAddress,
+    positionId: positionId.toString(),
+  });
+
+  const tx = sails.services.VaultService.functions.UnlockAndClaimPosition(
+    positionId
+  );
+
+  return tx;
+};
+
+// Claim multiple matured positions
+export const claimMultiplePositions = async (
+  accountAddress: string,
+  positionIds: bigint[]
+) => {
+  if (!accountAddress) throw new Error("No account address provided");
+
+  const sails = await getVaultSails();
+  console.log("[VAULT CLAIM MULTIPLE] Preparing transaction:", {
+    accountAddress,
+    positionIds: positionIds.map((id) => id.toString()),
+  });
+
+  const tx = sails.services.VaultService.functions.ClaimMultiplePositions(
+    positionIds
+  );
+
+  return tx;
 };
