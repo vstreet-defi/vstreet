@@ -1,101 +1,101 @@
 @import "../../../App.scss";
 
 .inventory {
-    width: 100%;
-    background: rgba(27, 27, 31, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    border-radius: 16px;
-    overflow: hidden;
+  width: 100%;
+  background: rgba(27, 27, 31, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
 }
 
 .tabs {
-    display: flex;
-    background: rgba(0, 0, 0, 0.2);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 
-    .tab {
-        padding: 16px 24px;
-        background: transparent;
-        border: none;
-        color: rgba(255, 255, 255, 0.4);
-        font-family: 'Montserrat', sans-serif;
-        font-size: 13px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        cursor: pointer;
-        transition: var(--transition-default);
-        position: relative;
-
-        &:hover {
-            color: rgba(255, 255, 255, 0.8);
-        }
-
-        &.active {
-            color: #00ffc4;
-
-            &::after {
-                content: '';
-                position: absolute;
-                bottom: 0;
-                left: 0;
-                width: 100%;
-                height: 2px;
-                background: #00ffc4;
-                box-shadow: 0 0 10px #00ffc4;
-            }
-        }
-    }
-}
-
-.badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 20px;
-    height: 20px;
-    padding: 0 6px;
-    margin-left: 8px;
-    background: linear-gradient(135deg, #00ffc4, #4fff4b);
-    border-radius: 10px;
-    color: #000;
-    font-size: 11px;
-    font-weight: 700;
-}
-
-.claimAllContainer {
-    display: flex;
-    justify-content: flex-end;
-    padding: 12px 20px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.claimAllBtn {
-    padding: 10px 20px;
-    background: linear-gradient(135deg, #00ffc4, #4fff4b);
+  .tab {
+    padding: 16px 24px;
+    background: transparent;
     border: none;
-    border-radius: 8px;
-    color: #000;
-    font-family: 'Montserrat', sans-serif;
+    color: rgba(255, 255, 255, 0.4);
+    font-family: "Montserrat", sans-serif;
     font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 1px;
     cursor: pointer;
     transition: var(--transition-default);
+    position: relative;
 
-    &:hover:not(:disabled) {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 20px rgba(0, 255, 196, 0.4);
+    &:hover {
+      color: rgba(255, 255, 255, 0.8);
     }
 
-    &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
+    &.active {
+      color: #00ffc4;
+
+      &::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: #00ffc4;
+        box-shadow: 0 0 10px #00ffc4;
+      }
     }
+  }
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  margin-left: 8px;
+  background: linear-gradient(135deg, #00ffc4, #4fff4b);
+  border-radius: 10px;
+  color: #000;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.claimAllContainer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.claimAllBtn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #00ffc4, #4fff4b);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  font-family: "Montserrat", sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: var(--transition-default);
+
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 255, 196, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
 }
 
 .content {
-    /* Styles for the content container are now handled by VaultActivePositions but wrapper might need this if tabs are separate */
-    /* Keeping empty or minimal if VaultActivePositions handles padding */
+  /* Styles for the content container are now handled by VaultActivePositions but wrapper might need this if tabs are separate */
+  /* Keeping empty or minimal if VaultActivePositions handles padding */
 }

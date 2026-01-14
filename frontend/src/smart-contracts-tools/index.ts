@@ -291,21 +291,22 @@ export const getVaultSails = async () => {
 };
 
 // Get global vault statistics
-export const getGlobalVaultStats = async (): Promise<GlobalVaultStats | null> => {
-  try {
-    const sails = await getVaultSails();
-    const result = await sails.services.VaultService.queries.GlobalStats(
-      ("0x" + "0".repeat(64)) as `0x${string}`,
-      undefined,
-      undefined
-    );
-    console.log("[VAULT GLOBAL STATS]", result);
-    return result as GlobalVaultStats;
-  } catch (error) {
-    console.error("[VAULT GLOBAL STATS ERROR]:", error);
-    return null;
-  }
-};
+export const getGlobalVaultStats =
+  async (): Promise<GlobalVaultStats | null> => {
+    try {
+      const sails = await getVaultSails();
+      const result = await sails.services.VaultService.queries.GlobalStats(
+        ("0x" + "0".repeat(64)) as `0x${string}`,
+        undefined,
+        undefined
+      );
+      console.log("[VAULT GLOBAL STATS]", result);
+      return result as GlobalVaultStats;
+    } catch (error) {
+      console.error("[VAULT GLOBAL STATS ERROR]:", error);
+      return null;
+    }
+  };
 
 // Get user's active positions
 export const getUserActivePositions = async (
@@ -315,12 +316,13 @@ export const getUserActivePositions = async (
 
   try {
     const sails = await getVaultSails();
-    const result = await sails.services.VaultService.queries.UserActivePositions(
-      accountAddress as `0x${string}`,
-      undefined,
-      undefined,
-      accountAddress as `0x${string}`
-    );
+    const result =
+      await sails.services.VaultService.queries.UserActivePositions(
+        accountAddress as `0x${string}`,
+        undefined,
+        undefined,
+        accountAddress as `0x${string}`
+      );
     console.log("[VAULT ACTIVE POSITIONS]", result);
     return (result as VaultPosition[]) || [];
   } catch (error) {
@@ -337,12 +339,13 @@ export const getUserMaturedPositions = async (
 
   try {
     const sails = await getVaultSails();
-    const result = await sails.services.VaultService.queries.UserMaturedPositions(
-      accountAddress as `0x${string}`,
-      undefined,
-      undefined,
-      accountAddress as `0x${string}`
-    );
+    const result =
+      await sails.services.VaultService.queries.UserMaturedPositions(
+        accountAddress as `0x${string}`,
+        undefined,
+        undefined,
+        accountAddress as `0x${string}`
+      );
     console.log("[VAULT MATURED POSITIONS]", result);
     return (result as VaultPosition[]) || [];
   } catch (error) {
@@ -482,11 +485,11 @@ export const getPositionDetails = async (
 // Map conviction ID to contract enum
 export const mapConvictionToEnum = (convictionId: string): ConvictionLevel => {
   const mapping: Record<string, ConvictionLevel> = {
-    "x1": "Day1",
-    "x7": "Day7",
-    "x14": "Day14",
-    "x28": "Day28",
-    "x90": "Day90",
+    x1: "Day1",
+    x7: "Day7",
+    x14: "Day14",
+    x28: "Day28",
+    x90: "Day90",
   };
   return mapping[convictionId] || "Day1";
 };
@@ -547,9 +550,8 @@ export const unlockAndClaimPosition = async (
     positionId: positionId.toString(),
   });
 
-  const tx = sails.services.VaultService.functions.UnlockAndClaimPosition(
-    positionId
-  );
+  const tx =
+    sails.services.VaultService.functions.UnlockAndClaimPosition(positionId);
 
   return tx;
 };
@@ -567,9 +569,8 @@ export const claimMultiplePositions = async (
     positionIds: positionIds.map((id) => id.toString()),
   });
 
-  const tx = sails.services.VaultService.functions.ClaimMultiplePositions(
-    positionIds
-  );
+  const tx =
+    sails.services.VaultService.functions.ClaimMultiplePositions(positionIds);
 
   return tx;
 };

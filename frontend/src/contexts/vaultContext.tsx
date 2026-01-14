@@ -47,7 +47,9 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
   const [activePositions, setActivePositions] = useState<VaultPosition[]>([]);
   const [maturedPositions, setMaturedPositions] = useState<VaultPosition[]>([]);
   const [allPositions, setAllPositions] = useState<VaultPosition[]>([]);
-  const [userVaultInfo, setUserVaultInfo] = useState<UserVaultInfo | null>(null);
+  const [userVaultInfo, setUserVaultInfo] = useState<UserVaultInfo | null>(
+    null
+  );
   const [totalPower, setTotalPower] = useState<bigint>(BigInt(0));
   const [totalStaked, setTotalStaked] = useState<bigint>(BigInt(0));
   const [isLoading, setIsLoading] = useState(false);
@@ -63,24 +65,16 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
     }
   }, []);
 
-  const fetchVaultData = useCallback(
-    async (hexAddress: string) => {
-      if (!hexAddress) return;
-      
-      setIsLoading(true);
-      console.log("VaultContext: Starting fetch for", hexAddress);
+  const fetchVaultData = useCallback(async (hexAddress: string) => {
+    if (!hexAddress) return;
 
-      try {
-        // Fetch all data in parallel for efficiency
-        const [
-          active,
-          matured,
-          all,
-          vaultInfo,
-          power,
-          staked,
-          stats,
-        ] = await Promise.all([
+    setIsLoading(true);
+    console.log("VaultContext: Starting fetch for", hexAddress);
+
+    try {
+      // Fetch all data in parallel for efficiency
+      const [active, matured, all, vaultInfo, power, staked, stats] =
+        await Promise.all([
           getUserActivePositions(hexAddress),
           getUserMaturedPositions(hexAddress),
           getUserAllPositions(hexAddress),
@@ -90,31 +84,29 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
           getGlobalVaultStats(),
         ]);
 
-        setActivePositions(active);
-        setMaturedPositions(matured);
-        setAllPositions(all);
-        setUserVaultInfo(vaultInfo);
-        setTotalPower(power);
-        setTotalStaked(staked);
-        if (stats) {
-          setGlobalStats(stats);
-        }
-
-        console.log("VaultContext: Data fetched successfully", {
-          activePositions: active.length,
-          maturedPositions: matured.length,
-          allPositions: all.length,
-          totalPower: power.toString(),
-          totalStaked: staked.toString(),
-        });
-      } catch (error) {
-        console.error("VaultContext: Failed to fetch vault data:", error);
-      } finally {
-        setIsLoading(false);
+      setActivePositions(active);
+      setMaturedPositions(matured);
+      setAllPositions(all);
+      setUserVaultInfo(vaultInfo);
+      setTotalPower(power);
+      setTotalStaked(staked);
+      if (stats) {
+        setGlobalStats(stats);
       }
-    },
-    []
-  );
+
+      console.log("VaultContext: Data fetched successfully", {
+        activePositions: active.length,
+        maturedPositions: matured.length,
+        allPositions: all.length,
+        totalPower: power.toString(),
+        totalStaked: staked.toString(),
+      });
+    } catch (error) {
+      console.error("VaultContext: Failed to fetch vault data:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   return (
     <VaultContext.Provider
