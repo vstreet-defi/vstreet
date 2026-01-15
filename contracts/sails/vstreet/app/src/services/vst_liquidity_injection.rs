@@ -484,10 +484,17 @@ where VftClient: Vft, {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
-        let mla = (user_info.cv * state_mut.ltv) / 100;
-        user_info.mla = mla;
+        let max_loan = (user_info.cv * state_mut.ltv) / 100;
 
-        format!("MLA: {:?}", mla)
+        let remaining = if max_loan > user_info.loan_amount {
+            max_loan - user_info.loan_amount
+        } else {
+            0
+        };
+
+        user_info.mla = remaining;
+
+        format!("MLA: {:?}", remaining)
     }
 
     fn update_cv_and_mla_for_all_users(&mut self) {
@@ -528,7 +535,7 @@ where VftClient: Vft, {
         }
     }
 
-    //Calculate utilization factor = (Total deposited * Total borrowed) / 100
+    // Calculate utilization factor = (Total borrowed / Total deposited) * 100
     pub fn calculate_utilization_factor(&mut self) -> u128 {
         let state_mut = self.state_mut();
 
@@ -541,7 +548,7 @@ where VftClient: Vft, {
             return 0;
         }
 
-        let utilization_factor = (((total_borrowed * decimals_factor) / total_deposited) * 100) / decimals_factor;
+        let utilization_factor = (total_borrowed * decimals_factor * 100) / total_deposited;
         state_mut.utilization_factor = utilization_factor;
         return utilization_factor;
     }
