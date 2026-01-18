@@ -93,14 +93,9 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
     }
   };
 
-  const renderFlag = (item: string) => {
-    return null;
-  };
-
   const renderItems = () =>
     items.map((item, index) => (
       <div className={styles.itemWrapper} key={index}>
-        {renderFlag(item)}
         <button
           className={`${styles.navTab} ${item.toLowerCase() === activeTab && isDapp ? styles.active : ""
             }`}
@@ -121,10 +116,6 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
         <div className={styles.itemsContainer}>{renderItems()}</div>
         {isAccountVisible || location.pathname === "/dapp" ? (
           <div className={styles.walletContainer}>
-            {/* Note: DisplayWallet might need internal refactoring to fully match the design, 
-                 but wrapping it here allows us to apply the container styles. 
-                 Ideally DisplayWallet should be broken down or styled via props/context.
-                 For now, we wrap it. */}
             <DisplayWallet />
           </div>
         ) : (
