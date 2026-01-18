@@ -1,10 +1,5 @@
 import { ProgramMetadata } from "@gear-js/api";
 
-//Last Refactored Contract missing APR and Deposits (needed to deposit and borrow first to get APR)
-// "0x0e16095ec8aa2d4a32a881b74da54f6b0db407951597ca9b74a135a88a758c49"
-//user rewrds fix 5
-// "0xa13193606f0335101f0169fef005976b02accc0f5e7f2f8a7eb86b467e63cd39"
-
 //Working Contract with Vaults & Liquidity
 export const vstreetProgramID =
   "0x42fd0436f6d8ede8b0097c81e814a1f107ad3e1025add3be9ba7fe1a884b52e2";
