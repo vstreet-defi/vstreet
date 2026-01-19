@@ -1,5 +1,13 @@
 import React from "react";
-import { Box, Image, Stack, Text, Heading, Flex, Container, Button } from "@chakra-ui/react";
+import {
+  Box,
+  Image,
+  Stack,
+  Text,
+  Flex,
+  Container,
+  Button,
+} from "@chakra-ui/react";
 import LogoVaraWhite from "../../../assets/images/Powered-by-vara.png";
 import hubStyles from "../../molecules/cards/HubCard.module.scss";
 import CornerAccent from "components/atoms/CornerAccent/CornerAccent";
@@ -7,29 +15,32 @@ import { RiFlashlightLine, RiShieldCheckLine, RiCpuLine } from "react-icons/ri";
 
 /**
  * Shilling Section Component
- * Highlights the partnership with Vara Network and key technical advantages 
+ * Highlights the partnership with Vara Network and key technical advantages
  * of the underlying infrastructure.
  */
 function Shilling() {
   const specs = [
     {
       title: "High-Speed Transactions",
-      content: "Vara's Gear Protocol ensures rapid transactions at lower fees, eliminating network congestion.",
+      content:
+        "Vara's Gear Protocol ensures rapid transactions at lower fees, eliminating network congestion.",
       icon: RiFlashlightLine,
       accent: "var(--color-secondary)",
     },
     {
       title: "Enhanced Security",
-      content: "The Actor model enables secure, independent smart contract operation with minimal centralization risks.",
+      content:
+        "The Actor model enables secure, independent smart contract operation with minimal centralization risks.",
       icon: RiShieldCheckLine,
       accent: "var(--color-primary)",
     },
     {
       title: "Innovative Technology",
-      content: "Persistent Memory and WASM VM optimize performance for advanced financial services.",
+      content:
+        "Persistent Memory and WASM VM optimize performance for advanced financial services.",
       icon: RiCpuLine,
       accent: "var(--color-secondary)",
-    }
+    },
   ];
 
   return (
@@ -48,7 +59,12 @@ function Shilling() {
       <div className="aura-glow aura-glow-secondary top-right" />
       <div className="aura-glow aura-glow-primary bottom-left" />
 
-      <Container maxW="100vw" px={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "12rem" }} position="relative" zIndex={1}>
+      <Container
+        maxW="100vw"
+        px={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "12rem" }}
+        position="relative"
+        zIndex={1}
+      >
         <Flex
           direction={{ base: "column", lg: "row" }}
           gap={{ base: 12, lg: 20 }}
@@ -75,7 +91,8 @@ function Shilling() {
               lineHeight="1.7"
               maxW="500px"
             >
-              vStreet is built on Vara Network, leveraging next-generation blockchain technology for unparalleled DeFi performance.
+              vStreet is built on Vara Network, leveraging next-generation
+              blockchain technology for unparalleled DeFi performance.
             </Text>
 
             <Button
@@ -104,14 +121,21 @@ function Shilling() {
           <Stack flex={1} spacing={6} w="100%">
             {specs.map((spec, index) => {
               return (
-                <Box key={index} className={hubStyles.hubCard} style={{ minHeight: "auto", padding: "24px" }}>
+                <Box
+                  key={index}
+                  className={hubStyles.hubCard}
+                  style={{ minHeight: "auto", padding: "24px" }}
+                >
                   <div className={hubStyles.glow} />
                   <CornerAccent position="top-left" length={15} />
                   <CornerAccent position="bottom-right" length={15} />
 
                   <div className={hubStyles.content}>
                     <Flex align="center" gap={4} mb={3}>
-                      <Box className={hubStyles.iconWrapper} style={{ fontSize: "24px", color: spec.accent }}>
+                      <Box
+                        className={hubStyles.iconWrapper}
+                        style={{ fontSize: "24px", color: spec.accent }}
+                      >
                         {React.createElement(spec.icon as any)}
                       </Box>
                       <Text

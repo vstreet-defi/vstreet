@@ -4,7 +4,7 @@ import TokenSelectorBorrowUnder from "components/atoms/Token-Selector-Borrow/Tok
 import styles from "./Card.module.scss";
 import PercentageSelector from "../Percentage-Selector/PercentageSelector";
 import ButtonGradFillBorrow from "components/atoms/Button-Gradient-Fill/ButtonGradFillBorrow";
-import { useEffect, useState } from "react";
+import { useEffect, useState } from "react"; // Importing React hooks
 import { useWallet } from "contexts/accountContext";
 import { useUserInfo } from "contexts/userInfoContext";
 import { formatWithDecimalsVARA, formatWithCommasVUSD } from "utils";
@@ -32,10 +32,6 @@ function FundsCardBorrow({ buttonLabel, mode }: Props) {
 
   const handleInputChange = (value: string) => {
     setInputValue(value);
-  };
-
-  const convertHexToDecimal = (hexValue: string) => {
-    return hexToBn(hexValue).toString();
   };
 
   useEffect(() => {
@@ -87,8 +83,8 @@ function FundsCardBorrow({ buttonLabel, mode }: Props) {
           {isBorrow
             ? "Available to Borrow"
             : isPay
-            ? "Current Debt"
-            : "Available"}
+              ? "Current Debt"
+              : "Available"}
           :{" "}
           <span>
             {getActiveBalance()} {getSymbol()}

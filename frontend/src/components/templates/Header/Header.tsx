@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DisplayWallet } from "components/organisms/Wallet/DisplayWallet";
-import Flag from "../../atoms/Flag/Flag";
 import Logo from "../../../assets/images/icons/vStreet-Navbar-Color-White.png";
 import styles from "./Header.module.scss";
 import BurgerMenu from "components/organisms/BurgerMenu";
@@ -28,12 +27,13 @@ type Props = {
 
 const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   const [activeTab, setActiveTab] = useState<string | null>(
-    DappTab.Supply.toLowerCase()
+    DappTab.Supply.toLowerCase(),
   );
   const navigate = useNavigate();
   const location = useLocation();
   const isTablet = window.innerWidth < 822;
-  const isDapp = location.pathname.startsWith("/dapp") || location.pathname === "/vst";
+  const isDapp =
+    location.pathname.startsWith("/dapp") || location.pathname === "/vst";
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -102,8 +102,9 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
       <div className={styles.itemWrapper} key={index}>
         {renderFlag(item)}
         <button
-          className={`${styles.navTab} ${item.toLowerCase() === activeTab && isDapp ? styles.active : ""
-            }`}
+          className={`${styles.navTab} ${
+            item.toLowerCase() === activeTab && isDapp ? styles.active : ""
+          }`}
           onClick={() => handleClick(item)}
         >
           {item}

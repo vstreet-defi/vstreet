@@ -1,12 +1,4 @@
-import {
-  Container,
-  Stack,
-  Flex,
-  Box,
-  Text,
-  Button,
-  Heading,
-} from "@chakra-ui/react";
+import { Container, Stack, Box, Button, Heading } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { CPUCityScene } from "../../visuals/CPUCityScene";
 import styles from "./Hero.module.scss";
@@ -17,7 +9,7 @@ type Props = {
 
 /**
  * Hero Section Component
- * Displays the main value proposition, primary CTA (Launch App), 
+ * Displays the main value proposition, primary CTA (Launch App),
  * and an immersive 3D background scene.
  */
 function Hero({ isMobile }: Props) {
@@ -41,12 +33,7 @@ function Hero({ isMobile }: Props) {
       <div className="aura-glow aura-glow-primary top-right" />
       <div className="aura-glow aura-glow-secondary bottom-left" />
 
-      <Box
-        w="100%"
-        h={"100%"}
-        position="relative"
-        zIndex={1}
-      >
+      <Box w="100%" h={"100%"} position="relative" zIndex={1}>
         <Stack
           pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "12rem" }}
           pr={{ base: "1rem" }}
@@ -79,7 +66,8 @@ function Hero({ isMobile }: Props) {
               maxW="850px"
               lineHeight="1.6"
             >
-              Scale your assets on the most advanced financial engine in Vara the network.
+              Scale your assets on the most advanced financial engine in Vara
+              the network.
             </Heading>
 
             <Stack

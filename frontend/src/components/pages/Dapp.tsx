@@ -19,7 +19,6 @@ import { FundsManagerBorrow } from "components/organisms/FundsManagerBorrow/Fund
 import StatsPanel from "components/organisms/StatsPanel/StatsPanel";
 import StakingInfo from "components/organisms/StakingInfo/StakingInfo";
 import LoanInfo from "components/organisms/LoanInfo/LoanInfo";
-import ComingSoon from "components/atoms/ComingSoon/ComingSoon";
 import VaultsManager from "components/organisms/VaultsManager/VaultsManager";
 import ForgeManager from "components/organisms/ForgeManager/ForgeManager";
 
@@ -28,7 +27,7 @@ import { isMobileDevice } from "utils/isMobile";
 
 /**
  * DappPage Component
- * Main entry point for the dApp interface. Handles tab navigation, 
+ * Main entry point for the dApp interface. Handles tab navigation,
  * page transitions, and conditional rendering of sidebar/content areas.
  */
 function DappPage() {
@@ -37,7 +36,9 @@ function DappPage() {
 
   // Determine current tab from URL path or search params, default to Supply
   const isVSTPath = location.pathname === "/vst";
-  const tab = isVSTPath ? "$vst" : (searchParams.get("tab") || DappTab.Supply.toLowerCase());
+  const tab = isVSTPath
+    ? "$vst"
+    : searchParams.get("tab") || DappTab.Supply.toLowerCase();
 
   const isSupplyTab = tab === DappTab.Supply.toLowerCase();
   const isBorrowTab = tab === DappTab.Borrow.toLowerCase();
@@ -95,7 +96,9 @@ function DappPage() {
                   </>
                 )
               }
-              sidebarLeft={isBorrowTab || isVaultsTab || isVSTTab ? null : <StatsPanel />}
+              sidebarLeft={
+                isBorrowTab || isVaultsTab || isVSTTab ? null : <StatsPanel />
+              }
               mainContent={
                 isSupplyTab ? (
                   <FundsManager />
@@ -108,7 +111,11 @@ function DappPage() {
                 )
               }
               sidebarRight={
-                isSupplyTab ? <StakingInfo /> : (isVaultsTab || isVSTTab) ? null : <LoanInfo />
+                isSupplyTab ? (
+                  <StakingInfo />
+                ) : isVaultsTab || isVSTTab ? null : (
+                  <LoanInfo />
+                )
               }
             />
           </motion.div>
