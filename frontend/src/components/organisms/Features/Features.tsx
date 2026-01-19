@@ -1,81 +1,62 @@
-import { Container, Flex, Box, Heading, Text, Stack } from "@chakra-ui/react";
+import { Container, Box, Heading, Text, SimpleGrid, Stack } from "@chakra-ui/react";
 import { CardFeatures } from "components/molecules/cards/CardFeatures";
-import Arrow from "../../../assets/images/icons/Arrow.svg";
-import bg from "../../../assets/images/backgrounds/ServicesBG.jpg";
-import { Partners } from "../Partners/Partners";
-import { PartnersMobile } from "../Partners/PartnersMobile";
+
 type Props = {
   isMobile: boolean;
 };
 
 function Features({ isMobile }: Props) {
   return (
-    <Container p="0" maxW="100vw" bgGradient="linear(to-l, #121215 ,#284736)">
+    <Container
+      p="0"
+      maxW="100vw"
+      bg="var(--color-bg-main)"
+      minH="100vh"
+      display="flex"
+      alignItems="center"
+    >
       <Box
         w="100%"
-        bgImg={bg}
-        bgRepeat="no-repeat"
-        bgPos="center"
-        bgSize="cover"
+        position="relative"
+        py={{ base: 10, md: 20 }}
+        px={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "12rem" }}
       >
-        {window.innerWidth < 748 ? <PartnersMobile /> : <Partners />}
-
-        <Stack
-          pl={{ base: "1rem", md: "3rem", xl: "8rem", "2xl": "15rem" }}
-          pr={{ base: "1rem" }}
-          align="center"
-          spacing={{ base: 8, md: 10 }}
-          py={{ base: 20, md: 28 }}
-          direction={{ base: "column", md: "row" }}
-        >
-          <Flex
-            flex={1}
-            justify="center"
-            align="center"
-            position="relative"
-            w="100%"
-            flexDir="column"
-          >
+        <SimpleGrid columns={{ base: 1, xl: 2 }} spacing={{ base: 12, xl: 20 }} alignItems="center">
+          <Stack spacing={8}>
             <Heading
-              bgGradient="linear(to-b, #00FFC4, #4FFF4B)"
+              bgGradient="var(--gradient-primary)"
               bgClip="text"
-              fontSize={{ base: "3rem", sm: "5rem", lg: "48px" }}
-              fontWeight="extrabold"
+              fontSize={{ base: "2.5rem", sm: "4rem", lg: "56px" }}
+              lineHeight="1.2"
+              fontWeight="900"
               fontFamily={"'Roboto Mono', monospace"}
+              textTransform="uppercase"
+              letterSpacing="-1px"
             >
-              Make your staked $VARA liquid
+              Make your staked <br /> $VARA liquid
             </Heading>
             <Text
-              mt="3rem"
-              fontSize={{ md: "12px", lg: "24px" }}
-              fontFamily={"'Roboto Mono', monospace"}
-              fontWeight="400px"
-              color="#FFF"
+              fontSize={{ base: "1rem", lg: "20px" }}
+              fontFamily={"'Inter', sans-serif"}
+              fontWeight="400"
+              color="var(--color-text-secondary)"
+              lineHeight="1.6"
+              maxW="700px"
             >
               Leverage your staked $VARA as collateral for stablecoin borrowing.
-              <br /> <br></br>
               Our streamlined platform offers secure, transparent lending,
               giving you the flexibility to enhance your investment strategies
               effectively.
             </Text>
-          </Flex>
-
-          <Stack
-            flex={1}
-            spacing={{ base: 5, md: 10 }}
-            mr={{ md: "0", lg: "8rem" }}
-          >
-            <Flex flexDir="column" alignItems="center">
-              <CardFeatures title="Stake Vara" />
-              <img src={Arrow} alt="Arrow" />
-              <CardFeatures title="LST $Vara as Collateral" />
-              <img src={Arrow} alt="Arrow" />
-              <CardFeatures title="Borrow Stable Coins" />
-              <img src={Arrow} alt="Arrow" />
-              <CardFeatures title="DeFi Strategy Legos" />
-            </Flex>
           </Stack>
-        </Stack>
+
+          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} w="100%">
+            <CardFeatures title="Stake Vara" />
+            <CardFeatures title="LST $Vara as Collateral" />
+            <CardFeatures title="Borrow Stable Coins" />
+            <CardFeatures title="DeFi Strategy Legos" />
+          </SimpleGrid>
+        </SimpleGrid>
       </Box>
     </Container>
   );

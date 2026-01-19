@@ -4,8 +4,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-top: 0.5rem;
-  margin-bottom: 0.5rem;
+  margin: 0;
 
   /* Background matching Claim Rewards but more vibrant */
   background: rgba(0, 255, 196, 0.18);
@@ -15,7 +14,7 @@
   border-radius: 8px;
 
   /* Text matching Claim Rewards but slightly larger for main action */
-  font-family: 'Montserrat', sans-serif;
+  font-family: "Montserrat", sans-serif;
   font-size: 18px;
   font-weight: 700;
   color: #00ffc4;

@@ -94,7 +94,7 @@
 }
 
 .availableBalance {
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.6);
@@ -111,7 +111,7 @@
 
   span {
     color: var(--color-primary);
-    font-family: 'Roboto Mono', monospace;
+    font-family: "Roboto Mono", monospace;
     margin-left: 4px;
 
     @media (max-width: 480px) {
@@ -192,4 +192,32 @@
 .BasicCard {
   // Legacy support if needed
   width: 100%;
+}
+
+.CardFeature {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(0, 255, 196, 0.3);
+  border-radius: 4px; /* Slightly angular */
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10px;
+    height: 10px;
+    border-top: 2px solid var(--color-primary);
+    border-left: 2px solid var(--color-primary);
+  }
+
+  &:hover {
+    background: rgba(0, 255, 196, 0.05);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 20px rgba(0, 255, 196, 0.2);
+    transform: translateY(-2px);
+  }
 }

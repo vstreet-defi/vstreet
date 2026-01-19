@@ -3,33 +3,28 @@ import styles from "./Card.module.scss";
 
 function CardFeatures(props: { title: string }) {
   return (
-    <Flex flexDir="column">
-      <Box
-        m={{ base: ".5rem", sm: "1rem", md: "2rem" }}
-        borderWidth="1px"
-        pt="1rem"
-        pb="1rem"
-        pl={"2rem"}
-        pr={"2rem"}
-        className={styles.CardFeature}
-        style={{
-          boxShadow: "0px 14px 25.4px -3px rgba(59, 255, 106, 0.52)",
-          backdropFilter: "blur(5.449999809265137px)",
-        }}
-        justifyItems="center"
+    <Box
+      w="100%"
+      py="1.5rem"
+      px={"2rem"}
+      className={styles.CardFeature}
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      minH="120px"
+    >
+      <Text
+        fontSize={{ base: "18px", lg: "20px" }}
+        fontWeight="700"
+        color="var(--color-primary)"
+        fontFamily={"'Roboto Mono', monospace"}
+        textAlign="center"
+        textTransform="uppercase"
+        letterSpacing="1px"
       >
-        <Text
-          fontSize={{ lg: "24px" }}
-          fontWeight={"500"}
-          color="#00FFC4"
-          fontFamily={"'Roboto Mono', monospace"}
-          alignSelf="center"
-          justifyContent={"center"}
-        >
-          {props.title}
-        </Text>
-      </Box>
-    </Flex>
+        {props.title}
+      </Text>
+    </Box>
   );
 }
 
