@@ -41,13 +41,7 @@ where
     let mla = user_info.mla;
     let loan_amount = user_info.loan_amount;
 
-    let scaled_amount = amount
-        .checked_mul(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
+    let scaled_amount = amount;
 
     let future_loan_amount = loan_amount
         .checked_add(scaled_amount)
@@ -56,6 +50,13 @@ where
             service.notify_error(error_message.clone());
             error_message
         })?;
+
+    // Ensure user has collateral before allowing loan
+    if user_info.cv == 0 {
+        let error_message = "Insufficient collateral: cv is 0".to_string();
+        service.notify_error(error_message.clone());
+        return Err(error_message);
+    }
 
     if amount > state_mut.config.max_loan_amount || amount == 0 || future_loan_amount > mla {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
@@ -111,6 +112,8 @@ where
 
     service.update_user_ltv(caller);
     service.calculate_apr();
+
+    let _ = service.calculate_mla(caller);
 
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
 
@@ -171,22 +174,15 @@ where
     }
 
     // Update loan amount and total borrowed
+    let loan_amount_to_subtract = user_info.loan_amount;
+
     user_info.is_loan_active = false;
     user_info.loan_amount = 0;
     user_info.loan_amount_usdc = 0;
 
     state_mut.total_borrowed = state_mut
         .total_borrowed
-        .checked_sub(
-            user_info
-                .loan_amount
-                .checked_mul(decimals_factor)
-                .ok_or_else(|| {
-                    let error_message = ERROR_INVALID_AMOUNT.to_string();
-                    service.notify_error(error_message.clone());
-                    error_message
-                })?,
-        )
+        .checked_sub(loan_amount_to_subtract)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -194,6 +190,7 @@ where
         })?;
     
     service.update_user_ltv(caller);
+    let _ = service.calculate_mla(caller);
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
     
     service.notify_loan_payed(loan_amount);
@@ -222,9 +219,7 @@ where
         }
     };
 
-    let loan_amount = user_info.loan_amount_usdc;
-
-    if amount > state_mut.config.max_loan_amount || amount == 0 || amount > loan_amount {
+    if amount == 0 || amount > user_info.loan_amount {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
@@ -240,24 +235,18 @@ where
         return sails_rs::Err(error_message);
     }
 
-    // Update loan amount and total borrowed
-    let scaled_amount = amount
-        .checked_mul(decimals_factor)
+    // Convert scaled amount to USDC for state updates and notification
+    let amount_usdc = amount
+        .checked_div(decimals_factor)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
             error_message
         })?;
 
-    if scaled_amount == 0 || scaled_amount > user_info.loan_amount {
-        let error_message = ERROR_INVALID_AMOUNT.to_string();
-        service.notify_error(error_message.clone());
-        return sails_rs::Err(error_message);
-    }
-
     user_info.loan_amount = user_info
         .loan_amount
-        .checked_sub(scaled_amount)
+        .checked_sub(amount)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -266,7 +255,7 @@ where
 
     user_info.loan_amount_usdc = user_info
         .loan_amount_usdc
-        .checked_sub(amount)
+        .checked_sub(amount_usdc)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -275,7 +264,7 @@ where
 
     state_mut.total_borrowed = state_mut
         .total_borrowed
-        .checked_sub(scaled_amount)
+        .checked_sub(amount)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -287,6 +276,7 @@ where
     }
 
     service.update_user_ltv(caller);
+    let _ = service.calculate_mla(caller);
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
     
     service.notify_loan_payed(amount);

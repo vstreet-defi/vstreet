@@ -42,17 +42,22 @@ function FundsCardBorrow({ buttonLabel, mode }: Props) {
     if (selectedAccount) {
       fetchBalance();
       fetchUserInfo(hexAddress);
-
-      const balanceConverted = convertHexToDecimal(balance.toString());
-      setBalanceVara(Number(balanceConverted));
     }
-  }, [selectedAccount, balance, hexAddress]);
+  }, [selectedAccount, hexAddress, fetchBalance, fetchUserInfo]);
+
+  useEffect(() => {
+    if (balance) {
+      console.log("Balance:", balance);
+      setBalanceVara(Number(balance));
+    }
+  }, [balance]);
 
   useEffect(() => {
     if (userInfo) {
       setDepositedBalance(userInfo.available_to_withdraw_vara || 0);
       setLoanAmount(userInfo.loan_amount || 0);
       setMla(userInfo.mla || 0);
+      console.log("MAXIMUM LOAN AMOUNT:", mla);
     }
   }, [userInfo]);
 
@@ -66,22 +71,38 @@ function FundsCardBorrow({ buttonLabel, mode }: Props) {
 
   const getFormattedBalance = () => {
     const bal = getActiveBalance();
-    return isCollateralMode ? formatWithDecimalsVARA(bal * 1e12) : formatWithCommasVUSD(bal);
+    return isCollateralMode
+      ? formatWithDecimalsVARA(bal * 1e12)
+      : formatWithCommasVUSD(mla);
   };
 
   const getSymbol = () => (isCollateralMode ? "TVARA" : "vUSD");
+
+  console.log("Balance Vara:", balanceVara);
 
   return (
     <div className={styles.fundsCard}>
       <div className={styles.inputSection}>
         <div className={styles.availableBalance}>
-          {isBorrow ? "Available to Borrow" : isPay ? "Current Debt" : "Available"}: <span>{getFormattedBalance()} {getSymbol()}</span>
+          {isBorrow
+            ? "Available to Borrow"
+            : isPay
+            ? "Current Debt"
+            : "Available"}
+          :{" "}
+          <span>
+            {getActiveBalance()} {getSymbol()}
+          </span>
         </div>
 
         <div className={styles.inputRow}>
           <div className={styles.inputWrapper}>
             <div className={styles.inputLabel}>Token</div>
-            {isCollateralMode ? <TokenSelectorBorrow /> : <TokenSelectorBorrowUnder />}
+            {isCollateralMode ? (
+              <TokenSelectorBorrow />
+            ) : (
+              <TokenSelectorBorrowUnder />
+            )}
           </div>
 
           <div className={styles.inputWrapper}>

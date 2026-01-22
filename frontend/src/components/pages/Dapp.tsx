@@ -72,9 +72,6 @@ function DappPage() {
           isMobile={isMobileDevice()}
         />
 
-        {/* AlertModal at root level - visible on ALL tabs */}
-        <AlertModal />
-
         <AnimatePresence mode="wait">
           <motion.div
             key={tab}
@@ -88,11 +85,14 @@ function DappPage() {
             <DappTemplate
               bannerComponent={
                 isVaultsTab || isVSTTab ? null : (
-                  isSupplyTab ? (
-                    <CollateralAndBorrowBanner text="DEPOSIT AND EARN REWARDS" />
-                  ) : (
-                    <CollateralAndBorrowBanner />
-                  )
+                  <>
+                    <AlertModal />
+                    {isSupplyTab ? (
+                      <CollateralAndBorrowBanner text="DEPOSIT AND EARN REWARDS" />
+                    ) : (
+                      <CollateralAndBorrowBanner />
+                    )}
+                  </>
                 )
               }
               sidebarLeft={isBorrowTab || isVaultsTab || isVSTTab ? null : <StatsPanel />}

@@ -133,7 +133,7 @@ where
     };
 
     // Check if amount is valid
-    if amount > state_mut.config.max_liquidity_withdraw || amount == 0 || amount > user_info.balance {
+    if amount > state_mut.config.max_liquidity_withdraw || amount == 0 {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
@@ -276,23 +276,9 @@ where
             error_message
         })?;
 
-    user_info.rewards_usdc = user_info
-        .rewards_usdc
-        .checked_sub(user_info.rewards_usdc)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
-    user_info.rewards_usdc_withdrawn = user_info
-        .rewards_usdc_withdrawn
-        .checked_add(user_info.rewards_usdc)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
+    // Recalculate USDC display values from the scaled values
+    user_info.rewards_usdc = user_info.rewards / decimals_factor;
+    user_info.rewards_usdc_withdrawn = user_info.rewards_withdrawn / decimals_factor;
 
     state_mut.total_rewards_distributed = state_mut
         .total_rewards_distributed
@@ -316,12 +302,6 @@ where
             service.notify_error(error_message.clone());
             error_message
         })?;
-
-    if rewards_to_withdraw == 0 || rewards_to_withdraw > state_mut.available_rewards_pool {
-        let error_message = ERROR_REWARDS_POOL_INSUFFICIENT.to_string();
-        service.notify_error(error_message.clone());
-        return sails_rs::Err(error_message);
-    }
 
     // Transfer tokens from contract to user
     let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
@@ -433,7 +413,7 @@ where
         })?;
 
     // Check if amount is valid
-    if amount_vara > state_mut.config.max_collateral_withdraw || amount_vara <= 0 || amount_vara > user_info.available_to_withdraw_vara {
+    if amount_vara > state_mut.config.max_collateral_withdraw || amount_vara == 0 || amount_vara > user_info.available_to_withdraw_vara {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);

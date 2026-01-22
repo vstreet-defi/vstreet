@@ -1,13 +1,21 @@
 import { ProgramMetadata } from "@gear-js/api";
 
-//Working Contract with Vaults & Liquidity
+//Last Refactored Contract missing APR and Deposits (needed to deposit and borrow first to get APR)
+// "0x0e16095ec8aa2d4a32a881b74da54f6b0db407951597ca9b74a135a88a758c49"
+//user rewrds fix 5
+// "0xa13193606f0335101f0169fef005976b02accc0f5e7f2f8a7eb86b467e63cd39"
+
+//Working Contract with APR
 export const vstreetProgramID =
-  "0x42fd0436f6d8ede8b0097c81e814a1f107ad3e1025add3be9ba7fe1a884b52e2";
+  (process.env.REACT_APP_VSTREET_PROGRAM_ID as `0x${string}`) ||
+  "0xbaba99d26838dc61816d447d87659ba9923c06c5951faca3e1752379cb5e56bf";
 
 //This meta is not longer used, use idlVSTREET instead
-// decodedVstreetMeta was removed as we now use Sails IDL exclusively.
+const vstreetMeta =
+  "0002000100000000000104000000010600000000000000000109000000911138000808696f34496e69744c69717569646974790000040148737461626c65636f696e5f6164647265737304011c4163746f724964000004082c677072696d6974697665731c4163746f724964000004000801205b75383b2033325d000008000003200000000c000c0000050300100808696f3c4c6971756964697479416374696f6e0001141c4465706f7369740400140110753132380000004457697468647261774c69717569646974790400140110753132380001003c5769746864726177526577617264730002004c4d6f64696679546f74616c426f72726f776564040014011075313238000300684d6f64696679417661696c61626c6552657761726473506f6f6c04001401107531323800040000140000050700180418526573756c74080454011c044501200108084f6b04001c000000000c45727204002000000100001c0808696f384c69717569646974794576656e740001182c496e697469616c697a6564000000244465706f7369746564040014011075313238000100484c697175696469747957697468647261776e040014011075313238000200405265776172647357697468647261776e04001401107531323800030054546f74616c426f72726f7765644d6f64696669656404001401107531323800040070417661696c61626c6552657761726473506f6f6c4d6f64696669656404001401107531323800050000200808696f144572726f72000114285a65726f416d6f756e7400000034496e76616c6964416d6f756e740001002c5a65726f5265776172647300020030557365724e6f74466f756e64000300385472616e736665724661696c656400040000240808696f344c6971756964697479506f6f6c00003401146f776e657204011c4163746f724964000148737461626c65636f696e5f6164647265737304011c4163746f72496400013c746f74616c5f6465706f736974656414011075313238000138746f74616c5f626f72726f77656414011075313238000158617661696c61626c655f726577617264735f706f6f6c14011075313238000164746f74616c5f726577617264735f646973747269627574656414011075313238000114757365727328016c42547265654d61703c4163746f7249642c2055736572496e666f3e000124626173655f726174651401107531323800013c7269736b5f6d756c7469706c696572140110753132380001487574696c697a6174696f6e5f666163746f721401107531323800011c6465765f66656514011075313238000134696e7465726573745f726174651401107531323800010c61707214011075313238000028042042547265654d617008044b01040456012c000400300000002c0808696f2055736572496e666f000014011c62616c616e63651401107531323800011c72657761726473140110753132380001306c6173745f757064617465641401107531323800013062616c616e63655f7573646314011075313238000130726577617264735f757364631401107531323800003000000234003400000408042c00";
+export const decodedVstreetMeta = ProgramMetadata.from(vstreetMeta);
 
-//vUSD Contract
+//wUSDT Contract
 export const vstreetVFTProgramID =
   "0x464511231a1afe9108a689ed3dbbb047ca308d6f5dfb86453e4df5612a2d668a";
 
@@ -18,6 +26,10 @@ export const fungibleTokenProgramID =
 //VST Token Contract (For Staking)
 export const vstTokenProgramID =
   "0xf95e6e247054e898a15395715503a9343fd80f95c6a516bf63f17e10e7d144be";
+
+//Vault Service Contract (For Staking Vaults)
+export const vaultProgramID =
+  "0x42fd0436f6d8ede8b0097c81e814a1f107ad3e1025add3be9ba7fe1a884b52e2";
 
 //IDL for the VFT contract (New Metadata Schema)
 export const idlVFT = `constructor {
@@ -54,43 +66,8 @@ service Vft {
   }
 };`;
 
-//IDL for the working VSTREET contract (Includes Liquidity & Vaults)
-export const idlVSTREET = `type ConvictionLevel = enum {
-  Day1,
-  Day7,
-  Day14,
-  Day28,
-  Day90,
-};
-
-type VaultPosition = struct {
-  id: u128,
-  user: actor_id,
-  amount: u128,
-  conviction_level: u8,
-  multiplier: u32,
-  power: u128,
-  start_timestamp: u64,
-  unlock_timestamp: u64,
-  is_active: bool,
-  claimed: bool,
-};
-
-type GlobalVaultStats = struct {
-  total_vst_locked: u128,
-  total_power: u128,
-  active_positions_count: u32,
-};
-
-type UserVaultInfo = struct {
-  total_staked_vst: u128,
-  total_power: u128,
-  active_positions: vec u128,
-  matured_positions: vec u128,
-  position_history: vec u128,
-};
-
-constructor {
+//IDL for the working VSTREET contract
+export const idlVSTREET = `constructor {
   NewWithVft : (vft_contract_id: actor_id, ltv: u128);
 };
 
@@ -134,25 +111,75 @@ service LiquidityInjectionService {
     LoanTaken: struct { amount: u128 };
     LoanPayed: struct { amount: u128 };
   }
-};
-
-service VaultService {
-  StakeVst : (amount: u128, conviction_level: ConvictionLevel) -> result (VaultPosition, str);
-  UnlockAndClaimPosition : (position_id: u128) -> null;
-  ClaimMultiplePositions : (position_ids: vec u128) -> null;
-  AddAdmin : (admin: actor_id) -> null;
-  SetVstTokenId : (vst_token_id: actor_id) -> null;
-  query GlobalStats : () -> GlobalVaultStats;
-  query UserVaultInfo : (user: actor_id) -> UserVaultInfo;
-  query UserActivePositions : (user: actor_id) -> vec VaultPosition;
-  query UserMaturedPositions : (user: actor_id) -> vec VaultPosition;
-  query UserPositions : (user: actor_id) -> vec VaultPosition;
-  query UserTotalPower : (user: actor_id) -> u128;
-  query UserTotalStaked : (user: actor_id) -> u128;
-  query PositionDetails : (position_id: u128) -> opt VaultPosition;
-  query TimeUntilUnlock : (position_id: u128) -> u64;
 };`;
 
 const fungibleTokenMeta =
   "00010001000000000001030000000107000000000000000108000000a90b3400081466745f696f28496e6974436f6e66696700000c01106e616d65040118537472696e6700011873796d626f6c040118537472696e67000120646563696d616c73080108753800000400000502000800000503000c081466745f696f204654416374696f6e000118104d696e74040010011075313238000000104275726e040010011075313238000100205472616e736665720c011066726f6d14011c4163746f724964000108746f14011c4163746f724964000118616d6f756e74100110753132380002001c417070726f7665080108746f14011c4163746f724964000118616d6f756e74100110753132380003002c546f74616c537570706c790004002442616c616e63654f66040014011c4163746f724964000500001000000507001410106773746418636f6d6d6f6e287072696d6974697665731c4163746f724964000004001801205b75383b2033325d0000180000032000000008001c081466745f696f1c46544576656e74000110205472616e736665720c011066726f6d14011c4163746f724964000108746f14011c4163746f724964000118616d6f756e74100110753132380000001c417070726f76650c011066726f6d14011c4163746f724964000108746f14011c4163746f724964000118616d6f756e74100110753132380001002c546f74616c537570706c790400100110753132380002001c42616c616e63650400100110753132380003000020081466745f696f3c496f46756e6769626c65546f6b656e00001801106e616d65040118537472696e6700011873796d626f6c040118537472696e67000130746f74616c5f737570706c791001107531323800012062616c616e6365732401505665633c284163746f7249642c2075313238293e000128616c6c6f77616e6365732c01905665633c284163746f7249642c205665633c284163746f7249642c2075313238293e293e000120646563696d616c730801087538000024000002280028000004081410002c00000230003000000408142400";
 export const decodedFungibleTokenMeta = ProgramMetadata.from(fungibleTokenMeta);
+
+//IDL for the Vault Service Contract
+export const idlVAULT = `
+type ConvictionLevel = enum {
+  Day1,
+  Day7,
+  Day14,
+  Day28,
+  Day90,
+};
+
+type VaultPosition = struct {
+  id: u128,
+  user: actor_id,
+  amount: u128,
+  conviction_level: ConvictionLevel,
+  multiplier: u128,
+  power: u128,
+  start_timestamp: u128,
+  unlock_timestamp: u128,
+  is_active: bool,
+  claimed: bool,
+};
+
+type GlobalVaultStats = struct {
+  total_vst_locked: u128,
+  total_power: u128,
+  active_positions_count: u128,
+};
+
+type UserVaultInfo = struct {
+  total_staked_vst: u128,
+  total_power: u128,
+  active_positions: vec u128,
+  matured_positions: vec u128,
+  position_history: vec u128,
+};
+
+constructor {
+  NewWithVft : (vft_contract_id: actor_id, ltv: u128);
+};
+
+service VaultService {
+  AddAdmin : (new_admin: actor_id) -> result (null, str);
+  ClaimMultiplePositions : (position_ids: vec u128) -> result (null, str);
+  SetVstTokenId : (vst_token_id: actor_id) -> result (null, str);
+  StakeVst : (amount: u128, conviction_level: ConvictionLevel) -> result (VaultPosition, str);
+  UnlockAndClaimPosition : (position_id: u128) -> result (null, str);
+  query GlobalStats : () -> GlobalVaultStats;
+  query PositionDetails : (position_id: u128) -> opt VaultPosition;
+  query TimeUntilUnlock : (position_id: u128) -> u128;
+  query UserActivePositions : (user: actor_id) -> vec VaultPosition;
+  query UserMaturedPositions : (user: actor_id) -> vec VaultPosition;
+  query UserPositions : (user: actor_id) -> vec VaultPosition;
+  query UserTotalPower : (user: actor_id) -> u128;
+  query UserTotalStaked : (user: actor_id) -> u128;
+  query UserVaultInfo : (user: actor_id) -> UserVaultInfo;
+
+  events {
+    Staked: struct { position_id: u128, user: actor_id, amount: u128, conviction_level: ConvictionLevel, power: u128, unlock_timestamp: u128 };
+    Unlocked: struct { position_id: u128, user: actor_id, amount: u128, power: u128 };
+    PositionClaimed: struct { position_id: u128, user: actor_id, amount: u128 };
+    MultiplePositionsClaimed: struct { user: actor_id, total_amount: u128, positions_count: u128 };
+    Error: str;
+  }
+};
+`;

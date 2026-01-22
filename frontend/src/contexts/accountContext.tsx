@@ -5,6 +5,7 @@ import React, {
   ReactNode,
   useEffect,
   useRef,
+  useCallback,
 } from "react";
 import {
   web3Accounts,
@@ -177,16 +178,14 @@ const WalletProvider: React.FC<WalletProviderProps> = ({ children }) => {
     subscribeToAccountChanges();
   }, [selectedAccount]);
 
-  const fetchBalance = async () => {
+  const fetchBalance = useCallback(async () => {
     if (selectedAccount) {
       const provider = new WsProvider("wss://testnet.vara.network");
       const api = await ApiPromise.create({ provider });
       const { data: balance } = await api.query.system.account(selectedAccount);
       setBalance(Number(balance.free.toString()));
     }
-  };
-
-  fetchBalance();
+  }, [selectedAccount]);
 
   useEffect(() => {
     const account = allAccounts.find((acc) => acc.address === selectedAccount);

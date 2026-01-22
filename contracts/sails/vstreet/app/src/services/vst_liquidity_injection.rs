@@ -34,6 +34,7 @@ pub enum LiquidityEvent {
     WithdrawnVara{amount:u128},
     LoanTaken{amount:u128},
     LoanPayed{amount:u128},
+    LoanLiquidated{user:ActorId, loan_amount:u128, collateral_seized:u128},
 }
 
 pub struct LiquidityInjectionService<VftClient>{
@@ -343,16 +344,15 @@ where VftClient: Vft, {
     // State mutable & ref functions
     pub fn state_mut(&self) -> &'static mut VstreetState {
         let state = unsafe { VSTREET_STATE.as_mut() };
-        debug_assert!(state.is_none(), "state is not started!");
+        debug_assert!(state.is_some(), "state is not started!");
         unsafe { state.unwrap_unchecked() }
     }
 
     fn state_ref(&self) -> &'static VstreetState {
         let state = unsafe { VSTREET_STATE.as_ref() };
-        debug_assert!(state.is_none(), "state is not started!");
+        debug_assert!(state.is_some(), "state is not started!");
         unsafe { state.unwrap_unchecked() }
     }
-
 
     // Internal methods
 
@@ -484,10 +484,17 @@ where VftClient: Vft, {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
-        let mla = (user_info.cv * state_mut.ltv) / 100;
-        user_info.mla = mla;
+        let max_loan = (user_info.cv * state_mut.ltv) / 100;
 
-        format!("MLA: {:?}", mla)
+        let remaining = if max_loan > user_info.loan_amount {
+            max_loan - user_info.loan_amount
+        } else {
+            0
+        };
+
+        user_info.mla = remaining;
+
+        format!("MLA: {:?}", remaining)
     }
 
     fn update_cv_and_mla_for_all_users(&mut self) {
@@ -506,7 +513,12 @@ where VftClient: Vft, {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
-        user_info.ltv = (user_info.loan_amount * 100) / user_info.cv;
+        // Prevent division by zero
+        if user_info.cv == 0 {
+            user_info.ltv = 0;
+        } else {
+            user_info.ltv = (user_info.loan_amount * 100) / user_info.cv;
+        }
 
         format!("LTV: {:?}", user_info.ltv)
     }
@@ -523,7 +535,7 @@ where VftClient: Vft, {
         }
     }
 
-    //Calculate utilization factor = (Total deposited * Total borrowed) / 100
+    // Calculate utilization factor = (Total borrowed / Total deposited) * 100
     pub fn calculate_utilization_factor(&mut self) -> u128 {
         let state_mut = self.state_mut();
 
@@ -536,7 +548,7 @@ where VftClient: Vft, {
             return 0;
         }
 
-        let utilization_factor = (((total_borrowed * decimals_factor) / total_deposited) * 100) / decimals_factor;
+        let utilization_factor = (total_borrowed * decimals_factor * 100) / total_deposited;
         state_mut.utilization_factor = utilization_factor;
         return utilization_factor;
     }
@@ -608,6 +620,14 @@ where VftClient: Vft, {
             self.calculate_mla(user);
             state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(loan_amount);
             Self::update_user_available_to_withdraw_vara(user_info);
+            
+            // Emit liquidation event for off-chain tracking
+            self.notify_on(LiquidityEvent::LoanLiquidated { 
+                user, 
+                loan_amount, 
+                collateral_seized: locked 
+            })
+            .expect("Notification Error");
         }
 
         Ok(())      

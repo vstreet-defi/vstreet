@@ -9,60 +9,14 @@ import { SailsIdlParser } from "sails-js-parser";
 import {
   vstreetProgramID,
   fungibleTokenProgramID,
+  decodedVstreetMeta,
+  decodedFungibleTokenMeta,
   idlVFT,
   idlVSTREET,
+  vaultProgramID,
+  idlVAULT,
+  vstTokenProgramID,
 } from "../utils/smartPrograms";
-
-// Sails-js Types for Vaults
-export type ConvictionLevel = "Day1" | "Day7" | "Day14" | "Day28" | "Day90";
-
-// Helper to map raw conviction_level u8 to readable string
-// Common patterns: 0-4 (index), 1/7/14/28/90 (days), or custom values
-export function mapConvictionLevel(raw: number | string): ConvictionLevel {
-  const value = Number(raw);
-  // Try index-based mapping first (0-4)
-  const indexMap: Record<number, ConvictionLevel> = {
-    0: "Day1", 1: "Day7", 2: "Day14", 3: "Day28", 4: "Day90"
-  };
-  if (indexMap[value]) return indexMap[value];
-
-  // Try day-value based mapping (1, 7, 14, 28, 90)
-  const dayMap: Record<number, ConvictionLevel> = {
-    1: "Day1", 7: "Day7", 14: "Day14", 28: "Day28", 90: "Day90"
-  };
-  if (dayMap[value]) return dayMap[value];
-
-  // Fallback for unknown values
-  console.warn(`[mapConvictionLevel] Unknown value: ${value}, defaulting to Day1`);
-  return "Day1";
-}
-
-export interface VaultPosition {
-  id: string; // u128 as string
-  user: string;
-  amount: number | string; // Can be large u128 string for precision
-  conviction_level: ConvictionLevel | number; // Accept raw u8 or mapped string
-  multiplier: number;
-  power: number | string; // Can be large u128 string for precision
-  start_timestamp: number;
-  unlock_timestamp: number;
-  is_active: boolean;
-  claimed: boolean;
-}
-
-export interface GlobalVaultStats {
-  total_vst_locked: number;
-  total_power: number;
-  active_positions_count: number;
-}
-
-export interface UserVaultInfo {
-  total_staked_vst: number;
-  total_power: number;
-  active_positions: string[];
-  matured_positions: string[];
-  position_history: string[];
-}
 
 export interface FullState {
   balances: [string, any][];
@@ -149,23 +103,6 @@ export function createWithdrawRewardsMessage(): MessageSendOptions {
   };
 }
 
-// VAULT SERVICE MESSAGES
-export function createStakeVstMessage(amount: string, conviction: ConvictionLevel): any {
-  return {
-    VaultService: {
-      StakeVst: [Number(amount), conviction],
-    },
-  };
-}
-
-export function createUnlockPositionMessage(positionId: string): any {
-  return {
-    VaultService: {
-      UnlockAndClaimPosition: [positionId],
-    },
-  };
-}
-
 // Sails cache
 const sailsCache: Record<string, Sails> = {};
 
@@ -187,7 +124,7 @@ export const getVFTDecimals = async (programId: string) => {
   try {
     const sails = await getSails(programId, idlVFT);
     const result = await sails.services.Vft.queries.Decimals(
-      "0x" + "0".repeat(64) as `0x${string}`, // anonymous caller
+      ("0x" + "0".repeat(64)) as `0x${string}`, // anonymous caller
       undefined,
       undefined
     );
@@ -211,7 +148,9 @@ export const getVFTBalance = async (
 
   try {
     const sails = await getSails(programId, idlVFT);
-    console.log(`[CONTRACT BALANCE QUERY] Checking: ${accountAddress} on ${programId}`);
+    console.log(
+      `[CONTRACT BALANCE QUERY] Checking: ${accountAddress} on ${programId}`
+    );
 
     const result = await sails.services.Vft.queries.BalanceOf(
       accountAddress as `0x${string}`, // caller (origin)
@@ -220,7 +159,11 @@ export const getVFTBalance = async (
       accountAddress as `0x${string}` // target address
     );
 
-    console.log(`[CONTRACT BALANCE RESULT] ${programId} for ${accountAddress} ->`, result, typeof result);
+    console.log(
+      `[CONTRACT BALANCE RESULT] ${programId} for ${accountAddress} ->`,
+      result,
+      typeof result
+    );
 
     if (result !== undefined && result !== null) {
       // Use string conversion to avoid BigInt to Number issues if huge
@@ -247,18 +190,21 @@ export const getUserInfo = async (
     const sails = await getSails(vstreetProgramID, idlVSTREET);
     console.log(`[CONTRACT USERINFO QUERY] Checking: ${accountAddress}`);
 
-    const result = await sails.services.LiquidityInjectionService.queries.UserInfo(
-      accountAddress as `0x${string}`,
-      undefined,
-      undefined,
-      accountAddress as `0x${string}`
-    );
+    const result =
+      await sails.services.LiquidityInjectionService.queries.UserInfo(
+        accountAddress as `0x${string}`,
+        undefined,
+        undefined,
+        accountAddress as `0x${string}`
+      );
 
     const userInfoStr = result as string;
 
     // Improved parser logic
     const parseUserInfo = (dataString: string): UserInfo => {
-      const cleanedString = dataString.substring(dataString.indexOf("{")).trim();
+      const cleanedString = dataString
+        .substring(dataString.indexOf("{"))
+        .trim();
       const jsonString = cleanedString
         .replace(/(\w+):/g, '"$1":')
         .replace(/'/g, '"');
@@ -270,216 +216,361 @@ export const getUserInfo = async (
     console.log("[CONTRACT USERINFO RESULT]", parsedData);
   } catch (error) {
     console.error("[CONTRACT USERINFO ERROR]:", error);
+
+    // If user doesn't exist in contract yet (panicked with Option::unwrap on None),
+    // set default empty values
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    if (
+      errorMessage.includes("panicked") ||
+      errorMessage.includes("Option::unwrap")
+    ) {
+      console.log(
+        "[CONTRACT USERINFO] User not found in contract, using default values"
+      );
+      setUserInfo({
+        balance: 0,
+        rewards: 0,
+        rewards_withdrawn: 0,
+        liquidity_last_updated: 0,
+        borrow_last_updated: 0,
+        available_to_withdraw_vara: 0,
+        balance_usdc: 0,
+        balance_vara: 0,
+        is_loan_active: false,
+        loan_amount: 0,
+        loan_amount_usdc: 0,
+        ltv: 0,
+        mla: 0,
+        rewards_usdc: 0,
+        rewards_usdc_withdrawn: 0,
+      });
+    }
   }
 };
 
-// VAULT SERVICE QUERIES
-export const getVaultGlobalStats = async (setStats: (stats: GlobalVaultStats) => void) => {
+// ============================================
+// VAULT SERVICE TYPES AND FUNCTIONS
+// ============================================
+
+// Conviction levels for staking
+export type ConvictionLevel = "Day1" | "Day7" | "Day14" | "Day28" | "Day90";
+
+// Vault position interface
+export interface VaultPosition {
+  id: bigint;
+  user: string;
+  amount: bigint;
+  conviction_level: ConvictionLevel;
+  multiplier: bigint;
+  power: bigint;
+  start_timestamp: bigint;
+  unlock_timestamp: bigint;
+  is_active: boolean;
+  claimed: boolean;
+}
+
+// Global vault stats interface
+export interface GlobalVaultStats {
+  total_vst_locked: bigint;
+  total_power: bigint;
+  active_positions_count: bigint;
+}
+
+// User vault info interface
+export interface UserVaultInfo {
+  total_staked_vst: bigint;
+  total_power: bigint;
+  active_positions: bigint[];
+  matured_positions: bigint[];
+  position_history: bigint[];
+}
+
+// Helper to get Vault Sails instance
+export const getVaultSails = async () => {
+  return getSails(vaultProgramID, idlVAULT);
+};
+
+// Get global vault statistics
+export const getGlobalVaultStats =
+  async (): Promise<GlobalVaultStats | null> => {
+    try {
+      const sails = await getVaultSails();
+      const result = await sails.services.VaultService.queries.GlobalStats(
+        ("0x" + "0".repeat(64)) as `0x${string}`,
+        undefined,
+        undefined
+      );
+      console.log("[VAULT GLOBAL STATS]", result);
+      return result as GlobalVaultStats;
+    } catch (error) {
+      console.error("[VAULT GLOBAL STATS ERROR]:", error);
+      return null;
+    }
+  };
+
+// Get user's active positions
+export const getUserActivePositions = async (
+  accountAddress: string
+): Promise<VaultPosition[]> => {
+  if (!accountAddress) return [];
+
   try {
-    const sails = await getSails(vstreetProgramID, idlVSTREET);
-    const result = (await sails.services.VaultService.queries.GlobalStats(
+    const sails = await getVaultSails();
+    const result =
+      await sails.services.VaultService.queries.UserActivePositions(
+        accountAddress as `0x${string}`,
+        undefined,
+        undefined,
+        accountAddress as `0x${string}`
+      );
+    console.log("[VAULT ACTIVE POSITIONS]", result);
+    return (result as VaultPosition[]) || [];
+  } catch (error) {
+    console.error("[VAULT ACTIVE POSITIONS ERROR]:", error);
+    return [];
+  }
+};
+
+// Get user's matured positions (ready to claim)
+export const getUserMaturedPositions = async (
+  accountAddress: string
+): Promise<VaultPosition[]> => {
+  if (!accountAddress) return [];
+
+  try {
+    const sails = await getVaultSails();
+    const result =
+      await sails.services.VaultService.queries.UserMaturedPositions(
+        accountAddress as `0x${string}`,
+        undefined,
+        undefined,
+        accountAddress as `0x${string}`
+      );
+    console.log("[VAULT MATURED POSITIONS]", result);
+    return (result as VaultPosition[]) || [];
+  } catch (error) {
+    console.error("[VAULT MATURED POSITIONS ERROR]:", error);
+    return [];
+  }
+};
+
+// Get all user positions (for history)
+export const getUserAllPositions = async (
+  accountAddress: string
+): Promise<VaultPosition[]> => {
+  if (!accountAddress) return [];
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserPositions(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT ALL POSITIONS]", result);
+    return (result as VaultPosition[]) || [];
+  } catch (error) {
+    console.error("[VAULT ALL POSITIONS ERROR]:", error);
+    return [];
+  }
+};
+
+// Get user vault info with categorization
+export const getUserVaultInfo = async (
+  accountAddress: string
+): Promise<UserVaultInfo | null> => {
+  if (!accountAddress) return null;
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserVaultInfo(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT USER INFO]", result);
+    return result as UserVaultInfo;
+  } catch (error) {
+    console.error("[VAULT USER INFO ERROR]:", error);
+    return null;
+  }
+};
+
+// Get user total power (sVST)
+export const getUserTotalPower = async (
+  accountAddress: string
+): Promise<bigint> => {
+  if (!accountAddress) return BigInt(0);
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserTotalPower(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT USER POWER]", result);
+    return BigInt(result?.toString() || "0");
+  } catch (error) {
+    console.error("[VAULT USER POWER ERROR]:", error);
+    return BigInt(0);
+  }
+};
+
+// Get user total staked VST
+export const getUserTotalStaked = async (
+  accountAddress: string
+): Promise<bigint> => {
+  if (!accountAddress) return BigInt(0);
+
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.UserTotalStaked(
+      accountAddress as `0x${string}`,
+      undefined,
+      undefined,
+      accountAddress as `0x${string}`
+    );
+    console.log("[VAULT USER STAKED]", result);
+    return BigInt(result?.toString() || "0");
+  } catch (error) {
+    console.error("[VAULT USER STAKED ERROR]:", error);
+    return BigInt(0);
+  }
+};
+
+// Get time until position unlocks
+export const getTimeUntilUnlock = async (
+  positionId: bigint
+): Promise<bigint> => {
+  try {
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.TimeUntilUnlock(
       ("0x" + "0".repeat(64)) as `0x${string}`,
       undefined,
-      undefined
-    )) as any;
-
-    if (result) {
-      setStats({
-        total_vst_locked: Number(result.total_vst_locked),
-        total_power: Number(result.total_power),
-        active_positions_count: Number(result.active_positions_count),
-      });
-    }
+      undefined,
+      positionId
+    );
+    console.log("[VAULT TIME UNTIL UNLOCK]", result);
+    return BigInt(result?.toString() || "0");
   } catch (error) {
-    console.error("[VAULT GLOBAL STATS ERROR]:", error);
+    console.error("[VAULT TIME UNTIL UNLOCK ERROR]:", error);
+    return BigInt(0);
   }
 };
 
-export const getUserVaultInfo = async (
-  accountAddress: string,
-  setUserInfo: (info: UserVaultInfo) => void
-) => {
-  if (!accountAddress) return;
-
+// Get position details
+export const getPositionDetails = async (
+  positionId: bigint
+): Promise<VaultPosition | null> => {
   try {
-    const sails = await getSails(vstreetProgramID, idlVSTREET);
-    const result = (await sails.services.VaultService.queries.UserVaultInfo(
-      accountAddress as `0x${string}`,
+    const sails = await getVaultSails();
+    const result = await sails.services.VaultService.queries.PositionDetails(
+      ("0x" + "0".repeat(64)) as `0x${string}`,
       undefined,
       undefined,
-      accountAddress as `0x${string}`
-    )) as any;
-
-    if (result) {
-      setUserInfo({
-        total_staked_vst: Number(result.total_staked_vst),
-        total_power: Number(result.total_power),
-        active_positions: result.active_positions.map((id: any) => id.toString()),
-        matured_positions: result.matured_positions.map((id: any) => id.toString()),
-        position_history: result.position_history.map((id: any) => id.toString()),
-      });
-    }
+      positionId
+    );
+    console.log("[VAULT POSITION DETAILS]", result);
+    return result as VaultPosition | null;
   } catch (error) {
-    console.error("[USER VAULT INFO ERROR]:", error);
+    console.error("[VAULT POSITION DETAILS ERROR]:", error);
+    return null;
   }
 };
 
-export const getUserActivePositions = async (
+// Map conviction ID to contract enum
+export const mapConvictionToEnum = (convictionId: string): ConvictionLevel => {
+  const mapping: Record<string, ConvictionLevel> = {
+    x1: "Day1",
+    x7: "Day7",
+    x14: "Day14",
+    x28: "Day28",
+    x90: "Day90",
+  };
+  return mapping[convictionId] || "Day1";
+};
+
+// Stake VST tokens (returns transaction builder for signing)
+export const stakeVst = async (
   accountAddress: string,
-  setPositions: (positions: VaultPosition[]) => void
+  amount: bigint,
+  convictionLevel: ConvictionLevel
 ) => {
-  if (!accountAddress) return;
+  if (!accountAddress) throw new Error("No account address provided");
 
-  try {
-    const sails = await getSails(vstreetProgramID, idlVSTREET);
+  const sails = await getVaultSails();
+  console.log("[VAULT STAKE VST] Preparing transaction:", {
+    accountAddress,
+    amount: amount.toString(),
+    convictionLevel,
+  });
 
-    // Get position IDs from UserVaultInfo (avoids vec<struct> deserialization issues)
-    const vaultInfo = (await sails.services.VaultService.queries.UserVaultInfo(
-      accountAddress as `0x${string}`,
-      undefined,
-      undefined,
-      accountAddress as `0x${string}`
-    )) as any;
+  // Build the transaction
+  const tx = sails.services.VaultService.functions.StakeVst(
+    amount,
+    convictionLevel
+  );
 
-    const activeIds = (vaultInfo?.active_positions || []).map((id: any) => id.toString());
-    const maturedIds = (vaultInfo?.matured_positions || []).map((id: any) => id.toString());
-    const historyIds = (vaultInfo?.position_history || []).map((id: any) => id.toString());
-    const allIds = Array.from(new Set([...activeIds, ...maturedIds, ...historyIds]));
+  return tx;
+};
 
-    // Fetch each position individually via PositionDetails
-    const allPositions: any[] = [];
-    for (const id of allIds) {
-      try {
-        const posResult = await sails.services.VaultService.queries.PositionDetails(
-          accountAddress as `0x${string}`,
-          undefined,
-          undefined,
-          BigInt(id)
-        );
-        if (posResult && typeof posResult === 'object') {
-          allPositions.push(posResult);
-        }
-      } catch (posError) {
-        console.warn(`Failed to fetch position ${id}:`, posError);
-      }
-    }
+// Create approval message for VST token to Vault contract
+export const createVstApproveForVault = async (
+  accountAddress: string,
+  amount: bigint
+) => {
+  const sails = await getSails(vstTokenProgramID, idlVFT);
+  console.log("[VAULT VST APPROVE] Preparing approval:", {
+    spender: vaultProgramID,
+    amount: amount.toString(),
+  });
 
-    // Parse u128 values (hex strings or BigInt) preserving precision
-    const parseBigValue = (val: any): number | string => {
-      if (val === undefined || val === null) return 0;
-      try {
-        // Handle hex strings like "0x506c75e2d6310000"
-        if (typeof val === 'string' && val.startsWith('0x')) {
-          const bigVal = BigInt(val);
-          // Return as string to avoid precision loss for very large numbers
-          return bigVal.toString();
-        }
-        // Handle BigInt directly
-        if (typeof val === 'bigint') {
-          return val.toString();
-        }
-        // Handle string numbers
-        if (typeof val === 'string') {
-          return val;
-        }
-        // Already a number
-        return val;
-      } catch (e) {
-        console.warn("[parseBigValue] Error parsing:", val, e);
-        return 0;
-      }
-    };
+  const tx = sails.services.Vft.functions.Approve(
+    vaultProgramID as `0x${string}`,
+    amount
+  );
 
-    // Helper to parse timestamps (in seconds, not milliseconds)
-    const parseTimestamp = (val: any): number => {
-      if (val === undefined || val === null) return 0;
-      try {
-        if (typeof val === 'string' && val.startsWith('0x')) {
-          return Number(BigInt(val));
-        }
-        if (typeof val === 'bigint') {
-          return Number(val);
-        }
-        return Number(val);
-      } catch (e) {
-        return 0;
-      }
-    };
+  return tx;
+};
 
+// Unlock and claim a single position
+export const unlockAndClaimPosition = async (
+  accountAddress: string,
+  positionId: bigint
+) => {
+  if (!accountAddress) throw new Error("No account address provided");
 
-    const parsedPositions: VaultPosition[] = allPositions.map((pos: any, idx: number) => {
-      // Handle both camelCase and snake_case field names
-      const rawAmount = pos.amount ?? pos.stakedAmount ?? pos.staked_amount ?? 0;
-      const rawPower = pos.power ?? pos.votingPower ?? pos.voting_power ?? 0;
-      const rawStartTs = pos.start_timestamp ?? pos.startTimestamp ?? pos.created_at ?? pos.createdAt ?? 0;
-      const rawUnlockTs = pos.unlock_timestamp ?? pos.unlockTimestamp ?? pos.maturity_date ?? pos.maturityDate ?? 0;
-      const rawConviction = pos.conviction_level ?? pos.convictionLevel ?? pos.conviction ?? 0;
-      const rawIsActive = pos.is_active ?? pos.isActive ?? true;
-      const rawClaimed = pos.claimed ?? pos.isClaimed ?? pos.is_claimed ?? false;
+  const sails = await getVaultSails();
+  console.log("[VAULT UNLOCK POSITION] Preparing transaction:", {
+    accountAddress,
+    positionId: positionId.toString(),
+  });
 
-      const parsedAmount = parseBigValue(rawAmount);
-      let parsedPower = parseBigValue(rawPower);
-      const parsedStartTs = parseTimestamp(rawStartTs);
-      const parsedUnlockTs = parseTimestamp(rawUnlockTs);
-      const multiplier = Number(pos.multiplier ?? 100);
+  const tx =
+    sails.services.VaultService.functions.UnlockAndClaimPosition(positionId);
 
-      // Calculate power locally if contract value is corrupted
-      const MAX_REASONABLE_POWER = BigInt(10 ** 18) * BigInt(10 ** 9);
-      try {
-        const powerBigInt = BigInt(String(parsedPower).split('.')[0]);
-        if (powerBigInt > MAX_REASONABLE_POWER) {
-          const amountBigInt = BigInt(String(parsedAmount).split('.')[0]);
-          parsedPower = ((amountBigInt * BigInt(multiplier)) / BigInt(100)).toString();
-        }
-      } catch {
-        const amountNum = Number(parsedAmount) || 0;
-        parsedPower = String(Math.floor(amountNum * multiplier / 100));
-      }
+  return tx;
+};
 
+// Claim multiple matured positions
+export const claimMultiplePositions = async (
+  accountAddress: string,
+  positionIds: bigint[]
+) => {
+  if (!accountAddress) throw new Error("No account address provided");
 
+  const sails = await getVaultSails();
+  console.log("[VAULT CLAIM MULTIPLE] Preparing transaction:", {
+    accountAddress,
+    positionIds: positionIds.map((id) => id.toString()),
+  });
 
-      // Determine category from UserVaultInfo arrays (source of truth)
-      const posId = pos.id?.toString() || "0";
-      let category: 'active' | 'matured' | 'history' = 'history';
-      if (activeIds.includes(posId)) {
-        category = 'active';
-      } else if (maturedIds.includes(posId)) {
-        category = 'matured';
-      }
+  const tx =
+    sails.services.VaultService.functions.ClaimMultiplePositions(positionIds);
 
-      return {
-        id: posId,
-        user: pos.user ?? pos.owner ?? accountAddress,
-        amount: parsedAmount,
-        conviction_level: mapConvictionLevel(rawConviction),
-        multiplier: multiplier,
-        power: parsedPower,
-        start_timestamp: parsedStartTs,
-        unlock_timestamp: parsedUnlockTs,
-        is_active: category === 'active',
-        claimed: category === 'history', // Use category instead of buggy contract value
-        _category: category, // Add explicit category for frontend use
-      } as VaultPosition & { _category: string };
-    });
-
-    // Filter out corrupted positions
-    const isValidPosition = (pos: VaultPosition): boolean => {
-      const idStr = String(pos.id);
-      if (idStr.length > 10) return false;
-
-      const validConvictions = ["Day1", "Day7", "Day14", "Day28", "Day90"];
-      if (!validConvictions.includes(String(pos.conviction_level))) return false;
-
-      if (pos.multiplier > 10000) return false;
-
-      return true;
-    };
-
-    const validPositions = parsedPositions.filter(isValidPosition);
-    setPositions(validPositions);
-
-  } catch (error) {
-    console.error("[getUserActivePositions Error]:", error);
-    setPositions([]);
-  }
+  return tx;
 };

@@ -17,7 +17,7 @@ const ACTIONS = {
 
 /**
  * FundsManagerBorrow Component
- * Handles the high-level logic for the Borrow tab, allowing users to manage 
+ * Handles the high-level logic for the Borrow tab, allowing users to manage
  * their TVARA collateral and vUSD loan/debt positions.
  */
 function FundsManagerBorrow() {
@@ -42,16 +42,36 @@ function FundsManagerBorrow() {
     if (selectedMode === MODES.COLLATERAL) {
       return "Manage your TVARA collateral to increase your borrowing power";
     }
-    return "Manage your vUSD loan and debt positions";
+    return "Manage your wUSDT loan and debt positions";
   };
 
   return (
     <div className={styles.mainContentCard}>
       {/* Visual Accents */}
-      <CornerAccent position="top-left" color="#00ffc4" length={40} thickness={2} />
-      <CornerAccent position="top-right" color="#4fff4b" length={40} thickness={2} />
-      <CornerAccent position="bottom-left" color="#4fff4b" length={40} thickness={2} />
-      <CornerAccent position="bottom-right" color="#00ffc4" length={40} thickness={2} />
+      <CornerAccent
+        position="top-left"
+        color="#00ffc4"
+        length={40}
+        thickness={2}
+      />
+      <CornerAccent
+        position="top-right"
+        color="#4fff4b"
+        length={40}
+        thickness={2}
+      />
+      <CornerAccent
+        position="bottom-left"
+        color="#4fff4b"
+        length={40}
+        thickness={2}
+      />
+      <CornerAccent
+        position="bottom-right"
+        color="#00ffc4"
+        length={40}
+        thickness={2}
+      />
 
       <div className={styles.header}>
         <h2 className={styles.title}>{selectedMode} Management</h2>
@@ -65,7 +85,9 @@ function FundsManagerBorrow() {
           <button
             key={mode}
             onClick={() => handleSelectMode(mode)}
-            className={`${styles.tab} ${selectedMode === mode ? styles.active : ""}`}
+            className={`${styles.tab} ${
+              selectedMode === mode ? styles.active : ""
+            }`}
             style={{ flex: 1 }}
           >
             {mode}
@@ -82,7 +104,9 @@ function FundsManagerBorrow() {
           <button
             key={action}
             onClick={() => handleSelectAction(action)}
-            className={`${styles.tab} ${selectedAction === action ? styles.active : ""}`}
+            className={`${styles.tab} ${
+              selectedAction === action ? styles.active : ""
+            }`}
           >
             {action}
           </button>
@@ -90,10 +114,7 @@ function FundsManagerBorrow() {
       </div>
 
       <div className={styles.content}>
-        <FundsCardBorrow
-          buttonLabel={selectedAction}
-          mode={selectedMode}
-        />
+        <FundsCardBorrow buttonLabel={selectedAction} mode={selectedMode} />
       </div>
     </div>
   );
