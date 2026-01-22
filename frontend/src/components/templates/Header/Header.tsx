@@ -5,6 +5,7 @@ import Flag from "../../atoms/Flag/Flag";
 import Logo from "../../../assets/images/icons/vStreet-Navbar-Color-White.png";
 import styles from "./Header.module.scss";
 import BurgerMenu from "components/organisms/BurgerMenu";
+import ComingSoon from "components/atoms/ComingSoon/ComingSoon";
 
 export enum DappTab {
   Home = "Home",
@@ -28,12 +29,13 @@ type Props = {
 
 const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   const [activeTab, setActiveTab] = useState<string | null>(
-    DappTab.Supply.toLowerCase()
+    DappTab.Supply.toLowerCase(),
   );
   const navigate = useNavigate();
   const location = useLocation();
   const isTablet = window.innerWidth < 822;
-  const isDapp = location.pathname.startsWith("/dapp") || location.pathname === "/vst";
+  const isDapp =
+    location.pathname.startsWith("/dapp") || location.pathname === "/vst";
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -98,18 +100,38 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
   };
 
   const renderItems = () =>
-    items.map((item, index) => (
-      <div className={styles.itemWrapper} key={index}>
-        {renderFlag(item)}
-        <button
-          className={`${styles.navTab} ${item.toLowerCase() === activeTab && isDapp ? styles.active : ""
-            }`}
-          onClick={() => handleClick(item)}
-        >
-          {item}
-        </button>
-      </div>
-    ));
+    items.map((item, index) => {
+      const isVST = item === DappTab.VST;
+      const isComingSoon = isVST;
+      return (
+        <div className={styles.itemWrapper} key={index}>
+          {renderFlag(item)}
+          <button
+            className={
+              `${styles.navTab} ` +
+              (item.toLowerCase() === activeTab && isDapp
+                ? styles.active
+                : "") +
+              (isComingSoon ? ` ${styles.comingSoon}` : "")
+            }
+            onClick={() => {
+              if (!isComingSoon) handleClick(item);
+            }}
+            disabled={isComingSoon}
+            type="button"
+            tabIndex={isComingSoon ? -1 : 0}
+            aria-disabled={isComingSoon}
+          >
+            {item}
+            {isComingSoon && (
+              <span className={styles.comingSoonLabel}>
+                <ComingSoon small />
+              </span>
+            )}
+          </button>
+        </div>
+      );
+    });
 
   const renderContent = () => {
     if (isMobile || isTablet) {

@@ -78,10 +78,10 @@ function Team() {
           >
             Tech Lead
           </Text>
-          <Flex mt="1rem" justify="space-between">
-            <Link href="https://x.com/_luchex" isExternal>
+          <Flex mt="1rem" justify="space-around">
+            {/* <Link href="https://x.com/_luchex" isExternal>
               <Img boxSize="1.8rem" src={x} alt="link"></Img>
-            </Link>
+            </Link> */}
             <Link
               href="https://www.linkedin.com/in/luciano-garcia-btc"
               isExternal
