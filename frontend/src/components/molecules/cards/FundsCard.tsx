@@ -8,7 +8,6 @@ import { useUserInfo } from "contexts/userInfoContext";
 import { useWallet } from "contexts/accountContext";
 import { hexToBn } from "@polkadot/util";
 import { formatWithCommasVUSD } from "utils";
-
 interface Props {
   buttonLabel: string;
 }
