@@ -20,7 +20,7 @@ function FundsCard({ buttonLabel }: Props) {
   const [convertedBalanceVUSD, setConvertedBalanceVUSD] = useState<number>(0);
   const { userInfo, fetchUserInfo, balance } = useUserInfo();
   const [formatBalanceVUSD, setFormatBalanceVUSD] = useState("");
-  const [formatDepositedVUSD, setFormatDepositedVUSD] = useState("");
+  // ...existing code...
 
   const { selectedAccount, hexAddress } = useWallet();
 
@@ -51,7 +51,7 @@ function FundsCard({ buttonLabel }: Props) {
       setDepositedBalance(vUSDDepositedBalance / 1000000);
       setConvertedBalanceVUSD(balance / 1000000);
       setFormatBalanceVUSD(formatWithCommasVUSD(balance));
-      setFormatDepositedVUSD(vUSDDepositedBalance.toLocaleString());
+      // ...existing code...
     }
   }, [userInfo]);
 
