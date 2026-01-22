@@ -19,9 +19,6 @@
     "@polkadot/util-crypto": "^12.2.2",
     "@polkadot/wasm-crypto": "7.0.3",
     "@polkadot/x-randomvalues": "^14.0.1",
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^8.18.0",
-    "@react-three/postprocessing": "^2.19.1",
     "@testing-library/jest-dom": "5.16.4",
     "@testing-library/react": "13.2.0",
     "@testing-library/user-event": "13.5.0",
@@ -42,7 +39,6 @@
     "sails-js": "^0.3.1",
     "sails-js-parser": "^0.3.1",
     "sass": "1.62.0",
-    "three": "^0.160.1",
     "typescript": "4.9.5",
     "web-vitals": "3.3.1"
   },
@@ -71,7 +67,6 @@
     ]
   },
   "devDependencies": {
-    "@types/three": "^0.182.0",
     "@typescript-eslint/eslint-plugin": "5.25.0",
     "@typescript-eslint/parser": "5.25.0",
     "eslint": "8.16.0",
@@ -82,7 +77,8 @@
     "eslint-plugin-jsx-a11y": "6.7.1",
     "eslint-plugin-react": "7.32.2",
     "eslint-plugin-react-hooks": "4.6.0",
-    "react-app-rewired": "2.2.1"
+    "react-app-rewired": "2.2.1",
+    "webpack": "^5.104.1"
   },
   "lint-staged": {
     "./**/*.{js,css,ts,tsx}": "eslint --fix"
