@@ -76,6 +76,7 @@ where
 
     // Update loan status and total borrowed
     user_info.is_loan_active = true;
+    user_info.borrow_last_updated = exec::block_timestamp() as u128;
     
     user_info.loan_amount = user_info
         .loan_amount
@@ -129,8 +130,12 @@ pub async fn pay_all_loan<VftClient>(
 where
     VftClient: Vft,
 {
-    let state_mut = service.state_mut();
     let caller = msg::source();
+    
+    // Calculate and apply accrued loan interest before payment
+    let _ = service.calculate_loan_interest_rate_amount(caller);
+    
+    let state_mut = service.state_mut();
     let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {
@@ -206,8 +211,12 @@ pub async fn pay_loan<VftClient>(
 where
     VftClient: Vft,
 {
-    let state_mut = service.state_mut();
     let caller = msg::source();
+    
+    // Calculate and apply accrued loan interest before payment
+    let _ = service.calculate_loan_interest_rate_amount(caller);
+    
+    let state_mut = service.state_mut();
     let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {

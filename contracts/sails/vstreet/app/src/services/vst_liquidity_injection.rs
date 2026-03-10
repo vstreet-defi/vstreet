@@ -422,8 +422,8 @@ where VftClient: Vft, {
         let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) * 3;
 
         if time_elapsed > 0 {
-            let interest_per_second = ((interest_rate * decimals_factor) / year_in_seconds) / decimals_factor as u128;
-            let rewards = interest_per_second * time_elapsed;
+            // Calculate rewards based on user balance, interest rate and time elapsed
+            let rewards = (user_info.balance * interest_rate * time_elapsed) / (year_in_seconds * decimals_factor);
             debug!("Calculated rewards: {}", rewards);
             user_info.rewards = user_info.rewards.saturating_add(rewards);
             user_info.rewards_usdc = user_info.rewards / decimals_factor;
@@ -565,7 +565,7 @@ where VftClient: Vft, {
     }
     
     //Calculate Loan Interest Rate Amount 
-    fn calculate_loan_interest_rate_amount(&mut self, user: ActorId) -> String {
+    pub fn calculate_loan_interest_rate_amount(&mut self, user: ActorId) -> String {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
