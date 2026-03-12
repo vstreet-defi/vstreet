@@ -10,6 +10,9 @@ import { ComponentType } from 'react';
 import { BrowserRouter } from 'react-router-dom';
 
 import { ADDRESS } from '@/consts';
+import { VaultProvider } from '@/vstreet/contexts/vaultContext';
+import { UserInfoProvider } from '@/vstreet/contexts/userInfoContext';
+import { WalletProvider } from '@/vstreet/contexts/accountContext';
 
 import { name as appName } from '../../package.json';
 
@@ -44,7 +47,16 @@ function AccountProvider({ children }: ProviderProps) {
   return <GearAccountProvider appName={appName}>{children}</GearAccountProvider>;
 }
 
-const providers = [BrowserRouter, AlertProvider, ApiProvider, AccountProvider, QueryProvider];
+const providers = [
+  BrowserRouter,
+  AlertProvider,
+  ApiProvider,
+  AccountProvider,
+  QueryProvider,
+  WalletProvider,
+  UserInfoProvider,
+  VaultProvider,
+];
 
 function withProviders(Component: ComponentType) {
   return () => providers.reduceRight((children, Provider) => <Provider>{children}</Provider>, <Component />);
