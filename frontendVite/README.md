@@ -14,9 +14,12 @@ A ready-made application template with a well-thought-out infrastructure for qui
 
 ## Installation
 
-Create new project based on this template:
+```sh
+npm install
+```
+
+## Run
 
 ```sh
-npx degit gear-foundation/dapps/frontend/templates/create-vara-app dApp
-cd dApp
+npm start
 ```
