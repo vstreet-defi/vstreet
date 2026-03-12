@@ -13,6 +13,7 @@
     "isolatedModules": true,
     "noEmit": true,
     "jsx": "react-jsx",
+    "allowJs": true,
 
     /* Linting */
     "strict": true,
@@ -21,7 +22,15 @@
     // custom
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "components/*": ["./src/vstreet/components/*"],
+      "contexts/*": ["./src/vstreet/contexts/*"],
+      "hooks/*": ["./src/vstreet/hooks/*"],
+      "services/*": ["./src/vstreet/services/*"],
+      "types/*": ["./src/vstreet/types/*"],
+      "utils/*": ["./src/vstreet/utils/*"],
+      "smart-contracts-tools/*": ["./src/vstreet/smart-contracts-tools/*"],
+      "consts": ["./src/vstreet/consts.ts"]
     }
   },
   "include": ["src"]

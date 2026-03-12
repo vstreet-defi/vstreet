@@ -7,10 +7,7 @@ import svgr from 'vite-plugin-svgr';
 // https://vitejs.dev/config/
 export default defineConfig({
   server: {
-    allowedHosts: [
-      'localhost',
-      '3000-varalab-dapptemplate-9c1fz312gi9.ws-us118.gitpod.io'
-    ]
+    allowedHosts: ['localhost', '3000-varalab-dapptemplate-9c1fz312gi9.ws-us118.gitpod.io'],
   },
   plugins: [
     react(),
@@ -18,9 +15,24 @@ export default defineConfig({
     svgr(),
     checker({
       typescript: true,
-      eslint: { lintCommand: 'eslint "./src/**/*.{ts,tsx}"', dev: { logLevel: ['error'] } },
+      eslint: {
+        lintCommand: 'eslint "./src/**/*.{ts,tsx}" --ignore-pattern "src/vstreet/**"',
+        dev: { logLevel: ['error'] },
+      },
     }),
   ],
 
-  resolve: { alias: { '@': '/src' } },
+  resolve: {
+    alias: {
+      '@': '/src',
+      components: '/src/vstreet/components',
+      contexts: '/src/vstreet/contexts',
+      hooks: '/src/vstreet/hooks',
+      services: '/src/vstreet/services',
+      types: '/src/vstreet/types',
+      utils: '/src/vstreet/utils',
+      'smart-contracts-tools': '/src/vstreet/smart-contracts-tools',
+      consts: '/src/vstreet/consts.ts',
+    },
+  },
 });

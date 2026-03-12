@@ -1,0 +1,93 @@
+.cornerAccent {
+    position: absolute;
+    pointer-events: none;
+    z-index: 2;
+
+    &::before,
+    &::after {
+        content: "";
+        position: absolute;
+        background: var(--accent-color, #00ffc4);
+        box-shadow: 0 0 8px var(--accent-color, #00ffc4);
+    }
+}
+
+/* Top Left */
+.topleft {
+    top: 0;
+    left: 0;
+
+    &::before {
+        top: 0;
+        left: 0;
+        width: var(--accent-length, 40px);
+        height: var(--accent-thickness, 2px);
+    }
+
+    &::after {
+        top: 0;
+        left: 0;
+        width: var(--accent-thickness, 2px);
+        height: var(--accent-length, 40px);
+    }
+}
+
+/* Top Right */
+.topright {
+    top: 0;
+    right: 0;
+
+    &::before {
+        top: 0;
+        right: 0;
+        width: var(--accent-length, 40px);
+        height: var(--accent-thickness, 2px);
+    }
+
+    &::after {
+        top: 0;
+        right: 0;
+        width: var(--accent-thickness, 2px);
+        height: var(--accent-length, 40px);
+    }
+}
+
+/* Bottom Left */
+.bottomleft {
+    bottom: 0;
+    left: 0;
+
+    &::before {
+        bottom: 0;
+        left: 0;
+        width: var(--accent-length, 40px);
+        height: var(--accent-thickness, 2px);
+    }
+
+    &::after {
+        bottom: 0;
+        left: 0;
+        width: var(--accent-thickness, 2px);
+        height: var(--accent-length, 40px);
+    }
+}
+
+/* Bottom Right */
+.bottomright {
+    bottom: 0;
+    right: 0;
+
+    &::before {
+        bottom: 0;
+        right: 0;
+        width: var(--accent-length, 40px);
+        height: var(--accent-thickness, 2px);
+    }
+
+    &::after {
+        bottom: 0;
+        right: 0;
+        width: var(--accent-thickness, 2px);
+        height: var(--accent-length, 40px);
+    }
+}

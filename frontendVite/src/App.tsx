@@ -1,6 +1,6 @@
 import { useApi, useAccount } from '@gear-js/react-hooks';
 
-import { Header, Footer, ApiLoader } from '@/components';
+import { ApiLoader } from '@/components';
 import { withProviders } from '@/hocs';
 import { Routing } from '@/pages';
 import './App.scss';
@@ -13,9 +13,7 @@ function Component() {
 
   return (
     <>
-      {/* <Header /> */}
       <main>{isAppReady ? <Routing /> : <ApiLoader />}</main>
-      <Footer />
     </>
   );
 }

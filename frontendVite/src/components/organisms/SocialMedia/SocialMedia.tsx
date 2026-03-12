@@ -38,13 +38,9 @@ function SocialMedia() {
       </p>
       <div className="social-icons-container">
         {socialMediaLinks.map(({ icon, alt, url }) => (
-          <button
-            key={alt}
-            className="social-icon-button"
-            onClick={() => window.open(url, '_blank')}
-          >
-            <img src={icon} alt={alt} />
-          </button>
+          <a key={alt} href={url} target="_blank" rel="noopener noreferrer" aria-label={alt}>
+            <img src={icon} alt="" />
+          </a>
         ))}
       </div>
     </div>

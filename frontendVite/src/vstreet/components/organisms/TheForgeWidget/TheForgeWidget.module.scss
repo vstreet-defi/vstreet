@@ -1,0 +1,380 @@
+.widget {
+    position: relative;
+    width: 100%;
+    min-height: 480px;
+    height: fit-content;
+
+    /* Glassmorphism - Matched with FundsManager */
+    background: linear-gradient(135deg,
+            rgba(27, 27, 31, 0.9),
+            rgba(18, 18, 21, 0.7));
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+
+    /* Border with gradient - Matched with FundsManager */
+    border: 1.5px solid;
+    border-image: linear-gradient(135deg,
+            rgba(0, 255, 196, 0.3),
+            rgba(79, 255, 75, 0.2)) 1;
+    border-radius: 12px;
+
+    /* Shadow */
+    box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+
+    padding: 24px 32px;
+    margin-bottom: 32px;
+    overflow: visible;
+
+    @media (max-width: 768px) {
+        padding: 20px 16px;
+        min-height: auto;
+    }
+}
+
+.header {
+    margin-bottom: 12px;
+    padding-bottom: 0px;
+    border-bottom: none;
+}
+
+.title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 8px 0;
+    text-shadow: none;
+
+    @media (max-width: 768px) {
+        font-size: 18px;
+    }
+}
+
+.subtitle {
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 0 16px 0;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 40px;
+}
+
+.controls {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.availableBalance {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.6);
+    text-align: right;
+    margin-bottom: 8px;
+
+    span {
+        color: #00ffc4;
+        font-family: "Orbitron", sans-serif;
+        margin-left: 4px;
+        text-shadow: 0 0 8px rgba(0, 255, 196, 0.4);
+    }
+
+    @media (max-width: 768px) {
+        font-size: 12px;
+    }
+
+    @media (max-width: 480px) {
+        font-size: 11px;
+        text-align: left;
+    }
+}
+
+.label {
+    display: block;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+}
+
+.deepInput {
+    position: relative;
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    height: 54px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    transition: border-color 0.3s ease;
+
+    &:focus-within {
+        border-color: rgba(0, 255, 196, 0.5);
+    }
+
+    input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-family: "Orbitron", sans-serif;
+        font-size: 1.25rem;
+        padding: 0 12px;
+        width: 100%;
+
+        &:focus {
+            outline: none;
+        }
+    }
+}
+
+.maxBtn {
+    background: rgba(0, 255, 196, 0.1);
+    border: 1px solid rgba(0, 255, 196, 0.3);
+    color: #00ffc4;
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+
+    &:hover {
+        background: rgba(0, 255, 196, 0.2);
+        box-shadow: 0 0 10px rgba(0, 255, 196, 0.3);
+    }
+}
+
+.tokenLabel {
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.4);
+    margin-left: 8px;
+}
+
+.warning {
+    margin-top: 12px;
+    font-size: 0.7rem;
+    color: #ff9d00;
+    background: rgba(255, 157, 0, 0.05);
+    padding: 8px 12px;
+    border-radius: 4px;
+    border-left: 2px solid #ff9d00;
+}
+
+.cardGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+}
+
+.forgeBtn {
+    margin-top: 16px;
+    height: 54px;
+
+    /* Background matching ButtonGradFill */
+    background: rgba(0, 255, 196, 0.18);
+
+    /* Border matching ButtonGradFill */
+    border: 2px solid rgba(0, 255, 196, 0.5);
+    border-radius: 8px;
+
+    /* Text matching ButtonGradFill */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #00ffc4;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+
+    /* Cursor */
+    cursor: pointer;
+
+    /* Transition */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-shadow: 0 0 12px rgba(0, 255, 196, 0.6);
+    box-shadow: 0 0 15px rgba(0, 255, 196, 0.2);
+
+    &:hover {
+        background: rgba(0, 255, 196, 0.2);
+        border-color: #00ffc4;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 20px rgba(0, 255, 196, 0.3);
+        text-shadow: 0 0 12px rgba(0, 255, 196, 0.8);
+    }
+
+    &:active {
+        transform: translateY(1px);
+    }
+}
+
+.projectionArea {
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 24px;
+}
+
+.projectionHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.powerBadge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+.peakMode {
+    background: rgba(79, 255, 75, 0.1);
+    border-color: rgba(79, 255, 75, 0.4);
+    color: #4fff4b;
+    box-shadow: 0 0 15px rgba(79, 255, 75, 0.2);
+}
+
+.projectionBody {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.yieldSplit {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.yieldInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.alignRight {
+    text-align: right;
+    align-items: flex-end;
+}
+
+.yieldSub {
+    font-size: 0.65rem;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+}
+
+.yieldValue {
+    font-family: "Orbitron", sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.neonGreen {
+    color: #4fff4b;
+}
+
+.unifiedBar {
+    position: relative;
+    height: 40px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.dexFill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    z-index: 1;
+    transition: width 0.5s ease-out;
+}
+
+.forgeFill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(90deg, #00ffc4, #4fff4b);
+    z-index: 2;
+    transition: width 0.7s cubic-bezier(0.19, 1, 0.22, 1);
+    box-shadow: 0 0 20px rgba(0, 255, 196, 0.3);
+}
+
+.glowPulse {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 20px;
+    height: 100%;
+    background: #fff;
+    filter: blur(10px);
+    opacity: 0.5;
+    animation: pulse 2s infinite;
+}
+
+.toonGloss {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: rgba(255, 255, 255, 0.15);
+    pointer-events: none;
+}
+
+.projectionFooter {
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    padding-top: 16px;
+    text-align: center;
+}
+
+.bonusLabel {
+    font-family: "Orbitron", sans-serif;
+    font-size: 0.8rem;
+    color: #4fff4b;
+    letter-spacing: 1px;
+}
+
+@keyframes pulse {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: translateX(500%);
+        opacity: 0;
+    }
+}
+
+@media (max-width: 1024px) {
+    .grid {
+        grid-template-columns: 1fr;
+    }
+}
