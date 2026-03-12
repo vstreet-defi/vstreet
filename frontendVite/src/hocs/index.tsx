@@ -8,7 +8,6 @@ import { Alert, alertStyles } from '@gear-js/vara-ui';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ComponentType } from 'react';
 import { BrowserRouter } from 'react-router-dom';
-
 import { ADDRESS } from '@/consts';
 import { VaultProvider } from '@/vstreet/contexts/vaultContext';
 import { UserInfoProvider } from '@/vstreet/contexts/userInfoContext';

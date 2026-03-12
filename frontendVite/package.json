@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "start": "vite --open --port 3000",
+    "dev": "npm run start",
     "build": "tsc -b && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"
@@ -14,7 +15,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@gear-js/api": "0.41.0",
-    "@gear-js/react-hooks": "0.15.0",
+    "@gear-js/react-hooks": "0.16.0",
     "@gear-js/ui": "^0.7.0",
     "@gear-js/vara-ui": "0.1.1",
     "@gear-js/wallet-connect": "^0.4.1",

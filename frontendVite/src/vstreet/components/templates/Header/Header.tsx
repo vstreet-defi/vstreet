@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { DisplayWallet } from "components/organisms/Wallet/DisplayWallet";
+import { Tooltip, ChakraProvider } from "@chakra-ui/react";
 import Flag from "../../atoms/Flag/Flag";
 import Logo from "../../../assets/images/icons/vStreet-Navbar-Color-White.png";
 import styles from "./Header.module.scss";
@@ -47,7 +48,7 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
     } else if (isDapp) {
       setActiveTab((tab || DappTab.Supply).toLowerCase());
     } else {
-      setActiveTab(null); // Resetear en otras rutas
+      setActiveTab(null);
     }
   }, [location.search, location.pathname, navigate, isDapp]);
 
@@ -101,13 +102,35 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
     items.map((item, index) => (
       <div className={styles.itemWrapper} key={index}>
         {renderFlag(item)}
-        <button
-          className={`${styles.navTab} ${item.toLowerCase() === activeTab && isDapp ? styles.active : ""
-            }`}
-          onClick={() => handleClick(item)}
-        >
-          {item}
-        </button>
+        {item === DappTab.VST ? (
+          <Tooltip
+            label="Coming Soon"
+            placement="top"
+            bg="rgba(10, 12, 18, 0.95)"
+            color="#00ffc4"
+            border="1px solid rgba(0, 255, 196, 0.3)"
+            borderRadius="4px"
+            fontSize="xs"
+            fontWeight="bold"
+            hasArrow
+          >
+            <button
+              className={`${styles.navTab} ${styles.disabled}`}
+              disabled
+              style={{ cursor: 'not-allowed', opacity: 0.6 }}
+            >
+              {item}
+            </button>
+          </Tooltip>
+        ) : (
+          <button
+            className={`${styles.navTab} ${item.toLowerCase() === activeTab && isDapp ? styles.active : ""
+              }`}
+            onClick={() => handleClick(item)}
+          >
+            {item}
+          </button>
+        )}
       </div>
     ));
 
@@ -118,13 +141,11 @@ const Header: React.FC<Props> = ({ isAccountVisible, items, isMobile }) => {
 
     return (
       <>
-        <div className={styles.itemsContainer}>{renderItems()}</div>
+        <ChakraProvider resetCSS={false}>
+          <div className={styles.itemsContainer}>{renderItems()}</div>
+        </ChakraProvider>
         {isAccountVisible || location.pathname === "/dapp" ? (
           <div className={styles.walletContainer}>
-            {/* Note: DisplayWallet might need internal refactoring to fully match the design, 
-                 but wrapping it here allows us to apply the container styles. 
-                 Ideally DisplayWallet should be broken down or styled via props/context.
-                 For now, we wrap it. */}
             <DisplayWallet />
           </div>
         ) : (

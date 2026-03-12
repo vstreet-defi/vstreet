@@ -1,6 +1,7 @@
 import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import DappPage from "./pages/Dapp";
+import ApiLoader from "./atoms/ApiLoader";
 //import { Faucet } from "./pages/Faucet";
 
 const routes = [
@@ -19,4 +20,5 @@ function Routing() {
   return <Routes>{getRoutes()}</Routes>;
 }
 
+export { Routing, ApiLoader };
 export default Routing;

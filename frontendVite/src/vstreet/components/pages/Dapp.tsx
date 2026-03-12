@@ -28,14 +28,11 @@ import { isMobileDevice } from 'utils/isMobile';
 
 /**
  * DappPage Component
- * Main entry point for the dApp interface. Handles tab navigation,
- * page transitions, and conditional rendering of sidebar/content areas.
  */
 function DappPage() {
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
 
-  // Determine current tab from URL path or search params, default to Supply
   const isVSTPath = location.pathname === '/vst';
   const tab = isVSTPath ? '$vst' : searchParams.get('tab') || DappTab.Supply.toLowerCase();
 
@@ -44,17 +41,15 @@ function DappPage() {
   const isVSTTab = tab === '$vst';
   const isVaultsTab = tab === DappTab.Vaults.toLowerCase();
 
-  // Framer-motion variants for the 'Cyber-Slide' page transition
   const variants = {
     initial: { opacity: 0, x: 20, filter: 'blur(10px)' },
     animate: { opacity: 1, x: 0, filter: 'blur(0px)' },
     exit: { opacity: 0, x: -20, filter: 'blur(10px)' },
   };
 
-  // Wallet connection state from PSYLABS account context
   const { allAccounts } = useWallet();
 
-  const NAV_ITEMS = [DappTab.Supply, DappTab.Borrow, DappTab.VST, DappTab.Vaults];
+  const NAV_ITEMS = [DappTab.Supply, DappTab.Borrow, DappTab.Vaults, DappTab.VST];
 
   const isAccountReady = allAccounts.length > 0;
 

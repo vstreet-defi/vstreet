@@ -11,15 +11,11 @@ const ModalBurgerMenu = ({ isOpen, items, selectedTab }: any) => {
       navigate("/");
     } else if (item === DappTab.Borrow) {
       navigate("/dapp?tab=borrow");
-    } else if (item === DappTab.VST) {
-      navigate("/vst");
     } else if (item === DappTab.Supply) {
       navigate("/dapp?tab=supply");
     } else if (item === DappTab.Vaults) {
       navigate("/dapp?tab=vaults");
-    } /*else if (item === DappTab.Faucet) {
-      navigate("/faucet");
-    }*/ else if (item === "GitHub") {
+    } else if (item === "GitHub") {
       window.open("https://github.com/vstreet-defi/vstreet", "_blank");
     } else if (item === "Team") {
       window.location.href = "#team";
