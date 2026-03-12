@@ -1,6 +1,8 @@
-import { useState, useEffect, useContext } from "react";
-import { AlertModalContext, AlertType } from "contexts/alertContext";
-import CornerAccent from "../../atoms/CornerAccent/CornerAccent";
+import { useState, useEffect, useContext } from 'react';
+import { createPortal } from 'react-dom';
+import { AlertModalContext, AlertType } from 'contexts/alertContext';
+import CornerAccent from '../../atoms/CornerAccent/CornerAccent';
+import './AlertModal.scss';
 
 export function Loader() {
   return (
@@ -20,21 +22,17 @@ function AlertModal() {
   const alertContext = useContext(AlertModalContext);
   const [isVisible, setIsVisible] = useState(false);
   const [alertType, setAlertType] = useState<AlertType>(AlertType.Info);
-  const [alertMessage, setAlertMessage] = useState<string>("");
+  const [alertMessage, setAlertMessage] = useState<string>('');
 
   useEffect(() => {
     if (alertContext?.isAlertModalVisible) {
       setIsVisible(true);
       setAlertType(alertContext?.alertType ?? AlertType.Info);
-      setAlertMessage(alertContext?.alertMessage ?? "");
+      setAlertMessage(alertContext?.alertMessage ?? '');
     } else {
       setIsVisible(false);
     }
-  }, [
-    alertContext?.isAlertModalVisible,
-    alertContext?.alertType,
-    alertContext?.alertMessage,
-  ]);
+  }, [alertContext?.isAlertModalVisible, alertContext?.alertType, alertContext?.alertMessage]);
 
   if (!isVisible) {
     return null;
@@ -43,46 +41,49 @@ function AlertModal() {
   const getModalText = () => {
     switch (alertType) {
       case AlertType.Success:
-        return "Transaction completed successfully!";
+        return 'Transaction completed successfully!';
       case AlertType.Warning:
-        return alertMessage || "Please check the information provided.";
+        return alertMessage || 'Please check the information provided.';
       case AlertType.Error:
-        return alertMessage || "An error occurred during the transaction.";
+        return alertMessage || 'An error occurred during the transaction.';
       case AlertType.Info:
-        return (
-          alertMessage || "Please check your wallet to sign the transaction."
-        );
+        return alertMessage || 'Please check your wallet to sign the transaction.';
       default:
-        return "";
+        return '';
     }
   };
 
   const getModalClass = () => {
     switch (alertType) {
       case AlertType.Success:
-        return "Alert-Modal-Success";
+        return 'Alert-Modal-Success';
       case AlertType.Warning:
-        return "Alert-Modal-Warning";
+        return 'Alert-Modal-Warning';
       case AlertType.Error:
-        return "Alert-Modal-Error";
+        return 'Alert-Modal-Error';
       case AlertType.Info:
-        return "Alert-Modal-Info";
+        return 'Alert-Modal-Info';
       default:
-        return "";
+        return '';
     }
   };
 
   const getAccentColor = () => {
     switch (alertType) {
-      case AlertType.Success: return "#4fff4b";
-      case AlertType.Warning: return "#fff500";
-      case AlertType.Error: return "#ff0f00";
-      case AlertType.Info: return "#00ffc4";
-      default: return "#00ffc4";
+      case AlertType.Success:
+        return '#4fff4b';
+      case AlertType.Warning:
+        return '#fff500';
+      case AlertType.Error:
+        return '#ff0f00';
+      case AlertType.Info:
+        return '#00ffc4';
+      default:
+        return '#00ffc4';
     }
   };
 
-  return (
+  return createPortal(
     <div className="Alert-Modal">
       <div className={`Alert-Modal-Box ${getModalClass()}`}>
         <CornerAccent position="top-left" color={getAccentColor()} length={30} />
@@ -92,7 +93,8 @@ function AlertModal() {
         <p>{getModalText()}</p>
         {(alertType === AlertType.Info || alertType === AlertType.Success) && <Loader />}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
