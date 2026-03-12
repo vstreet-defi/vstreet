@@ -1,0 +1,173 @@
+.header {
+  display: flex;
+  width: 100%;
+  height: 5rem;
+  padding: 0 2rem;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(10, 12, 18, 0.7);
+  backdrop-filter: blur(15px);
+  position: relative;
+  border-bottom: 1px solid rgba(0, 255, 196, 0.2);
+  z-index: 100;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent 0%, rgba(0, 255, 196, 0.5) 50%, transparent 100%);
+    box-shadow: 0 0 15px rgba(0, 255, 196, 0.3);
+  }
+
+  @media screen and (max-width: 480px) {
+    padding: 0 1rem;
+  }
+}
+
+.logo {
+  cursor: pointer;
+  width: 10.125rem;
+  height: 2.3125rem;
+  flex-shrink: 0;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    filter: drop-shadow(0 0 8px rgba(0, 255, 196, 0.3));
+  }
+}
+
+.itemsContainer {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 1rem;
+}
+
+.itemWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.navTab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 1.5rem;
+  min-width: 140px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  clip-path: polygon(10% 0, 100% 0, 90% 100%, 0% 100%);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+
+  &:hover {
+    border-color: rgba(0, 255, 196, 0.3);
+    color: rgba(255, 255, 255, 0.95);
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+.connectButton {
+  background: rgba(0, 255, 196, 0.1);
+  border: 1px solid rgba(0, 255, 196, 0.3);
+  border-radius: 6px;
+  color: #00ffc4;
+  padding: 0.6rem 1.25rem;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: rgba(0, 255, 196, 0.2);
+    border-color: #00ffc4;
+    box-shadow: 0 0 15px rgba(0, 255, 196, 0.3);
+    transform: translateY(-1px);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.burgerMenu {
+  position: relative;
+}
+
+.burgerIcon {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 30px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.line {
+  width: 100%;
+  height: 3px;
+  background: white;
+  transition: all 0.3s ease;
+
+  &.open {
+    background: white;
+  }
+}
+
+.mobileMenu {
+  position: absolute;
+  top: 140%;
+  right: 0;
+  width: 219px;
+  background-color: #1b1b1f;
+  padding: 20px;
+  color: white;
+  border-radius: 5px;
+  border: 1px solid rgba(0, 0, 0, 0.107);
+  box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);
+  z-index: 1;
+
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+
+  li {
+    margin: 0 10px 10px 10px;
+    padding-bottom: 20px;
+
+    button {
+      color: white;
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      text-decoration: none;
+
+      &:hover {
+        color: #00ffc4;
+      }
+    }
+  }
+}
