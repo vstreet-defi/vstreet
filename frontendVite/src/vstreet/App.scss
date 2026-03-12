@@ -1,8 +1,3 @@
-//FONTS
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
-
 //STYLES
 // Dapp.scss is removed as we are moving to Dapp.module.scss
 // Header.scss is removed as we are moving to Header.module.scss
@@ -23,6 +18,11 @@
 @use './components/atoms/TotalLiquidityPool/TotalLiquidityPool.scss';
 @use './components/atoms/Staking-Info-Header/StakinInfoHeader.scss';
 @use './components/molecules/Staking-Info-Card/StakingInfoCard.scss';
+
+//FONTS
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
 :root {
   --color-primary: #00ffc4;
