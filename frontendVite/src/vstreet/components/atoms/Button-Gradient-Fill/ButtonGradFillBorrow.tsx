@@ -1,6 +1,5 @@
 import React, { useContext, useState } from "react";
 import { AlertModalContext } from "contexts/alertContext";
-import { useAccount } from "@gear-js/react-hooks";
 import { web3FromSource } from "@polkadot/extension-dapp";
 
 import { Sails } from "sails-js";
@@ -29,19 +28,89 @@ interface ButtonProps {
 
 type TransactionFunction = () => Promise<void>;
 
+const LOG_PREFIX = "[BorrowAction]";
+
+const logTransactionContext = (stage: string, details: Record<string, unknown>) => {
+  console.log(`${LOG_PREFIX} ${stage}`, details);
+};
+
+const getErrorMessage = (error: unknown) =>
+  error instanceof Error ? error.message : String(error);
+
 const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   amount,
   label,
   balance,
 }) => {
-  const { accounts } = useAccount();
-
   const alertModalContext = useContext(AlertModalContext);
   const { fetchUserInfo } = useUserInfo();
 
-  const { accountData, hexAddress, fetchBalance } = useWallet();
+  const { accountData, hexAddress, fetchBalance, allAccounts } = useWallet();
 
   const [isLoading, setIsLoading] = useState(false);
+  const availableAccounts = allAccounts ?? [];
+
+  const validateTransactionPreconditions = (operation: string) => {
+    const parsedAmount = Number(amount);
+
+    logTransactionContext(`${operation}:precheck`, {
+      label,
+      amount,
+      parsedAmount,
+      balance,
+      accountAddress: accountData?.address,
+      accountSource: accountData?.meta.source,
+      hexAddress,
+      walletAccountsCount: availableAccounts.length,
+    });
+
+    if (!accountData) {
+      throw new Error("No account data found");
+    }
+
+    if (availableAccounts.length === 0) {
+      throw new Error("No wallet accounts available. Connect or refresh the wallet extension.");
+    }
+
+    if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
+      throw new Error(`Invalid transaction amount: ${amount}`);
+    }
+
+    return parsedAmount;
+  };
+
+  const getRequiredAccount = () => {
+    if (!accountData) {
+      throw new Error("No account data found");
+    }
+    return accountData;
+  };
+
+  const createConfiguredSails = async (operation: string, idl: string, programId: string) => {
+    const parser = await SailsIdlParser.new();
+    const sails = new Sails(parser);
+
+    sails.parseIdl(idl);
+    sails.setProgramId(programId as `0x${string}`);
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+    });
+
+    sails.setApi(gearApi);
+
+    logTransactionContext(`${operation}:sails-configured`, {
+      programId,
+      serviceNames: Object.keys(sails.services ?? {}),
+      functionNames: Object.keys(
+        sails.services?.LiquidityInjectionService?.functions ??
+        sails.services?.Vft?.functions ??
+        {}
+      ),
+    });
+
+    return sails;
+  };
 
   const handleTransaction = async (
     transactions: { transaction: TransactionFunction; infoText: string }[]
@@ -52,6 +121,16 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       try {
         await transaction();
       } catch (error) {
+        console.error(`${LOG_PREFIX} transaction failed`, {
+          infoText,
+          label,
+          amount,
+          balance,
+          accountAddress: accountData?.address,
+          hexAddress,
+          error,
+          errorMessage: getErrorMessage(error),
+        });
         throw error;
       }
     }
@@ -65,26 +144,9 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createDepositTransaction = async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVSTREET);
-    sails.setProgramId(vstreetProgramID);
-
-    const accountWEB = accountData;
-    if (!accountWEB) {
-      throw new Error("No account data found");
-    }
-
-    const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
-    });
-
-    sails.setApi(gearApi);
-
-    if (accounts.length === 0) {
-      throw new Error("No account found");
-    }
+    validateTransactionPreconditions("deposit");
+    const sails = await createConfiguredSails("deposit", idlVSTREET, vstreetProgramID);
+    const accountWEB = getRequiredAccount();
 
     const transaction =
       await sails.services.LiquidityInjectionService.functions.DepositCollateral();
@@ -95,6 +157,11 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     transaction.withValue(BigInt(Number(amount) * 1e12));
     await transaction.calculateGas(true, 15);
 
+    logTransactionContext("deposit:transaction-created", {
+      value: BigInt(Number(amount) * 1e12).toString(),
+      signerSource: accountWEB.meta.source,
+    });
+
     return async () => {
       const { isFinalized } = await transaction.signAndSend();
       await isFinalized;
@@ -102,36 +169,25 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createWithdrawTransaction = async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVSTREET);
-    sails.setProgramId(vstreetProgramID);
-
-    const accountWEB = accountData;
-    if (!accountWEB) {
-      throw new Error("No account data found");
-    }
-
-    const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
-    });
-
-    sails.setApi(gearApi);
-
-    if (accounts.length === 0) {
-      throw new Error("No account found");
-    }
+    const parsedAmount = validateTransactionPreconditions("withdraw");
+    const sails = await createConfiguredSails("withdraw", idlVSTREET, vstreetProgramID);
+    const accountWEB = getRequiredAccount();
+    const amountConverted = parsedAmount * 1e12;
 
     const transaction =
       await sails.services.LiquidityInjectionService.functions.WithdrawCollateral(
-        Number(amount)
+        amountConverted
       );
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
     await transaction.calculateGas(true, 15);
+
+    logTransactionContext("withdraw:transaction-created", {
+      amountConverted,
+      signerSource: accountWEB.meta.source,
+    });
 
     return async () => {
       const { isFinalized } = await transaction.signAndSend();
@@ -140,28 +196,10 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createTakeLoanTransaction = async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVSTREET);
-    sails.setProgramId(vstreetProgramID);
-
-    const accountWEB = accountData;
-    if (!accountWEB) {
-      throw new Error("No account data found");
-    }
-
-    const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
-    });
-
-    sails.setApi(gearApi);
-
-    if (accounts.length === 0) {
-      throw new Error("No account found");
-    }
-
-    const amountConverted = Number(amount) * 1000000;
+    const parsedAmount = validateTransactionPreconditions("borrow");
+    const sails = await createConfiguredSails("borrow", idlVSTREET, vstreetProgramID);
+    const accountWEB = getRequiredAccount();
+    const amountConverted = parsedAmount * 1000000;
 
     const transaction =
       await sails.services.LiquidityInjectionService.functions.TakeLoan(
@@ -173,6 +211,11 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     });
     await transaction.calculateGas(true, 15);
 
+    logTransactionContext("borrow:transaction-created", {
+      amountConverted,
+      signerSource: accountWEB.meta.source,
+    });
+
     return async () => {
       const { isFinalized } = await transaction.signAndSend();
       await isFinalized;
@@ -180,28 +223,10 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createPayLoanTransaction = async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVSTREET);
-    sails.setProgramId(vstreetProgramID);
-
-    const accountWEB = accountData;
-    if (!accountWEB) {
-      throw new Error("No account data found");
-    }
-
-    const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
-    });
-
-    sails.setApi(gearApi);
-
-    if (accounts.length === 0) {
-      throw new Error("No account found");
-    }
-
-    const amountConverted = Number(amount) * 1000000;
+    const parsedAmount = validateTransactionPreconditions("pay");
+    const sails = await createConfiguredSails("pay", idlVSTREET, vstreetProgramID);
+    const accountWEB = getRequiredAccount();
+    const amountConverted = parsedAmount * 1000000;
 
     const transaction =
       await sails.services.LiquidityInjectionService.functions.PayLoan(
@@ -213,6 +238,11 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     });
     await transaction.calculateGas(true, 15);
 
+    logTransactionContext("pay:transaction-created", {
+      amountConverted,
+      signerSource: accountWEB.meta.source,
+    });
+
     return async () => {
       const { isFinalized } = await transaction.signAndSend();
       await isFinalized;
@@ -220,28 +250,10 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createApprovalTransaction = async () => {
-    const parser = await SailsIdlParser.new();
-    const sails = new Sails(parser);
-
-    sails.parseIdl(idlVFT);
-    sails.setProgramId(fungibleTokenProgramID);
-
-    const accountWEB = accountData;
-    if (!accountWEB) {
-      throw new Error("No account data found");
-    }
-
-    const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
-    });
-
-    sails.setApi(gearApi);
-
-    if (accounts.length === 0) {
-      throw new Error("No account found");
-    }
-
-    const amountConverted = Number(amount) * 1000000;
+    const parsedAmount = validateTransactionPreconditions("approve");
+    const sails = await createConfiguredSails("approve", idlVFT, fungibleTokenProgramID);
+    const accountWEB = getRequiredAccount();
+    const amountConverted = parsedAmount * 1000000;
 
     const transaction = await sails.services.Vft.functions.Approve(
       vstreetProgramID,
@@ -252,6 +264,11 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
     await transaction.calculateGas(true, 15);
+
+    logTransactionContext("approve:transaction-created", {
+      amountConverted,
+      signerSource: accountWEB.meta.source,
+    });
 
     return async () => {
       const { isFinalized } = await transaction.signAndSend();
@@ -317,10 +334,28 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     const action = actions[label];
     if (action) {
       try {
+        logTransactionContext("click", {
+          label,
+          amount,
+          balance,
+          accountAddress: accountData?.address,
+          hexAddress,
+          walletAccountsCount: availableAccounts.length,
+        });
         await action();
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : "An unknown error occurred.";
+        console.error(`${LOG_PREFIX} action failed`, {
+          label,
+          amount,
+          balance,
+          accountAddress: accountData?.address,
+          hexAddress,
+          walletAccountsCount: availableAccounts.length,
+          error,
+          errorMessage,
+        });
         alertModalContext?.showErrorModal(errorMessage);
         setTimeout(() => {
           alertModalContext?.hideAlertModal();
@@ -339,7 +374,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     <button
       className={`btn-grad-fill ${isLoading ? "btn-grad-fill--loading" : ""}`}
       onClick={handleClick}
-      disabled={Number(amount) > balance || Number(amount) === 0 || isLoading}
+      disabled={!Number.isFinite(Number(amount)) || Number(amount) > balance || Number(amount) === 0 || isLoading}
     >
       {isLoading ? <Loader /> : label}
     </button>
