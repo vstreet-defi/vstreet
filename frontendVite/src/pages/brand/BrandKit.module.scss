@@ -1,0 +1,384 @@
+.container {
+  min-height: 100vh;
+  background: transparent;
+  color: var(--color-text-primary);
+  display: flex;
+  flex-direction: column;
+}
+
+.main {
+  flex: 1;
+  max-width: 1200px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 80px 40px 80px 40px;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 100px;
+
+  @media (max-width: 768px) {
+    padding: 60px 20px 40px 20px;
+    gap: 60px;
+  }
+}
+
+.hero {
+  text-align: center;
+  margin: 0;
+
+  .title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: clamp(36px, 10vw, 72px);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: clamp(4px, 1vw, 12px);
+    margin: 0 0 24px 0;
+    background: linear-gradient(135deg, #00ffc4 0%, #4fff4b 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 20px rgba(0, 255, 196, 0.4));
+  }
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+    letter-spacing: 4px;
+  }
+
+  .subtitle {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 4px;
+  }
+}
+
+.section {
+  margin: 0;
+
+  .sectionHeader {
+    margin-bottom: 32px;
+
+    .sectionTitle {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #ffffff;
+      margin: 0 0 8px 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .divider {
+      width: 100%;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(0, 255, 196, 0.5), transparent);
+    }
+  }
+}
+
+@mixin cardBase {
+  background: linear-gradient(135deg, rgba(27, 27, 31, 0.9), rgba(18, 18, 21, 0.7));
+  backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(0, 255, 196, 0.2);
+  border-radius: 12px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+}
+
+.bioBox {
+  @include cardBase;
+  padding: 40px;
+  height: auto !important;
+  min-height: auto !important;
+
+  @media (max-width: 768px) {
+    padding: 24px;
+  }
+
+  .bioSection {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+
+    @media (max-width: 768px) {
+      gap: 12px;
+    }
+  }
+
+  h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    color: #00ffc4;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  p {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.8;
+    font-size: 16px;
+    color: rgba(255, 255, 255, 0.8);
+    margin: 0;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+  }
+}
+
+.actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+.copyBtn {
+  background: rgba(0, 255, 196, 0.1);
+  border: 1px solid rgba(0, 255, 196, 0.3);
+  color: #00ffc4;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+
+  @media (max-width: 480px) {
+    width: 100%;
+    text-align: center;
+  }
+
+  &:hover {
+    background: rgba(0, 255, 196, 0.2);
+    box-shadow: 0 0 15px rgba(0, 255, 196, 0.3);
+    transform: translateY(-1px);
+  }
+}
+
+.colorGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 32px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.colorCard {
+  @include cardBase;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: all 0.3s ease;
+  min-height: auto !important;
+  height: auto !important;
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
+
+  &:hover {
+    transform: translateY(-8px);
+    border-color: rgba(0, 255, 196, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  }
+}
+
+.colorPreview {
+  height: 100px;
+  width: 100%;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+
+  @media (max-width: 768px) {
+    height: 80px;
+  }
+}
+
+.colorInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .colorName {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #ffffff;
+  }
+
+  .colorHex {
+    font-family: 'Roboto Mono', monospace;
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .copyHexBtn {
+    @extend .copyBtn;
+    width: auto;
+
+    @media (max-width: 480px) {
+      width: 100%;
+    }
+  }
+}
+
+.fontGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 24px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.fontCard {
+  @include cardBase;
+  padding: 32px;
+  min-height: auto !important;
+  height: auto !important;
+
+  @media (max-width: 768px) {
+    padding: 24px;
+  }
+
+  h3 {
+    font-size: 28px;
+    margin-bottom: 12px;
+    color: #00ffc4;
+
+    @media (max-width: 768px) {
+      font-size: 24px;
+    }
+  }
+
+  p {
+    font-size: 14px;
+    color: rgba(255, 255, 255, 0.5);
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+}
+
+.downloadLink {
+  color: #00ffc4;
+  text-decoration: none;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(0, 255, 196, 0.3);
+  padding-bottom: 4px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #00ffc4;
+    text-shadow: 0 0 8px rgba(0, 255, 196, 0.4);
+  }
+}
+
+.logoGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 32px;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.logoCard {
+  @include cardBase;
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  text-align: center;
+  min-height: auto !important;
+  height: auto !important;
+
+  @media (max-width: 768px) {
+    padding: 24px;
+  }
+
+  span {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+}
+
+.logoImgWrapper {
+  width: 100%;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+  padding: 20px;
+}
+
+.logoImg {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 0 10px rgba(0, 255, 196, 0.1));
+}
+
+.downloadBtn {
+  background: #00ffc4;
+  color: #0a0c12;
+  text-decoration: none;
+  padding: 12px 24px;
+  border-radius: 4px;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  clip-path: polygon(0 0, 95% 0, 100% 100%, 5% 100%);
+  width: 100%;
+
+  &:hover {
+    box-shadow: 0 0 20px rgba(0, 255, 196, 0.5);
+    transform: scale(1.02);
+  }
+}
+
+.internalDivider {
+  width: 100%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  margin: 32px 0;
+}
