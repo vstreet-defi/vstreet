@@ -1,24 +1,19 @@
-import React, { useContext, useState } from "react";
-import { AlertModalContext } from "contexts/alertContext";
-import { web3FromSource } from "@polkadot/extension-dapp";
+import React, { useContext, useState } from 'react';
+import { AlertModalContext } from 'contexts/alertContext';
+import { web3FromSource } from '@polkadot/extension-dapp';
 
-import { Sails } from "sails-js";
-import { SailsIdlParser } from "sails-js-parser";
+import { Sails } from 'sails-js';
+import { SailsIdlParser } from 'sails-js-parser';
 
-import { useWallet } from "contexts/accountContext";
-import { useUserInfo } from "contexts/userInfoContext";
+import { useWallet } from 'contexts/accountContext';
+import { useUserInfo } from 'contexts/userInfoContext';
 
-import {
-  fungibleTokenProgramID,
-  idlVFT,
-  idlVSTREET,
-  vstreetProgramID,
-} from "../../../utils/smartPrograms";
+import { fungibleTokenProgramID, idlVFT, idlVSTREET, vstreetProgramID } from '../../../utils/smartPrograms';
 
-import { Loader } from "components/molecules/alert-modal/AlertModal";
-import { GearApi } from "@gear-js/api";
-import { Codec, CodecClass } from "@polkadot/types/types";
-import { Signer } from "@polkadot/types/types";
+import { Loader } from 'components/molecules/alert-modal/AlertModal';
+import { GearApi } from '@gear-js/api';
+import { Codec, CodecClass } from '@polkadot/types/types';
+import { Signer } from '@polkadot/types/types';
 
 interface ButtonProps {
   label: string;
@@ -28,20 +23,15 @@ interface ButtonProps {
 
 type TransactionFunction = () => Promise<void>;
 
-const LOG_PREFIX = "[BorrowAction]";
+const LOG_PREFIX = '[BorrowAction]';
 
 const logTransactionContext = (stage: string, details: Record<string, unknown>) => {
   console.log(`${LOG_PREFIX} ${stage}`, details);
 };
 
-const getErrorMessage = (error: unknown) =>
-  error instanceof Error ? error.message : String(error);
+const getErrorMessage = (error: unknown) => (error instanceof Error ? error.message : String(error));
 
-const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
-  amount,
-  label,
-  balance,
-}) => {
+const ButtonGradFillBorrow: React.FC<ButtonProps> = ({ amount, label, balance }) => {
   const alertModalContext = useContext(AlertModalContext);
   const { fetchUserInfo } = useUserInfo();
 
@@ -65,11 +55,11 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     });
 
     if (!accountData) {
-      throw new Error("No account data found");
+      throw new Error('No account data found');
     }
 
     if (availableAccounts.length === 0) {
-      throw new Error("No wallet accounts available. Connect or refresh the wallet extension.");
+      throw new Error('No wallet accounts available. Connect or refresh the wallet extension.');
     }
 
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
@@ -81,7 +71,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
 
   const getRequiredAccount = () => {
     if (!accountData) {
-      throw new Error("No account data found");
+      throw new Error('No account data found');
     }
     return accountData;
   };
@@ -94,7 +84,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     sails.setProgramId(programId as `0x${string}`);
 
     const gearApi = await GearApi.create({
-      providerAddress: "wss://testnet.vara.network",
+      providerAddress: 'wss://testnet.vara.network',
     });
 
     sails.setApi(gearApi);
@@ -103,18 +93,14 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
       programId,
       serviceNames: Object.keys(sails.services ?? {}),
       functionNames: Object.keys(
-        sails.services?.LiquidityInjectionService?.functions ??
-        sails.services?.Vft?.functions ??
-        {}
+        sails.services?.LiquidityInjectionService?.functions ?? sails.services?.Vft?.functions ?? {},
       ),
     });
 
     return sails;
   };
 
-  const handleTransaction = async (
-    transactions: { transaction: TransactionFunction; infoText: string }[]
-  ) => {
+  const handleTransaction = async (transactions: { transaction: TransactionFunction; infoText: string }[]) => {
     for (const { transaction, infoText } of transactions) {
       alertModalContext?.showInfoModal(infoText);
 
@@ -144,12 +130,11 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createDepositTransaction = async () => {
-    validateTransactionPreconditions("deposit");
-    const sails = await createConfiguredSails("deposit", idlVSTREET, vstreetProgramID);
+    validateTransactionPreconditions('deposit');
+    const sails = await createConfiguredSails('deposit', idlVSTREET, vstreetProgramID);
     const accountWEB = getRequiredAccount();
 
-    const transaction =
-      await sails.services.LiquidityInjectionService.functions.DepositCollateral();
+    const transaction = await sails.services.LiquidityInjectionService.functions.DepositCollateral();
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
@@ -157,7 +142,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     transaction.withValue(BigInt(Number(amount) * 1e12));
     await transaction.calculateGas(true, 15);
 
-    logTransactionContext("deposit:transaction-created", {
+    logTransactionContext('deposit:transaction-created', {
       value: BigInt(Number(amount) * 1e12).toString(),
       signerSource: accountWEB.meta.source,
     });
@@ -169,22 +154,19 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createWithdrawTransaction = async () => {
-    const parsedAmount = validateTransactionPreconditions("withdraw");
-    const sails = await createConfiguredSails("withdraw", idlVSTREET, vstreetProgramID);
+    const parsedAmount = validateTransactionPreconditions('withdraw');
+    const sails = await createConfiguredSails('withdraw', idlVSTREET, vstreetProgramID);
     const accountWEB = getRequiredAccount();
     const amountConverted = parsedAmount * 1e12;
 
-    const transaction =
-      await sails.services.LiquidityInjectionService.functions.WithdrawCollateral(
-        amountConverted
-      );
+    const transaction = await sails.services.LiquidityInjectionService.functions.WithdrawCollateral(amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
     await transaction.calculateGas(true, 15);
 
-    logTransactionContext("withdraw:transaction-created", {
+    logTransactionContext('withdraw:transaction-created', {
       amountConverted,
       signerSource: accountWEB.meta.source,
     });
@@ -196,22 +178,19 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createTakeLoanTransaction = async () => {
-    const parsedAmount = validateTransactionPreconditions("borrow");
-    const sails = await createConfiguredSails("borrow", idlVSTREET, vstreetProgramID);
+    const parsedAmount = validateTransactionPreconditions('borrow');
+    const sails = await createConfiguredSails('borrow', idlVSTREET, vstreetProgramID);
     const accountWEB = getRequiredAccount();
     const amountConverted = parsedAmount * 1000000;
 
-    const transaction =
-      await sails.services.LiquidityInjectionService.functions.TakeLoan(
-        amountConverted
-      );
+    const transaction = await sails.services.LiquidityInjectionService.functions.TakeLoan(amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
     await transaction.calculateGas(true, 15);
 
-    logTransactionContext("borrow:transaction-created", {
+    logTransactionContext('borrow:transaction-created', {
       amountConverted,
       signerSource: accountWEB.meta.source,
     });
@@ -223,22 +202,19 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createPayLoanTransaction = async () => {
-    const parsedAmount = validateTransactionPreconditions("pay");
-    const sails = await createConfiguredSails("pay", idlVSTREET, vstreetProgramID);
+    const parsedAmount = validateTransactionPreconditions('pay');
+    const sails = await createConfiguredSails('pay', idlVSTREET, vstreetProgramID);
     const accountWEB = getRequiredAccount();
     const amountConverted = parsedAmount * 1000000;
 
-    const transaction =
-      await sails.services.LiquidityInjectionService.functions.PayLoan(
-        amountConverted
-      );
+    const transaction = await sails.services.LiquidityInjectionService.functions.PayLoan(amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
     await transaction.calculateGas(true, 15);
 
-    logTransactionContext("pay:transaction-created", {
+    logTransactionContext('pay:transaction-created', {
       amountConverted,
       signerSource: accountWEB.meta.source,
     });
@@ -250,22 +226,19 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
   };
 
   const createApprovalTransaction = async () => {
-    const parsedAmount = validateTransactionPreconditions("approve");
-    const sails = await createConfiguredSails("approve", idlVFT, fungibleTokenProgramID);
+    const parsedAmount = validateTransactionPreconditions('approve');
+    const sails = await createConfiguredSails('approve', idlVFT, fungibleTokenProgramID);
     const accountWEB = getRequiredAccount();
     const amountConverted = parsedAmount * 1000000;
 
-    const transaction = await sails.services.Vft.functions.Approve(
-      vstreetProgramID,
-      amountConverted
-    );
+    const transaction = await sails.services.Vft.functions.Approve(vstreetProgramID, amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
     await transaction.calculateGas(true, 15);
 
-    logTransactionContext("approve:transaction-created", {
+    logTransactionContext('approve:transaction-created', {
       amountConverted,
       signerSource: accountWEB.meta.source,
     });
@@ -281,7 +254,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     await handleTransaction([
       {
         transaction,
-        infoText: "Deposit in progress. Please check your wallet to sign the transaction.",
+        infoText: 'Deposit in progress. Please check your wallet to sign the transaction.',
       },
     ]);
   };
@@ -291,7 +264,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     await handleTransaction([
       {
         transaction,
-        infoText: "Withdrawal in progress. Please check your wallet to sign the transaction.",
+        infoText: 'Withdrawal in progress. Please check your wallet to sign the transaction.',
       },
     ]);
   };
@@ -301,7 +274,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     await handleTransaction([
       {
         transaction,
-        infoText: "Loan taking in progress. Please check your wallet to sign the transaction.",
+        infoText: 'Loan taking in progress. Please check your wallet to sign the transaction.',
       },
     ]);
   };
@@ -312,11 +285,11 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     await handleTransaction([
       {
         transaction: approvalTransaction,
-        infoText: "Approval in progress. Please check your wallet to approve the transaction.",
+        infoText: 'Approval in progress. Please check your wallet to approve the transaction.',
       },
       {
         transaction: payLoanTransaction,
-        infoText: "Loan pay in progress. Please check your wallet to sign the transaction.",
+        infoText: 'Loan pay in progress. Please check your wallet to sign the transaction.',
       },
     ]);
   };
@@ -334,7 +307,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
     const action = actions[label];
     if (action) {
       try {
-        logTransactionContext("click", {
+        logTransactionContext('click', {
           label,
           amount,
           balance,
@@ -344,8 +317,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
         });
         await action();
       } catch (error) {
-        const errorMessage =
-          error instanceof Error ? error.message : "An unknown error occurred.";
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
         console.error(`${LOG_PREFIX} action failed`, {
           label,
           amount,
@@ -362,7 +334,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
         }, 3000);
       }
     } else {
-      alertModalContext?.showErrorModal("Invalid action");
+      alertModalContext?.showErrorModal('Invalid action');
       setTimeout(() => {
         alertModalContext?.hideAlertModal();
       }, 3000);
@@ -372,10 +344,9 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({
 
   return (
     <button
-      className={`btn-grad-fill ${isLoading ? "btn-grad-fill--loading" : ""}`}
+      className={`btn-grad-fill ${isLoading ? 'btn-grad-fill--loading' : ''}`}
       onClick={handleClick}
-      disabled={!Number.isFinite(Number(amount)) || Number(amount) > balance || Number(amount) === 0 || isLoading}
-    >
+      disabled={!Number.isFinite(Number(amount)) || Number(amount) > balance || Number(amount) === 0 || isLoading}>
       {isLoading ? <Loader /> : label}
     </button>
   );
