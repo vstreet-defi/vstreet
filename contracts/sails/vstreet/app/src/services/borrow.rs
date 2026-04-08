@@ -31,21 +31,20 @@ where
     // uses the real (up-to-date) outstanding loan amount.
     let _ = service.calculate_loan_interest_rate_amount(caller);
 
-    let state_mut = service.state_mut();
-    let decimals_factor = state_mut.config.decimals_factor;
-
-    let user_info = match state_mut.users.get_mut(&caller) {
-        Some(user_info) => user_info,
-        None => {
+    // Ensure user exists
+    {
+        let state_mut = service.state_mut();
+        if !state_mut.users.contains_key(&caller) {
             let error_message = ERROR_USER_NOT_FOUND.to_string();
             service.notify_error(error_message.clone());
             return Err(error_message);
         }
-    };
+    }
 
     // Refresh MLA after interest has been applied
     let _ = service.calculate_mla(caller);
     let state_mut = service.state_mut();
+    let decimals_factor = state_mut.config.decimals_factor;
     let user_info = state_mut.users.get_mut(&caller).unwrap();
 
     let mla = user_info.mla;
