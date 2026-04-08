@@ -418,8 +418,8 @@ where VftClient: Vft, {
     pub fn update_user_rewards(user_info: &mut UserInfo, interest_rate: u128, decimals_factor: u128, year_in_seconds: u128) {
         let current_timestamp = exec::block_timestamp() as u128;
 
-        // Seconds in the 3 seconds Vara Blocks Elapsed since last update
-        let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) * 3;
+        // Seconds elapsed since last update (block_timestamp returns milliseconds)
+        let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) / 1000;
 
         if time_elapsed > 0 {
             // Calculate rewards based on user balance, interest rate and time elapsed
@@ -561,7 +561,7 @@ where VftClient: Vft, {
         let risk_multiplier = state_mut.config.risk_multiplier;
         let dev_fee = state_mut.config.dev_fee;
 
-        base_rate.saturating_add(utilization_factor * risk_multiplier) * (1 + dev_fee)
+        base_rate.saturating_add(utilization_factor * risk_multiplier).saturating_add(dev_fee)
     }
     
     //Calculate Loan Interest Rate Amount 
