@@ -25,8 +25,13 @@ pub async fn take_loan<VftClient>(
 where
     VftClient: Vft,
 {
-    let state_mut = service.state_mut();
     let caller = msg::source();
+
+    // Refresh accrued interest BEFORE reading MLA so the eligibility check
+    // uses the real (up-to-date) outstanding loan amount.
+    let _ = service.calculate_loan_interest_rate_amount(caller);
+
+    let state_mut = service.state_mut();
     let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {
@@ -37,6 +42,11 @@ where
             return Err(error_message);
         }
     };
+
+    // Refresh MLA after interest has been applied
+    let _ = service.calculate_mla(caller);
+    let state_mut = service.state_mut();
+    let user_info = state_mut.users.get_mut(&caller).unwrap();
 
     let mla = user_info.mla;
     let loan_amount = user_info.loan_amount;
@@ -64,17 +74,8 @@ where
         return Err(error_message);
     }
 
-    // Transfer tokens from contract to user
-    let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
-
-    // Check if transfer was successful
-    if let Err(_) = result {
-        let error_message = ERROR_TRANSFER_FAILED.to_string();
-        service.notify_error(error_message.clone());
-        return sails_rs::Err(error_message);
-    }
-
-    // Update loan status and total borrowed
+    // CEI: update all loan state BEFORE the external transfer to prevent re-entrancy.
+    // If the transfer later fails we roll back.
     user_info.is_loan_active = true;
     user_info.borrow_last_updated = exec::block_timestamp() as u128;
     
@@ -118,6 +119,22 @@ where
 
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
 
+    // Transfer tokens from contract to user AFTER state has been updated (CEI).
+    let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
+
+    // Roll back state if the transfer fails
+    if let Err(_) = result {
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
+        user_info.is_loan_active = false;
+        user_info.loan_amount = user_info.loan_amount.saturating_sub(scaled_amount);
+        user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
+        state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(scaled_amount);
+        let error_message = ERROR_TRANSFER_FAILED.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
+    }
+
     service.notify_loan_taken(amount);
 
     Ok(())
@@ -136,7 +153,6 @@ where
     let _ = service.calculate_loan_interest_rate_amount(caller);
     
     let state_mut = service.state_mut();
-    let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {
         Some(user_info) => user_info,
@@ -147,20 +163,12 @@ where
         }
     };
 
-    if user_info.loan_amount % decimals_factor != 0 {
-        let error_message = ERROR_INVALID_AMOUNT.to_string();
-        service.notify_error(error_message.clone());
-        return Err(error_message);
-    }
-
-    let loan_amount = user_info
-        .loan_amount
-        .checked_div(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
+    // `loan_amount` is stored in raw token units — transfer it directly.
+    // The previous `% decimals_factor` guard was wrong: it would permanently
+    // lock users from repaying once accrued interest introduced sub-factor
+    // precision.  The `/ decimals_factor` on the transfer amount caused users
+    // to repay 10^6× less than they owed.
+    let loan_amount = user_info.loan_amount;
 
     if loan_amount == 0 {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
@@ -179,6 +187,8 @@ where
     }
 
     // Update loan amount and total borrowed
+    let state_mut = service.state_mut();
+    let user_info = state_mut.users.get_mut(&caller).unwrap();
     let loan_amount_to_subtract = user_info.loan_amount;
 
     user_info.is_loan_active = false;
