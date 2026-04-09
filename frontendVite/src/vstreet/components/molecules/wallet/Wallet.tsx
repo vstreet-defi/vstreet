@@ -1,9 +1,8 @@
-import { Account } from "@gear-js/react-hooks";
-import { AccountButton } from "../../atoms/account-button";
-import styles from "./Wallet.module.scss";
+import { AccountButton } from '../../atoms/account-button';
+import styles from './Wallet.module.scss';
 
 type Props = {
-  balance: Account["balance"];
+  balance: { value: string; unit: string };
   address: string;
   name: string | undefined;
   onClick: () => void;

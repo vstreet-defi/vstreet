@@ -1,7 +1,7 @@
-import React from "react";
-import styles from "./StakingInfo.module.scss";
-import { useUserInfo } from "../../../contexts/userInfoContext";
-import { formatWithCommasVUSD } from "utils";
+import React from 'react';
+import styles from './StakingInfo.module.scss';
+import { useUserInfo } from '../../../contexts/userInfoContext';
+import { formatWithCommasVUSD } from 'utils/index';
 
 /**
  * StakingInfo Component
@@ -22,23 +22,16 @@ function StakingInfo() {
       <div className={styles.stats}>
         <div className={styles.statItem}>
           <p className={styles.statLabel}>Total Deposited</p>
-          <p className={styles.statValue}>
-            {`$${formatWithCommasVUSD(userInfo?.balance_usdc ?? 0)} vUSD`}
-          </p>
+          <p className={styles.statValue}>{`$${formatWithCommasVUSD(userInfo?.balance_usdc ?? 0)} vUSD`}</p>
         </div>
 
         <div className={styles.statItem}>
           <p className={styles.statLabel}>Available Rewards</p>
-          <p className={styles.statValue}>
-            {`$${formatWithCommasVUSD(userInfo?.rewards_usdc ?? 0)} vUSD`}
-          </p>
+          <p className={styles.statValue}>{`$${formatWithCommasVUSD(userInfo?.rewards_usdc ?? 0)} vUSD`}</p>
         </div>
       </div>
 
-      <button
-        className={styles.claimButton}
-        disabled={!userInfo || userInfo.rewards_usdc <= 0}
-      >
+      <button className={styles.claimButton} disabled={!userInfo || userInfo.rewards_usdc <= 0}>
         Claim Rewards
       </button>
     </div>

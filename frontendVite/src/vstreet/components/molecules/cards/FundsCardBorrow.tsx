@@ -11,7 +11,7 @@ import 'components/atoms/Button-Gradient-Fill/ButtonGradFill.scss';
 import { useEffect, useState } from 'react';
 import { useWallet } from 'contexts/accountContext';
 import { useUserInfo } from 'contexts/userInfoContext';
-import { formatWithDecimalsVARA, formatWithCommasVUSD } from 'utils';
+import { formatWithDecimalsVARA, formatWithCommasVUSD } from 'utils/index';
 import { hexToBn } from '@polkadot/util';
 
 interface Props {

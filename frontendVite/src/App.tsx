@@ -3,7 +3,7 @@ import { useApi, useAccount } from '@gear-js/react-hooks';
 import { ApiLoader } from '@/vstreet/components';
 import { withProviders } from '@/hocs';
 import { Routing } from '@/pages';
-import Background from '@/vstreet/components/atoms/Background/Background';
+import Background from '@/vstreet/components/atoms/Background/Background.tsx';
 import './App.scss';
 
 function Component() {

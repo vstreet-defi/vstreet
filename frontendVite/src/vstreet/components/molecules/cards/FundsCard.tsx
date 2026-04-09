@@ -11,7 +11,7 @@ import { useEffect, useState } from 'react';
 import { useUserInfo } from 'contexts/userInfoContext';
 import { useWallet } from 'contexts/accountContext';
 import { hexToBn } from '@polkadot/util';
-import { formatWithCommasVUSD } from 'utils';
+import { formatWithCommasVUSD } from 'utils/index';
 
 interface Props {
   buttonLabel: string;

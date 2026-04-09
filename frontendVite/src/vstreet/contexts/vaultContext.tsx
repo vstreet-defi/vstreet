@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import {
   VaultPosition,
   GlobalVaultStats,
@@ -16,7 +10,7 @@ import {
   getUserTotalPower,
   getUserTotalStaked,
   getGlobalVaultStats,
-} from "smart-contracts-tools";
+} from 'smart-contracts-tools/index';
 
 interface VaultContextProps {
   // Global stats
@@ -47,9 +41,7 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
   const [activePositions, setActivePositions] = useState<VaultPosition[]>([]);
   const [maturedPositions, setMaturedPositions] = useState<VaultPosition[]>([]);
   const [allPositions, setAllPositions] = useState<VaultPosition[]>([]);
-  const [userVaultInfo, setUserVaultInfo] = useState<UserVaultInfo | null>(
-    null
-  );
+  const [userVaultInfo, setUserVaultInfo] = useState<UserVaultInfo | null>(null);
   const [totalPower, setTotalPower] = useState<bigint>(BigInt(0));
   const [totalStaked, setTotalStaked] = useState<bigint>(BigInt(0));
   const [isLoading, setIsLoading] = useState(false);
@@ -61,7 +53,7 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
         setGlobalStats(stats);
       }
     } catch (error) {
-      console.error("Failed to fetch global vault stats:", error);
+      console.error('Failed to fetch global vault stats:', error);
     }
   }, []);
 
@@ -69,20 +61,19 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
     if (!hexAddress) return;
 
     setIsLoading(true);
-    console.log("VaultContext: Starting fetch for", hexAddress);
+    console.log('VaultContext: Starting fetch for', hexAddress);
 
     try {
       // Fetch all data in parallel for efficiency
-      const [active, matured, all, vaultInfo, power, staked, stats] =
-        await Promise.all([
-          getUserActivePositions(hexAddress),
-          getUserMaturedPositions(hexAddress),
-          getUserAllPositions(hexAddress),
-          getUserVaultInfo(hexAddress),
-          getUserTotalPower(hexAddress),
-          getUserTotalStaked(hexAddress),
-          getGlobalVaultStats(),
-        ]);
+      const [active, matured, all, vaultInfo, power, staked, stats] = await Promise.all([
+        getUserActivePositions(hexAddress),
+        getUserMaturedPositions(hexAddress),
+        getUserAllPositions(hexAddress),
+        getUserVaultInfo(hexAddress),
+        getUserTotalPower(hexAddress),
+        getUserTotalStaked(hexAddress),
+        getGlobalVaultStats(),
+      ]);
 
       setActivePositions(active);
       setMaturedPositions(matured);
@@ -94,7 +85,7 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
         setGlobalStats(stats);
       }
 
-      console.log("VaultContext: Data fetched successfully", {
+      console.log('VaultContext: Data fetched successfully', {
         activePositions: active.length,
         maturedPositions: matured.length,
         allPositions: all.length,
@@ -102,7 +93,7 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
         totalStaked: staked.toString(),
       });
     } catch (error) {
-      console.error("VaultContext: Failed to fetch vault data:", error);
+      console.error('VaultContext: Failed to fetch vault data:', error);
     } finally {
       setIsLoading(false);
     }
@@ -121,8 +112,7 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
         isLoading,
         fetchVaultData,
         refreshGlobalStats,
-      }}
-    >
+      }}>
       {children}
     </VaultContext.Provider>
   );
@@ -131,7 +121,7 @@ export const VaultProvider: React.FC<VaultProviderProps> = ({ children }) => {
 export const useVault = () => {
   const context = useContext(VaultContext);
   if (context === undefined) {
-    throw new Error("useVault must be used within a VaultProvider");
+    throw new Error('useVault must be used within a VaultProvider');
   }
   return context;
 };
