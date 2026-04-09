@@ -15,7 +15,7 @@ A ready-made application template with a well-thought-out infrastructure for qui
 ## Installation
 
 ```sh
-npm install
+npm install -f
 ```
 
 ## Run
