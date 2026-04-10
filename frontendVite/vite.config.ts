@@ -3,6 +3,10 @@ import { defineConfig } from 'vite';
 import { checker } from 'vite-plugin-checker';
 import { nodePolyfills } from 'vite-plugin-node-polyfills';
 import svgr from 'vite-plugin-svgr';
+import path from 'path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -24,15 +28,15 @@ export default defineConfig({
 
   resolve: {
     alias: {
-      '@': './src',
-      components: './src/vstreet/components',
-      contexts: './src/vstreet/contexts',
-      hooks: './src/vstreet/hooks',
-      services: './src/vstreet/services',
-      types: './src/vstreet/types',
-      utils: './src/vstreet/utils',
-      'smart-contracts-tools': './src/vstreet/smart-contracts-tools',
-      consts: './src/vstreet/consts.ts',
+      '@': path.resolve(__dirname, './src'),
+      components: path.resolve(__dirname, './src/vstreet/components'),
+      contexts: path.resolve(__dirname, './src/vstreet/contexts'),
+      hooks: path.resolve(__dirname, './src/vstreet/hooks'),
+      services: path.resolve(__dirname, './src/vstreet/services'),
+      types: path.resolve(__dirname, './src/vstreet/types'),
+      utils: path.resolve(__dirname, './src/vstreet/utils'),
+      'smart-contracts-tools': path.resolve(__dirname, './src/vstreet/smart-contracts-tools'),
+      consts: path.resolve(__dirname, './src/vstreet/consts.ts'),
     },
   },
 });
