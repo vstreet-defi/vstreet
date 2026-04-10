@@ -7,16 +7,16 @@ import { Team } from '@/components/organisms/Team/Team';
 import { HomeFooter } from '@/components/templates/HomeFooter/HomeFooter';
 import { HomeHeader, HomeTab } from '@/components/templates/HomeHeader/HomeHeader';
 import { isMobileDevice } from '@/utils/isMobile';
-import SecuredByVara from '@/components/atoms/SecuredByVara/SecuredByVara';
 
 function Home() {
   const navBarItems = [HomeTab.GitHub, HomeTab.Team, HomeTab.ContactUs];
+  const mobile = isMobileDevice();
+  
   return (
     <ChakraProvider>
-      <HomeHeader items={navBarItems} isMobile={isMobileDevice()} />
-      <SecuredByVara />
-      <Hero isMobile={isMobileDevice()} />
-      <Features isMobile={isMobileDevice()} />
+      <HomeHeader items={navBarItems} isMobile={mobile} />
+      <Hero />
+      <Features />
       <Shilling />
       <Team />
       <SocialMedia />

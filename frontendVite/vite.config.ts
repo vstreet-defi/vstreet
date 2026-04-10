@@ -9,6 +9,7 @@ export default defineConfig({
   server: {
     allowedHosts: ['localhost', '3000-varalab-dapptemplate-9c1fz312gi9.ws-us118.gitpod.io'],
   },
+  assetsInclude: ['**/*.glb'],
   plugins: [
     react(),
     nodePolyfills(),

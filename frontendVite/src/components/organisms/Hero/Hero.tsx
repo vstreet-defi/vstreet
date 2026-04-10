@@ -1,115 +1,86 @@
-import { Container, Stack, Flex, Box, Text, Button, Heading } from '@chakra-ui/react';
+import { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Home1VideoBgSmall from '@/assets/images/backgrounds/Home-Gif-WebComp1280x741-12fps.gif';
+import gsap from 'gsap';
+import { PerspectiveGrid } from '@/components/atoms/PerspectiveGrid/PerspectiveGrid';
+import styles from './Hero.module.scss';
 
-type Props = {
-  isMobile: boolean;
-};
-
-function Hero({ isMobile }: Props) {
+function Hero() {
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLElement>(null);
+  const titleRef = useRef<HTMLHeadingElement>(null);
+  const subtitleRef = useRef<HTMLHeadingElement>(null);
+  const buttonsRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const ctx = gsap.context(() => {
+      // Timeline para animaciones secuenciales del Hero usando refs
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+
+      if (titleRef.current) {
+        tl.from(titleRef.current, {
+          opacity: 0,
+          y: 40,
+          duration: 0.9,
+        });
+      }
+
+      if (subtitleRef.current) {
+        tl.from(
+          subtitleRef.current,
+          {
+            opacity: 0,
+            y: 30,
+            duration: 0.8,
+          },
+          '-=0.5'
+        );
+      }
+
+      if (buttonsRef.current) {
+        tl.from(
+          buttonsRef.current,
+          {
+            opacity: 0,
+            scale: 0.9,
+            duration: 0.7,
+          },
+          '-=0.4'
+        );
+      }
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <Container p="0" minW="100%">
-      <Box
-        w="100%"
-        h={'100%'}
-        bgRepeat="no-repeat"
-        bgPos="bottom"
-        bgSize={{ base: 'cover', md: 'fill' }}
-        bgImage={Home1VideoBgSmall}>
-        <Stack
-          pl={{ base: '1rem', md: '3rem', xl: '8rem', '2xl': '12rem' }}
-          pr={{ base: '1rem' }}
-          align="center"
-          spacing={{ base: 8, md: 10 }}
-          py={{ base: 20, md: 28 }}
-          direction={{ base: 'column', md: 'row' }}>
-          <Stack flex={1} spacing={{ base: 5, md: 10 }}>
-            <Heading
-              bgGradient="linear(to-b, #00FFC4, #4FFF4B)"
-              bgClip="text"
-              fontSize={{
-                base: '4rem',
-                sm: '5rem',
-                lg: '78px',
-                xl: '100px',
-                '2xl': '128px',
-              }}
-              fontWeight="extrabold"
-              fontFamily={"'Roboto Mono', monospace"}>
-              VARA <br></br> DeFi-Hub
-            </Heading>
-
-            <Text
-              fontWeight="400px"
-              color="#FFF"
-              fontSize={{ base: '1rem', sm: '1rem', lg: '24px' }}
-              fontFamily={"'Roboto Mono', monospace"}
-              mr={{ base: '0', md: '0rem', lg: '2rem', xl: '6rem' }}>
-              Unlock the derivative tokens liquidity to optimize your DeFi strategies
-            </Text>
-            {!isMobile && (
-              <>
-                <Stack spacing={{ base: 4, sm: 6 }} direction={{ base: 'column', sm: 'row' }}>
-                  <Button
-                    borderRadius="0"
-                    size="lg"
-                    fontWeight="bold"
-                    px={6}
-                    color="#111111"
-                    bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
-                    _hover={{ bg: 'gray.200' }}
-                    onClick={() => navigate('/dapp')}>
-                    Launch App
-                  </Button>
-                  <Button
-                    variant="outline"
-                    colorScheme="white"
-                    color="white"
-                    borderRadius="0"
-                    size="lg"
-                    fontWeight="bold"
-                    px={6}
-                    isDisabled={true}>
-                    Whitepaper
-                  </Button>
-                </Stack>
-              </>
-            )}
-            {isMobile && (
-              <Stack spacing={{ base: 4, sm: 6 }} direction={{ base: 'column', sm: 'row' }} marginTop={'20px'}>
-                <Button
-                  borderRadius="0"
-                  size="lg"
-                  fontWeight="bold"
-                  px={6}
-                  color="#111111"
-                  bgGradient="linear(to-r, #00FFC4 ,#4FFF4B)"
-                  _hover={{ bg: 'gray.200' }}
-                  onClick={() => navigate('/dapp')}
-                  marginBottom={'10px'}>
-                  Launch App
-                </Button>
-
-                <Button
-                  variant="outline"
-                  colorScheme="white"
-                  color="white"
-                  borderRadius="0"
-                  size="lg"
-                  fontWeight="bold"
-                  px={6}
-                  isDisabled={true}
-                  marginBottom={'10px'}>
-                  Whitepaper
-                </Button>
-              </Stack>
-            )}
-          </Stack>
-        </Stack>
-      </Box>
-    </Container>
+    <section ref={containerRef} className={styles.hero}>
+      <div className={styles.background}>
+        <PerspectiveGrid />
+      </div>
+      <div className={styles.overlay} />
+      
+      <div className={styles.content}>
+        <h1 ref={titleRef} className={styles.title}>vStreet</h1>
+        <h2 ref={subtitleRef} className={styles.subtitle}>The DeFi Core on Vara Network</h2>
+        
+        <div ref={buttonsRef} className={styles.buttons}>
+          <button
+            className={styles.buttonPrimary}
+            onClick={() => navigate('/dapp')}
+          >
+            Launch dApp
+          </button>
+          <button
+            className={styles.buttonSecondary}
+            disabled
+          >
+            Whitepaper
+          </button>
+        </div>
+      </div>
+    </section>
   );
 }
 

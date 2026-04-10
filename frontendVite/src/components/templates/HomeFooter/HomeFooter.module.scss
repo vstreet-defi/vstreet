@@ -1,0 +1,88 @@
+.footer {
+  position: relative;
+  width: 100%;
+  padding: 4rem 2rem 2rem;
+  background: linear-gradient(180deg, #0f0f12 0%, #0a0a0d 100%);
+  border-top: 1px solid rgba(0, 255, 196, 0.1);
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.legal {
+  background: linear-gradient(135deg, rgba(27, 27, 31, 0.6), rgba(18, 18, 21, 0.4));
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 255, 196, 0.1);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 3rem;
+}
+
+.legalTitle {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: rgba(0, 255, 196, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+}
+
+.legalText {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.7;
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.logo {
+  max-width: 150px;
+  filter: drop-shadow(0 0 15px rgba(0, 255, 196, 0.2));
+  opacity: 0.9;
+}
+
+.copyright {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.email {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: rgba(0, 255, 196, 0.8);
+  text-decoration: none;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    color: #00ffc4;
+    text-shadow: 0 0 10px rgba(0, 255, 196, 0.5);
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 3rem 1.5rem 1.5rem;
+  }
+  
+  .legal {
+    padding: 1rem 1.25rem;
+  }
+  
+  .legalText {
+    font-size: 0.75rem;
+  }
+}

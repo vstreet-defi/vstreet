@@ -1,82 +1,136 @@
-import { Box, Image, Stack, Text, Flex, Heading } from '@chakra-ui/react';
-import { ButtonGradientBorder } from '@/components/atoms/Button-Gradient-Border/Button-Gradient-Border';
-import LogoVaraWhite from '@/assets/images/Powered-by-vara.png';
-import shillingBg from '@/assets/images/backgrounds/ShillingBG.jpg';
+import { FC, useRef, useEffect } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-function Shilling() {
+import VaraLogo from '@/assets/images/vara-logo-teal.png';
+
+import styles from './Shilling.module.scss';
+
+gsap.registerPlugin(ScrollTrigger);
+
+const features = [
+  {
+    title: 'High-Speed Transactions',
+    text: 'Vara Network enhances DeFi with high transaction throughput and scalability. Its Gear Protocol\'s Actor model ensures rapid transactions at lower fees.',
+  },
+  {
+    title: 'Enhanced Security',
+    text: 'Security and decentralization are key in Vara Network. The Actor model supports secure, independent operation of smart contracts.',
+  },
+  {
+    title: 'Innovative Technology',
+    text: 'Vara Network\'s use of Persistent Memory and the WASM Virtual Machine optimizes performance for advanced financial services.',
+  },
+];
+
+const Shilling: FC = () => {
+  const containerRef = useRef<HTMLElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const gridRef = useRef<HTMLDivElement>(null);
+  const itemsRef = useRef<(HTMLDivElement | null)[]>([]);
+  const ctaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const ctx = gsap.context(() => {
+      if (logoRef.current) {
+        gsap.fromTo(
+          logoRef.current,
+          { opacity: 0, y: 30 },
+          {
+            scrollTrigger: {
+              trigger: logoRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none none',
+            },
+            opacity: 1,
+            y: 0,
+            duration: 0.8,
+            ease: 'power3.out',
+          }
+        );
+      }
+
+      const validItems = itemsRef.current.filter(Boolean);
+      if (validItems.length > 0) {
+        gsap.fromTo(
+          validItems,
+          { opacity: 0, y: 40 },
+          {
+            scrollTrigger: {
+              trigger: gridRef.current,
+              start: 'top 80%',
+              toggleActions: 'play none none none',
+            },
+            opacity: 1,
+            y: 0,
+            duration: 0.7,
+            stagger: 0.15,
+            ease: 'power3.out',
+          }
+        );
+      }
+
+      if (ctaRef.current) {
+        gsap.fromTo(
+          ctaRef.current,
+          { opacity: 0, scale: 0.95 },
+          {
+            scrollTrigger: {
+              trigger: ctaRef.current,
+              start: 'top 85%',
+              toggleActions: 'play none none none',
+            },
+            opacity: 1,
+            scale: 1,
+            duration: 0.6,
+            ease: 'power3.out',
+          }
+        );
+      }
+    }, containerRef);
+
+    return () => ctx.revert();
+  }, []);
+
   return (
-    <Box display="flex" height="fit-content" minW="100%" bgImage={shillingBg} bgSize={'cover'}>
-      <Stack
-        pl={{ base: '1rem', md: '3rem', xl: '8rem', '2xl': '15rem' }}
-        pr={{ base: '1rem' }}
-        align="center"
-        spacing={{ base: 8, md: 10 }}
-        py={{ base: 20, md: 28 }}
-        direction={{ base: 'column', md: 'row' }}>
-        <Stack flex={1} spacing={{ base: 5, md: 10 }}>
-          <Image w="30rem" src={LogoVaraWhite} />
-          <Stack spacing={{ base: 4, sm: 6 }} direction={{ base: 'column', sm: 'row' }}>
-            <Box
-              ml={{ base: '0', md: '12rem' }}
-              alignSelf="center"
-              paddingLeft={'120px'}
-              sx={{
-                '@media screen and (max-width: 748px)': {
-                  paddingLeft: '0px',
-                },
-              }}>
-              <a href="https://vara-network.io/" target="_blank" rel="noopener noreferrer">
-                <ButtonGradientBorder text="Go to Vara" />
-              </a>
-            </Box>
-          </Stack>
-        </Stack>
-        <Flex
-          flex={1}
-          justify="center"
-          align="center"
-          position="relative"
-          w="full"
-          pr={{ sm: '0', md: '8rem' }}
-          textAlign={{ base: 'center', md: 'right' }}>
-          <Box fontFamily={"'Roboto Mono', monospace"} mt={{ base: '4rem', md: '0' }}>
-            <Box color="white" mb="2rem">
-              <Heading fontFamily={"'Roboto Mono', monospace"} fontWeight="700px" fontSize="24px" color="#4FFF4B">
-                High-Speed Transactions and Scalability
-              </Heading>
-              <Text fontFamily={"'Roboto Mono', monospace"} fontWeight="400px" fontSize={{ lg: '24px' }} color="#FFF">
-                Vara Network enhances DeFi with high transaction throughput and scalability. Its Gear Protocol&apos;s
-                Actor model ensures rapid transactions at lower fees, addressing issues like network congestion
-                effectively
-              </Text>
-            </Box>
+    <section ref={containerRef} className={styles.shilling}>
+      <div className={styles.container}>
+        <div ref={logoRef} className={styles.logoSection}>
+          <img className={styles.logo} src={VaraLogo} alt="Vara Network" />
+          <p className={styles.tagline}>Powered by Vara Network</p>
+        </div>
 
-            <Box color="white" mb="2rem">
-              <Heading fontFamily={"'Roboto Mono', monospace"} fontWeight="700px" fontSize="24px" color="#00FFC4">
-                Enhanced Security and Decentralization in DeFi
-              </Heading>
-              <Text fontFamily={"'Roboto Mono', monospace"} fontWeight="400px" fontSize={{ lg: '24px' }} color="#FFF">
-                Security and decentralization are key in Vara Network. The Actor model supports secure, independent
-                operation of smart contracts, minimizing centralization risks and promoting complex decentralized
-                applications
-              </Text>
-            </Box>
+        <div ref={gridRef} className={styles.grid}>
+          {features.map((feature, index) => (
+            <div
+              key={index}
+              ref={(el) => { itemsRef.current[index] = el; }}
+              className={styles.featureCard}
+            >
+              <h3 className={styles.featureTitle}>{feature.title}</h3>
+              <p className={styles.featureText}>{feature.text}</p>
+            </div>
+          ))}
 
-            <Box color="white" mb="2rem">
-              <Heading fontFamily={"'Roboto Mono', monospace"} fontWeight="700px" fontSize="24px" color="#4FFF4B">
-                Innovative Technology for Optimized Performance
-              </Heading>
-              <Text fontFamily={"'Roboto Mono', monospace"} fontWeight="400px" fontSize={{ lg: '24px' }} color="#FFF">
-                Vara Network&apos;s use of Persistent Memory and the WASM Virtual Machine optimizes performance,
-                offering faster computations and efficient memory management, crucial for advanced financial services on
-                the blockchain
-              </Text>
-            </Box>
-          </Box>
-        </Flex>
-      </Stack>
-    </Box>
+          <div ref={ctaRef} className={styles.ctaCard}>
+            <a
+              href="https://vara-network.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={styles.ctaLink}
+            >
+              <span>Explore Vara Network</span>
+              <svg className={styles.ctaArrow} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
   );
-}
+};
 
 export { Shilling };
