@@ -1,0 +1,77 @@
+.card {
+    position: relative;
+    flex: 1;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: 70px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: visible;
+    text-align: center;
+    min-width: 120px;
+
+    /* Angular Shape - Matched with Tabs */
+    clip-path: polygon(0 0, 95% 0, 100% 100%, 5% 100%);
+
+    &:hover {
+        background: rgba(0, 255, 196, 0.05);
+        border-color: rgba(0, 255, 196, 0.3);
+    }
+
+    &.active {
+        background: rgba(0, 255, 196, 0.12);
+        border: 2px solid #00ffc4;
+        position: relative;
+        box-shadow: none;
+
+        .term {
+            color: #00ffc4;
+            text-shadow: 0 0 12px rgba(0, 255, 196, 0.6);
+        }
+
+        &::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 5%;
+            right: 5%;
+            height: 2px;
+            background: #00ffc4;
+            filter: drop-shadow(0 0 8px rgba(0, 255, 196, 0.6));
+        }
+    }
+}
+
+.term {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 2px;
+}
+
+.discount {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    color: #4fff4b;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    margin-bottom: 2px;
+}
+
+.vibe {
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+.gloss,
+.activeGlow {
+    display: none;
+}

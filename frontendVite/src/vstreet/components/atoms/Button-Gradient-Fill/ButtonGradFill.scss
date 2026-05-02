@@ -1,0 +1,113 @@
+.btn-grad-fill {
+  width: 100%;
+  height: 54px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+
+  /* Background matching Claim Rewards but more vibrant */
+  background: rgba(0, 255, 196, 0.18);
+
+  /* Border matching Claim Rewards but more vibrant */
+  border: 2px solid rgba(0, 255, 196, 0.5);
+  border-radius: 8px;
+
+  /* Text matching Claim Rewards but slightly larger for main action */
+  font-family: 'Montserrat', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #00ffc4;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+
+  /* Cursor */
+  cursor: pointer;
+
+  /* Transition */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  text-shadow: 0 0 12px rgba(0, 255, 196, 0.6);
+  box-shadow: 0 0 15px rgba(0, 255, 196, 0.2);
+
+  &:hover:not(:disabled) {
+    background: rgba(0, 255, 196, 0.2);
+    border-color: #00ffc4;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0, 255, 196, 0.3);
+    text-shadow: 0 0 12px rgba(0, 255, 196, 0.8);
+  }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: rgba(0, 255, 196, 0.08);
+    border-color: rgba(0, 255, 196, 0.2);
+    color: rgba(0, 255, 196, 0.5);
+    text-shadow: none;
+    box-shadow: none;
+  }
+
+  &--loading {
+    padding: 0px 0px;
+    background: transparent;
+    border: none;
+  }
+}
+
+.lds-facebook,
+.lds-facebook div {
+  box-sizing: border-box;
+}
+
+.lds-facebook {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 3rem;
+}
+
+.lds-facebook div {
+  display: inline-block;
+  position: absolute;
+  left: 8px;
+  width: 16px;
+  background: currentColor;
+  animation: lds-facebook 1.2s cubic-bezier(0, 0.5, 0.5, 1) infinite;
+}
+
+.lds-facebook div:nth-child(1) {
+  left: 8px;
+  animation-delay: -0.24s;
+}
+
+.lds-facebook div:nth-child(2) {
+  left: 32px;
+  animation-delay: -0.12s;
+}
+
+.lds-facebook div:nth-child(3) {
+  left: 56px;
+  animation-delay: 0s;
+}
+
+@keyframes lds-facebook {
+  0% {
+    top: 8px;
+    height: 1.8rem;
+  }
+
+  50%,
+  100% {
+    top: 24px;
+    height: 1rem;
+  }
+}
+
+.lds-facebook-green div {
+  background: linear-gradient(90deg, #00ffc4, #4fff4b);
+}

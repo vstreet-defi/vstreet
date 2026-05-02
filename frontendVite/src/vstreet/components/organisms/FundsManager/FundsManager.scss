@@ -1,0 +1,58 @@
+.funds-manager {
+  margin-top: 6rem;
+  margin-right: 3rem;
+
+  @media (max-width: 768px) {
+    margin-right: 0;
+  }
+
+  &__tabs {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  &__select-tab {
+    border-width: 2px;
+    border-image: linear-gradient(180deg, grey, rgba(86, 86, 86, 0)) 1;
+    border-color: grey;
+    background-image: linear-gradient(
+      106deg,
+      rgba(28, 28, 28, 0) 13.06%,
+      rgba(18, 18, 18, 0.79) 75.37%
+    );
+    width: 11.6rem;
+    height: 2.8rem;
+    text-align: center;
+    color: grey;
+    padding: 0.5rem;
+    font-size: 20px;
+    font-family: "Roboto Mono", monospace;
+    font-weight: 100;
+    cursor: pointer;
+    transition: color 0.3s, border-image 0.3s;
+
+    @media (max-width: 480px) {
+      width: 8.6rem;
+    }
+
+    &--active {
+      color: #00ffc4;
+      border-image: linear-gradient(
+          180deg,
+          rgb(0, 255, 196),
+          rgba(86, 86, 86, 0)
+        )
+        1;
+    }
+
+    &--inactive {
+      color: grey;
+      border-image: linear-gradient(
+          180deg,
+          rgb(68, 68, 68),
+          rgba(86, 86, 86, 0)
+        )
+        1;
+    }
+  }
+}

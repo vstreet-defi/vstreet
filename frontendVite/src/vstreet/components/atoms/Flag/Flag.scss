@@ -1,0 +1,29 @@
+.flag-container {
+  display: flex;
+  position: relative;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 10px;
+  align-self: stretch;
+  div {
+    display: flex;
+    position: absolute;
+    left: 70px;
+    width: max-content;
+    padding: 2px 4px;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(90deg, #00ffc4 -17.32%, #4fff4b 107.82%);
+    p {
+      color: #111;
+      text-align: center;
+      font-family: Inter;
+      font-size: 8px;
+      font-style: italic;
+      font-weight: 700;
+      line-height: normal;
+    }
+  }
+}
