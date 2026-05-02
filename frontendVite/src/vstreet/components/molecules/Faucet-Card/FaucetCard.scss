@@ -1,0 +1,75 @@
+.faucetbody {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 683px;
+  background: linear-gradient(90deg, #121215 0%, #000 47.3%, #003327 96.6%);
+}
+
+.faucetbanner {
+  display: flex;
+  background: linear-gradient(270deg, #121215 -300%, #000 100%, #1b1b1f 100%);
+  height: 292px;
+  display: flex;
+  justify-content: center;
+  color: #4fff4b;
+  font-family: "Roboto Mono";
+  font-size: 3rem;
+  text-align: center;
+  border-bottom: solid 1px white;
+
+  @media (max-width: 768px) {
+    font-size: 3rem;
+    padding-top: 4px;
+  }
+  @media (max-width: 418px) {
+    font-size: 2rem;
+  }
+}
+
+.faucetbannertext {
+  text-align: center;
+  margin: auto;
+  font-weight: bold;
+  background: linear-gradient(to left, #00ffc4, #4fff4b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-style: italic;
+}
+
+.btn-grad-fill-faucet {
+  background: linear-gradient(90deg, #00ffc4, #4fff4b);
+  border: none;
+  color: #3a3a3a;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  cursor: pointer;
+  margin-top: 30px;
+  width: 240px;
+  height: 50px;
+  font-family: Montserrat;
+  font-size: 24px;
+  font-style: italic;
+  font-weight: 700;
+  line-height: normal;
+
+  &--loading {
+    padding: 0px 0px;
+  }
+
+  transition: 0.5s;
+  &:hover {
+    background: linear-gradient(90deg, #00ba8f, #35b533);
+  }
+  &:focus {
+    outline: none;
+  }
+  &:disabled {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+}

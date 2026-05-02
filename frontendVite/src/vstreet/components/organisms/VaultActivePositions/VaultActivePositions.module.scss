@@ -1,0 +1,15 @@
+.container {
+    padding: 24px;
+    min-height: 200px;
+}
+
+.emptyState {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 150px;
+    color: rgba(255, 255, 255, 0.2);
+    font-size: 14px;
+    font-style: italic;
+}
