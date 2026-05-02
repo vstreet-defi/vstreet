@@ -423,7 +423,19 @@ where VftClient: Vft, {
 
         if time_elapsed > 0 {
             // Calculate rewards based on user balance, interest rate and time elapsed
-            let rewards = (user_info.balance * interest_rate * time_elapsed) / (year_in_seconds * decimals_factor);
+            // let rewards = (user_info.balance * interest_rate * time_elapsed) / (year_in_seconds * decimals_factor);
+        // Refactor rewards calculation to prevent overflow and maintain precision
+            let denominator = year_in_seconds
+            .saturating_mul(decimals_factor)
+            .saturating_mul(100);
+
+            let rewards = user_info.balance
+            .saturating_mul(interest_rate)
+            .saturating_mul(time_elapsed)
+            .checked_div(denominator)
+            .unwrap_or(0);
+
+
             debug!("Calculated rewards: {}", rewards);
             user_info.rewards = user_info.rewards.saturating_add(rewards);
             user_info.rewards_usdc = user_info.rewards / decimals_factor;
@@ -575,7 +587,22 @@ where VftClient: Vft, {
         let time_diff_seconds = (current_timestamp - user_info.borrow_last_updated) / 1000;
         let decimals_factor = state_mut.config.decimals_factor;
 
-        let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds) / (state_mut.config.year_in_seconds * decimals_factor);
+        // let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds)
+            // / (state_mut.config.year_in_seconds * decimals_factor * 100);
+            // Refactor interest rate amount calculation to prevent overflow and maintain precision
+           let denominator = state_mut
+                .config
+                .year_in_seconds
+                .saturating_mul(decimals_factor)
+                .saturating_mul(100);
+
+            let interest_rate_amount = loan_amount
+                .saturating_mul(interest_rate)
+                .saturating_mul(time_diff_seconds)
+                .checked_div(denominator)
+                .unwrap_or(0);       
+
+
         user_info.loan_amount = user_info.loan_amount.saturating_add(interest_rate_amount);
         user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
         user_info.borrow_last_updated = current_timestamp;
