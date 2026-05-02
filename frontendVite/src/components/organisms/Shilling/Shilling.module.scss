@@ -1,192 +1,276 @@
 .shilling {
   position: relative;
   width: 100%;
-  padding: 6rem 2rem;
-  background: linear-gradient(180deg, #0a0a0d 0%, #0f0f12 100%);
+  padding: 8rem 2rem;
   overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: -200px;
-    right: -200px;
-    width: 600px;
-    height: 600px;
-    background: radial-gradient(circle, rgba(0, 255, 196, 0.08) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    z-index: 0;
-  }
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
 }
 
+/* ===== Background Effects ===== */
+.bgGrid {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.04;
+  background-image:
+    linear-gradient(rgba(0, 255, 196, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 196, 0.3) 1px, transparent 1px);
+  background-size: 60px 60px;
+  transform: perspective(600px) rotateX(60deg) translateY(-100px) scale(1.5);
+  transform-origin: center top;
+  pointer-events: none;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+}
+
+.bgGlow {
+  position: absolute;
+  top: 50%;
+  left: 30%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0, 255, 196, 0.06) 0%, transparent 70%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ===== Container Layout ===== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   position: relative;
   z-index: 1;
-}
-
-.logoSection {
-  text-align: center;
-  margin-bottom: 3rem;
-}
-
-.logo {
-  max-width: 180px;
-  width: 100%;
-  height: auto;
-  filter: drop-shadow(0 0 30px rgba(0, 255, 196, 0.4));
-  margin: 0 auto;
-}
-
-.tagline {
-  font-family: 'Inter', sans-serif;
-  font-weight: 500;
-  font-size: 1rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 1rem;
-  letter-spacing: 0.5px;
-}
-
-.grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: auto auto;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 4rem;
+  align-items: center;
+}
+
+/* ===== Left Column: Logo + Terminal ===== */
+.leftColumn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 1.5rem;
 }
 
-.featureCard {
+.logoWrapper {
   position: relative;
-  padding: 2rem;
-  background: linear-gradient(135deg, rgba(27, 27, 31, 0.9), rgba(18, 18, 21, 0.7));
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-  border: 1px solid rgba(0, 255, 196, 0.15);
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  display: inline-block;
+}
+
+.logo {
+  max-width: 220px;
+  width: 100%;
+  height: auto;
+  position: relative;
+  z-index: 2;
+}
+
+.tagline {
+  font-family: 'Michroma', sans-serif;
+  font-weight: 400;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 4px;
+  color: #ffffff;
+  margin: 0;
+  text-align: center;
+}
+
+/* ===== Right Column: Data Cards ===== */
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.dataCard {
+  display: flex;
+  align-items: flex-start;
+  gap: 1.25rem;
+  padding: 1.75rem 2rem;
+  background: linear-gradient(90deg, rgba(27, 27, 31, 0.8) 0%, rgba(18, 18, 21, 0.4) 100%);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-left: 2px solid #00ffc4;
+  border-radius: 0 8px 8px 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
   overflow: hidden;
 
   &::before {
     content: '';
     position: absolute;
     top: 0;
-    left: 24px;
-    width: 40px;
-    height: 2px;
-    background: #00ffc4;
-    box-shadow: 0 0 8px rgba(0, 255, 196, 0.6);
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(180deg, #00ffc4 0%, #4fff4b 100%);
+    box-shadow: 0 0 12px rgba(0, 255, 196, 0.5);
+    opacity: 0;
+    transition: opacity 0.3s ease;
   }
 
   &:hover {
-    border-color: rgba(0, 255, 196, 0.3);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 196, 0.1);
-  }
-}
+    background: linear-gradient(90deg, rgba(27, 27, 31, 0.95) 0%, rgba(18, 18, 21, 0.6) 100%);
+    border-color: rgba(0, 255, 196, 0.15);
+    transform: translateX(4px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 4px 0 20px rgba(0, 255, 196, 0.08);
 
-.featureTitle {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 1.1rem;
-  background: linear-gradient(135deg, #00ffc4 0%, #4fff4b 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 1rem;
-}
+    &::before {
+      opacity: 1;
+    }
 
-.featureText {
-  font-family: 'Inter', sans-serif;
-  font-weight: 400;
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.75);
-  line-height: 1.6;
-}
-
-.ctaCard {
-  grid-column: 1 / -1;
-  display: flex;
-  justify-content: center;
-  padding: 1.5rem 2rem;
-  background: linear-gradient(135deg, rgba(0, 255, 196, 0.1), rgba(79, 255, 75, 0.05));
-  border: 1px solid rgba(0, 255, 196, 0.2);
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.ctaLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 1rem;
-  color: #00ffc4;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  text-decoration: none;
-  text-shadow: 0 0 10px rgba(0, 255, 196, 0.5);
-  transition: all 0.3s ease;
-
-  &:hover {
-    color: #4fff4b;
-    text-shadow: 0 0 15px rgba(79, 255, 75, 0.7);
-
-    .ctaArrow {
-      transform: translateX(4px);
+    .iconSvg {
+      filter: drop-shadow(0 0 8px rgba(0, 255, 196, 0.8));
+      transform: scale(1.1);
     }
   }
 }
 
-.ctaArrow {
-  width: 20px;
-  height: 20px;
-  color: currentColor;
-  transition: transform 0.3s ease;
+.cardIcon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #00ffc4;
 }
 
-@media (max-width: 900px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
+.iconSvg {
+  width: 28px;
+  height: 28px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 0 4px rgba(0, 255, 196, 0.4));
+}
+
+.cardContent {
+  flex: 1;
+}
+
+.cardTitle {
+  font-family: 'Michroma', sans-serif;
+  font-weight: 400;
+  font-size: 0.95rem;
+  color: #ffffff;
+  margin: 0 0 0.5rem 0;
+  letter-spacing: 0.5px;
+}
+
+.cardText {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin: 0;
+  line-height: 1.6;
+}
+
+/* ===== CTA Button (matches site-wide button style) ===== */
+.ctaButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1rem;
+  padding: 0.5rem 1.4rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  color: #00ffc4;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-decoration: none;
+  background: rgba(0, 255, 196, 0.1);
+  border: 2px solid rgba(0, 255, 196, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  align-self: center;
+  text-shadow: 0 0 10px rgba(0, 255, 196, 0.5);
+  box-shadow: 0 0 20px rgba(0, 255, 196, 0.15);
+
+  &:hover {
+    transform: translateY(-2px);
+    background: rgba(0, 255, 196, 0.2);
+    border-color: #00ffc4;
+    box-shadow: 0 4px 25px rgba(0, 255, 196, 0.3);
+    text-shadow: 0 0 15px rgba(0, 255, 196, 0.8);
   }
-  
-  .featureCard:last-of-type {
-    grid-column: 1 / -1;
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 900px) {
+  .container {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+
+  .leftColumn {
+    align-items: center;
+    text-align: center;
+  }
+
+  .ctaButton {
+    align-self: center;
+  }
+
+  .bgGrid {
+    background-size: 40px 40px;
   }
 }
 
 @media (max-width: 600px) {
   .shilling {
-    padding: 4rem 1.5rem;
+    padding: 5rem 1.5rem;
+    min-height: auto;
   }
-  
-  .grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .featureCard,
-  .featureCard:last-of-type {
-    grid-column: 1;
-  }
-  
-  .logoSection {
-    margin-bottom: 2rem;
-  }
-  
+
   .logo {
-    max-width: 140px;
+    max-width: 160px;
   }
-  
-  .featureCard {
-    padding: 1.5rem;
+
+  .tagline {
+    font-size: 0.8rem;
+    letter-spacing: 2px;
   }
-  
-  .featureTitle {
+
+  .dataCard {
+    padding: 1.25rem 1.5rem;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .cardIcon {
+    width: 40px;
+    height: 40px;
+  }
+
+  .iconSvg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .cardTitle {
     font-size: 1rem;
   }
-  
-  .featureText {
-    font-size: 0.9rem;
+
+  .cardText {
+    font-size: 0.85rem;
+  }
+
+  .ctaButton {
+    width: auto;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.75rem;
   }
 }

@@ -1,6 +1,7 @@
 import { FC, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { ProfileCard } from '@/components/reactbits';
 
 import github from '@/assets/images/socials/icon _github_.png';
 import x from '@/assets/images/socials/icon _x_.png';
@@ -15,7 +16,7 @@ gsap.registerPlugin(ScrollTrigger);
 const teamMembers = [
   {
     name: 'Rafa',
-    role: 'Backend Lead',
+    title: 'Backend Lead',
     avatar: rafa,
     socials: [
       { icon: x, url: 'https://x.com/Rafael_Acuna', alt: 'X' },
@@ -24,7 +25,7 @@ const teamMembers = [
   },
   {
     name: 'Robin',
-    role: 'Frontend',
+    title: 'Frontend',
     avatar: robin,
     socials: [
       { icon: x, url: 'https://twitter.com/robinhodl69', alt: 'X' },
@@ -33,7 +34,7 @@ const teamMembers = [
   },
   {
     name: 'Terratek',
-    role: 'Full Stack',
+    title: 'Full Stack',
     avatar: ivan,
     socials: [
       { icon: x, url: 'https://twitter.com/IvanTerratek', alt: 'X' },
@@ -51,7 +52,6 @@ const Team: FC = () => {
     if (!containerRef.current) return;
 
     const ctx = gsap.context(() => {
-      // Animate header
       if (headerRef.current) {
         gsap.fromTo(
           headerRef.current,
@@ -70,7 +70,6 @@ const Team: FC = () => {
         );
       }
 
-      // Stagger animation for team cards using refs
       const validCards = cardsRef.current.filter(Boolean);
       if (validCards.length > 0) {
         gsap.fromTo(
@@ -100,36 +99,21 @@ const Team: FC = () => {
     <section ref={containerRef} className={styles.team} id="team">
       <div className={styles.container}>
         <div ref={headerRef} className={styles.header}>
-          <h2 className={styles.title}>Our Team</h2>
+          <h2 className={styles.title}>Team</h2>
         </div>
-        
+
         <div className={styles.grid}>
           {teamMembers.map((member, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               ref={(el) => { cardsRef.current[index] = el; }}
-              className={styles.card}
             >
-              <div 
-                className={styles.avatar} 
-                style={{ backgroundImage: `url(${member.avatar})` }}
+              <ProfileCard
+                avatarUrl={member.avatar}
+                name={member.name}
+                title={member.title}
+                socials={member.socials}
               />
-              <h3 className={styles.name}>{member.name}</h3>
-              <p className={styles.role}>{member.role}</p>
-              
-              <div className={styles.socials}>
-                {member.socials.map((social, socialIndex) => (
-                  <a
-                    key={socialIndex}
-                    href={social.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.socialLink}
-                  >
-                    <img src={social.icon} alt={social.alt} />
-                  </a>
-                ))}
-              </div>
             </div>
           ))}
         </div>
@@ -139,3 +123,4 @@ const Team: FC = () => {
 };
 
 export { Team };
+export default Team;

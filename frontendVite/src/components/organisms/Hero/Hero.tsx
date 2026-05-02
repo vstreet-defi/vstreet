@@ -1,7 +1,7 @@
-import { useRef, useEffect } from 'react';
+import { gsap } from 'gsap';
+import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import gsap from 'gsap';
-import { PerspectiveGrid } from '@/components/atoms/PerspectiveGrid/PerspectiveGrid';
+
 import styles from './Hero.module.scss';
 
 function Hero() {
@@ -56,11 +56,9 @@ function Hero() {
 
   return (
     <section ref={containerRef} className={styles.hero}>
-      <div className={styles.background}>
-        <PerspectiveGrid />
-      </div>
+      <div className={styles.background}></div>
       <div className={styles.overlay} />
-      
+
       <div className={styles.content}>
         <h1 ref={titleRef} className={styles.title}>vStreet</h1>
         <h2 ref={subtitleRef} className={styles.subtitle}>The DeFi Core on Vara Network</h2>

@@ -3,7 +3,6 @@ import { useApi, useAccount } from '@gear-js/react-hooks';
 import { ApiLoader } from '@/vstreet/components';
 import { withProviders } from '@/hocs';
 import { Routing } from '@/pages';
-import Background from '@/vstreet/components/atoms/Background/Background';
 import './App.scss';
 
 function Component() {
@@ -13,10 +12,7 @@ function Component() {
   const isAppReady = isApiReady && isAccountReady;
 
   return (
-    <>
-      <Background />
-      <main>{isAppReady ? <Routing /> : <ApiLoader />}</main>
-    </>
+    <main>{isAppReady ? <Routing /> : <ApiLoader />}</main>
   );
 }
 

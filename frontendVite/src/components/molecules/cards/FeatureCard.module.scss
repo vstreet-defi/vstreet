@@ -37,6 +37,10 @@
     transform: translateY(-4px);
     box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 196, 0.1);
   }
+
+  &:hover .iconContainer svg {
+    transform: scale(1.15);
+  }
 }
 
 .disabled {
@@ -46,6 +50,35 @@
   &:hover {
     transform: none;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.comingSoon {
+  opacity: 0.65;
+  background: linear-gradient(135deg, rgba(27, 27, 31, 0.5), rgba(18, 18, 21, 0.35));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  &::before {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: none;
+  }
+
+  .iconContainer {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03));
+    box-shadow: none;
+
+    svg {
+      color: rgba(255, 255, 255, 0.5);
+      filter: grayscale(0.7);
+      animation: none;
+    }
+  }
+
+  &:hover {
+    opacity: 0.85;
+    transform: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.12);
   }
 }
 
@@ -63,18 +96,30 @@
   svg {
     width: 32px;
     height: 32px;
-    stroke: #00ffc4;
-    fill: none;
+    color: #00ffc4;
+    filter: drop-shadow(0 0 4px rgba(0, 255, 196, 0.6)) drop-shadow(0 0 10px rgba(0, 255, 196, 0.3));
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: iconPulse 3s ease-in-out infinite;
+  }
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    filter: drop-shadow(0 0 4px rgba(0, 255, 196, 0.4)) drop-shadow(0 0 10px rgba(0, 255, 196, 0.2));
+  }
+  50% {
+    filter: drop-shadow(0 0 12px rgba(0, 255, 196, 0.8)) drop-shadow(0 0 20px rgba(0, 255, 196, 0.5));
   }
 }
 
 .title {
-  font-family: 'Montserrat', sans-serif;
-  font-weight: 700;
-  font-size: 1.5rem;
+  font-family: 'Michroma', sans-serif;
+  font-weight: 400;
+  font-size: 1.25rem;
   color: #ffffff;
   margin-bottom: 0.75rem;
   text-align: center;
+  letter-spacing: 0.5px;
 }
 
 .description {
@@ -118,6 +163,21 @@
   }
 }
 
+.soonBadge {
+  display: inline-block;
+  padding: 0.5rem 1.2rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  text-align: center;
+}
+
 .badge {
   display: block;
   font-size: 0.7rem;
@@ -130,21 +190,21 @@
   .card {
     padding: 1.5rem;
   }
-  
+
   .iconContainer {
     width: 48px;
     height: 48px;
-    
+
     svg {
       width: 24px;
       height: 24px;
     }
   }
-  
+
   .title {
     font-size: 1.25rem;
   }
-  
+
   .description {
     font-size: 0.85rem;
   }
