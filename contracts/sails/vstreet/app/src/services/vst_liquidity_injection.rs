@@ -418,12 +418,24 @@ where VftClient: Vft, {
     pub fn update_user_rewards(user_info: &mut UserInfo, interest_rate: u128, decimals_factor: u128, year_in_seconds: u128) {
         let current_timestamp = exec::block_timestamp() as u128;
 
-        // Seconds in the 3 seconds Vara Blocks Elapsed since last update
-        let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) * 3;
+        // Seconds elapsed since last update (block_timestamp returns milliseconds)
+        let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) / 1000;
 
         if time_elapsed > 0 {
-            let interest_per_second = ((interest_rate * decimals_factor) / year_in_seconds) / decimals_factor as u128;
-            let rewards = interest_per_second * time_elapsed;
+            // Calculate rewards based on user balance, interest rate and time elapsed
+            // let rewards = (user_info.balance * interest_rate * time_elapsed) / (year_in_seconds * decimals_factor);
+        // Refactor rewards calculation to prevent overflow and maintain precision
+            let denominator = year_in_seconds
+            .saturating_mul(decimals_factor)
+            .saturating_mul(100);
+
+            let rewards = user_info.balance
+            .saturating_mul(interest_rate)
+            .saturating_mul(time_elapsed)
+            .checked_div(denominator)
+            .unwrap_or(0);
+
+
             debug!("Calculated rewards: {}", rewards);
             user_info.rewards = user_info.rewards.saturating_add(rewards);
             user_info.rewards_usdc = user_info.rewards / decimals_factor;
@@ -561,11 +573,11 @@ where VftClient: Vft, {
         let risk_multiplier = state_mut.config.risk_multiplier;
         let dev_fee = state_mut.config.dev_fee;
 
-        base_rate.saturating_add(utilization_factor * risk_multiplier) * (1 + dev_fee)
+        base_rate.saturating_add(utilization_factor * risk_multiplier).saturating_add(dev_fee)
     }
     
     //Calculate Loan Interest Rate Amount 
-    fn calculate_loan_interest_rate_amount(&mut self, user: ActorId) -> String {
+    pub fn calculate_loan_interest_rate_amount(&mut self, user: ActorId) -> String {
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
@@ -575,7 +587,22 @@ where VftClient: Vft, {
         let time_diff_seconds = (current_timestamp - user_info.borrow_last_updated) / 1000;
         let decimals_factor = state_mut.config.decimals_factor;
 
-        let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds) / (state_mut.config.year_in_seconds * decimals_factor);
+        // let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds)
+            // / (state_mut.config.year_in_seconds * decimals_factor * 100);
+            // Refactor interest rate amount calculation to prevent overflow and maintain precision
+           let denominator = state_mut
+                .config
+                .year_in_seconds
+                .saturating_mul(decimals_factor)
+                .saturating_mul(100);
+
+            let interest_rate_amount = loan_amount
+                .saturating_mul(interest_rate)
+                .saturating_mul(time_diff_seconds)
+                .checked_div(denominator)
+                .unwrap_or(0);       
+
+
         user_info.loan_amount = user_info.loan_amount.saturating_add(interest_rate_amount);
         user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
         user_info.borrow_last_updated = current_timestamp;

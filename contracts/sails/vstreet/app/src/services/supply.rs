@@ -154,17 +154,10 @@ where
         return sails_rs::Err(error_message);
     }
 
-    // Transfer tokens from contract to user
-    let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
-
-    // Check if transfer was successful
-    if let Err(_) = result {
-        let error_message = ERROR_TRANSFER_FAILED.to_string();
-        service.notify_error(error_message.clone());
-        return sails_rs::Err(error_message);
-    }
-
-    // Update balance and rewards
+    // CEI: update state BEFORE the external call to prevent re-entrancy.
+    // In Gear's async model execution is suspended at .await, so another
+    // message from this user could be processed against the old (pre-debit)
+    // balance if we do not debit first.
     user_info.balance = user_info
         .balance
         .checked_sub(scaled_amount)
@@ -173,7 +166,7 @@ where
             service.notify_error(error_message.clone());
             error_message
         })?;
-    
+
     if user_info.balance % decimals_factor != 0 {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
@@ -197,6 +190,21 @@ where
             service.notify_error(error_message.clone());
             error_message
         })?;
+
+    // Transfer tokens from contract to user
+    let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
+
+    // If transfer fails roll back the state changes to keep accounting consistent
+    if let Err(_) = result {
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
+        user_info.balance = user_info.balance.saturating_add(scaled_amount);
+        user_info.balance_usdc = user_info.balance / decimals_factor;
+        state_mut.total_deposited = state_mut.total_deposited.saturating_add(scaled_amount);
+        let error_message = ERROR_TRANSFER_FAILED.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
+    }
 
     service.calculate_utilization_factor();
     state_mut.apr = service.calculate_apr();
@@ -339,6 +347,14 @@ where
         return sails_rs::Err(error_message);
     }
 
+    // Validate alignment BEFORE touching state.  Returning Err in Gear does NOT roll
+    // back state, so mutations that happen before this check would persist.
+    if value % one_tvara != 0 {
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        return Err(error_message);
+    }
+
     // Update user collateral
     let current_timestamp = exec::block_timestamp() as u128;
     let user_info = state_mut.users
@@ -360,12 +376,6 @@ where
 
     // Calculate available to withdraw vara
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
-
-    if value % one_tvara != 0 {
-        let error_message = ERROR_INVALID_AMOUNT.to_string();
-        service.notify_error(error_message.clone());
-        return Err(error_message);
-    }
 
     let amount = value
         .checked_div(one_tvara)
@@ -419,17 +429,7 @@ where
         return sails_rs::Err(error_message);
     }
 
-    if let Err(_err) = msg::send(
-        caller,
-        LiquidityEvent::WithdrawnVara { amount: amount }, 
-        amount_vara
-    ) {
-        let error_message = ERROR_TRANSFER_FAILED.to_string();
-        service.notify_error(error_message.clone());
-        return sails_rs::Err(error_message);
-    }
-
-    // Update balance 
+    // CEI: debit collateral BEFORE sending VARA to prevent re-entrancy.
     user_info.balance_vara = user_info
         .balance_vara
         .checked_sub(amount_vara)
@@ -439,7 +439,21 @@ where
             error_message
         })?;
 
-    //Update CV and MLA
+    if let Err(_err) = msg::send(
+        caller,
+        LiquidityEvent::WithdrawnVara { amount: amount }, 
+        amount_vara
+    ) {
+        // Roll back on send failure
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
+        user_info.balance_vara = user_info.balance_vara.saturating_add(amount_vara);
+        let error_message = ERROR_TRANSFER_FAILED.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
+    }
+
+    // Update CV, MLA and LTV after the send succeeded
     service.calculate_cv(caller);
     service.calculate_mla(caller);
 

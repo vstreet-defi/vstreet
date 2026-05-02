@@ -66,7 +66,7 @@ impl Default for Config {
             risk_multiplier: 40_000,     // 0.04 * DECIMALS_FACTOR
             one_tvara: 1_000_000_000_000, // Value of one TVara and Vara
             vara_price: 1000000,
-            dev_fee: 1_500_000, // 1.5% * DECIMALS_FACTOR
+            dev_fee: 15_000,     // 1.5% * DECIMALS_FACTOR (0.015 * 10^6)
             max_loan_amount: 100000000000000000000,
             max_collateral_withdraw: 100000000000000000000,
             max_liquidity_deposit: 100000000000000000000,
