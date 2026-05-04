@@ -13,12 +13,41 @@ El dApp de **vStreet** implementa un sistema de diseño moderno con:
 
 ## 📊 Paleta de Colores
 
+### CSS Variables (fuente única de verdad)
+Definidas en `src/App.scss`:
+```scss
+--font-display: 'Space Grotesk', sans-serif;
+--font-body: 'Space Grotesk', sans-serif;
+--font-mono: 'JetBrains Mono', monospace;
+
+--color-primary: #00ffc4;
+--color-secondary: #4fff4b;
+--color-accent: #ffb800;
+--color-bg-main: #0d0d14;
+--color-bg-footer: #08080c;
+--color-bg-header: #1b1b1f;
+--color-text-primary: rgba(255, 255, 255, 0.95);
+--color-text-secondary: rgba(200, 210, 230, 0.7);
+--color-text-tertiary: rgba(200, 210, 230, 0.45);
+--gradient-primary: linear-gradient(135deg, #00ffc4 0%, #4fff4b 100%);
+--gradient-hero: linear-gradient(135deg, #00ffc4 0%, #4fff4b 100%);
+--gradient-section: linear-gradient(90deg, #00ffc4 0%, #4fff4b 100%);
+--gradient-card: linear-gradient(180deg, #00ffc4 0%, #4fff4b 100%);
+--shadow-glow: 0 0 8px currentColor;
+--container-max: 1200px;
+--transition-default: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+```
+
 ### Primarios
 - **Cyan**: `#00ffc4` (principal, glow de 6px)
 - **Lime**: `#4fff4b` (secundario, accents)
+- **Accent**: `#ffb800` (naranja dorado, para highlights y CTAs)
 - **Blanco**: `#ffffff` (texto principal)
 
 ### Fondos
+- **Main Background**: `#0d0d14` (canvas oscuro unificado)
+- **Footer Background**: `#08080c` (más profundo)
+- **Header Background**: `#1b1b1f` (para elementos elevados)
 - **Oscuro Base**: `rgba(18, 18, 21, 0.7)`
 - **Oscuro Claro**: `rgba(27, 27, 31, 0.9)`
 - **Transparente**: Para glassmorphism
@@ -139,20 +168,22 @@ filter: drop-shadow(0 0 15px rgba(0, 255, 196, 0.6));
 ## ✍️ Tipografía
 
 ### Familias
-- **Headings**: Montserrat (Sans-serif)
-  - Weight: 700 (regular), 900 (énfasis)
-- **Body**: Inter (Sans-serif)
-  - Weight: 400 (regular), 600 (destacado)
+- **Display & Body**: Space Grotesk (Sans-serif)
+  - Weight: 400 (regular), 700 (énfasis)
+  - Uso: Títulos, subtítulos, body text, botones, navegación
+- **Mono**: JetBrains Mono (Monospace)
+  - Weight: 400 (regular), 500 (destacado)
+  - Uso: Labels técnicos, números, badges, código
 
 ### Escala de Tamaños
 | Nivel | Tamaño | Weight | Uso |
 |-------|--------|--------|-----|
-| H1 | 48px | 900 | Títulos principales |
-| H2 | 22px | 700 | Títulos de sección |
-| H3 | 18px | 700 | Subtítulos |
-| Body | 14px | 400 | Texto regular |
-| Small | 12px | 400 | Texto secundario |
-| Tiny | 11px | 700 | Labels |
+| H1 | clamp(3rem, 8vw, 5rem) | 400 | Títulos principales (Hero) |
+| H2 | clamp(1.8rem, 5vw, 3rem) | 400 | Títulos de sección |
+| H3 | clamp(1rem, 3vw, 1.5rem) | 400 | Subtítulos |
+| Body | 0.9rem | 400 | Texto regular |
+| Small | 0.85rem | 400 | Texto secundario |
+| Tiny | 0.7rem | 500 | Labels técnicos (mono) |
 
 ---
 
@@ -248,11 +279,14 @@ keyframes: flickeringNeon (4s infinite)
 El sistema está diseñado para **dark mode**. No hay soporte explícito para light mode.
 
 **Colores Tema Oscuro**
-- Fondo principal: #0f0f12
-- Fondo secundario: rgba(18, 18, 21, 0.7)
-- Texto primario: #ffffff
-- Texto secundario: rgba(255, 255, 255, 0.5)
-- Acentos: #00ffc4 (cyan), #4fff4b (lime)
+- Fondo principal (canvas): `#0d0d14`
+- Fondo footer: `#08080c`
+- Fondo header: `#1b1b1f`
+- Fondo secundario: `rgba(18, 18, 21, 0.7)`
+- Texto primario: `rgba(255, 255, 255, 0.95)`
+- Texto secundario: `rgba(200, 210, 230, 0.7)` (tono frío)
+- Texto terciario: `rgba(200, 210, 230, 0.45)`
+- Acentos: `#00ffc4` (cyan), `#4fff4b` (lime), `#ffb800` (naranja)
 
 ---
 
@@ -357,17 +391,47 @@ export { OrganismName };
 // Primarios
 $cyan: #00ffc4;
 $lime: #4fff4b;
+$accent: #ffb800;
 $white: #ffffff;
 
 // Backgrounds
+$bg-main: #0d0d14;
+$bg-footer: #08080c;
 $bg-dark: rgba(18, 18, 21, 0.7);
 $bg-dark-light: rgba(27, 27, 31, 0.9);
 
-// Glassmorphism
+// Glassmorphism refinado
 @mixin glassmorphism {
-  background: linear-gradient(135deg, $bg-dark-light, $bg-dark);
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  background: linear-gradient(145deg, rgba(27, 27, 31, 0.85), rgba(18, 18, 21, 0.6));
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+}
+
+// Gradient border glow
+@mixin gradient-border-glow {
+  &::after {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, rgba(0, 255, 196, 0.15), transparent 50%, rgba(79, 255, 75, 0.1));
+    -webkit-mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    mask:
+      linear-gradient(#fff 0 0) content-box,
+      linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+
+  &:hover::after {
+    opacity: 1;
+  }
 }
 
 // Glow effects
@@ -387,28 +451,75 @@ $bg-dark-light: rgba(27, 27, 31, 0.9);
 
 Al crear componentes, verifica:
 
-- [ ] **Color**: Usa cyan (#00ffc4) para primario, lime (#4fff4b) para secundario
-- [ ] **Glassmorphism**: Cards/containers con backdrop-filter blur(16px)
-- [ ] **Gradient Border**: Border-image con gradients de neon
-- [ ] **Responsiveness**: Breakpoints en 1440px, 1024px, 822px, 768px
-- [ ] **Tipografía**: Montserrat para headings, Inter para body
-- [ ] **Animaciones**: Transiciones smooth (0.3s, ease-in-out)
-- [ ] **Glow Effects**: box-shadow o text-shadow para acentos
-- [ ] **Corner Accents**: Usa componente CornerAccent en containers principales
-- [ ] **Padding**: 24px-32px desktop, 16px-20px mobile
+- [ ] **Color**: Usa cyan (#00ffc4) para primario, lime (#4fff4b) para secundario, naranja (#ffb800) para highlights
+- [ ] **Canvas**: Background unificado `#0d0d14`; evitar cambios de fondo entre secciones
+- [ ] **Glassmorphism**: Cards/containers con `backdrop-filter: blur(12px) saturate(180%)`
+- [ ] **Gradient Borders**: Border degradado sutil (cyan → lime) en cards destacadas
+- [ ] **Responsiveness**: Breakpoints en 900px, 768px, 600px, 480px
+- [ ] **Tipografía**: Space Grotesk para todo el texto; JetBrains Mono para labels técnicos
+- [ ] **Animaciones**: Transiciones con `cubic-bezier(0.4, 0, 0.2, 1)`, duración 0.3s-0.4s
+- [ ] **Glow Effects**: `box-shadow` o `text-shadow` con `rgba(0, 255, 196, 0.x)` para acentos
+- [ ] **Padding**: Secciones `5rem 2rem` desktop, `4rem 1.5rem` mobile
+- [ ] **Container**: `max-width: 1200px`, centrado con `margin: 0 auto`
 - [ ] **Z-index**: Modals 1000+, overlays 100+, content 1+
+- [ ] **Tendencias**: Aplicar Tactile Brutalism (bordes 1px, sin shadows pesados) y Bento Grid donde aplique
+
+---
+
+## 🧩 Referencias de Componentes Externos
+
+### Aceternity UI
+**URL**: https://ui.aceternity.com
+
+Librería open-source de componentes animados para React (copy-paste, sin dependencias npm).
+Usada por Google, Microsoft, Cisco. Componentes recomendados para vStreet:
+
+| Componente | Sección | Efecto |
+|-----------|---------|--------|
+| `SpotlightCard` | Features / VST | Spotlight que sigue al mouse dentro de la card |
+| `BentoGrid` | Cualquier sección con cards | Grilla modular con animaciones staggered |
+| `BackgroundBeams` | Hero | Rayos de luz verticales sutiles |
+| `TextGenerateEffect` | Títulos de sección | Texto que aparece letra por letra |
+| `3DCard` | Team / Features | Card con efecto 3D on hover |
+| `InfiniteMovingCards` | Social / Testimonials | Carrusel infinito automático |
+
+**Formato de integración**: Copiar código del componente desde la web de Aceternity y adaptar colores a la paleta vStreet.
+
+---
+
+## 🔮 Tendencias 2026 Aplicadas
+
+### Tactile Brutalism
+- Bordes finos de 1px como elemento estructural
+- Sin drop shadows pesados; profundidad via bordes y superposición
+- Esquinas: 0px (sharp) o 16px (pill), evitando 8px genérico
+
+### Chromatic Extremes
+- Canvas negro puro (`#0d0d14`) interrumpido por UN solo acento saturado (`#00ffc4`)
+- Sin gradientes múltiples ni paletas complejas
+
+### Bento Grid 2.0
+- Layouts modulares asimétricos con jerarquía visual
+- Cards de diferentes tamaños según importancia del contenido
+- Micro-interacciones individuales por tile
+
+### Frosted Touch (Glassmorphism Refinado)
+- `backdrop-filter: blur()` con `saturate()` sutil
+- Bordes translúcidos, no opacos
+- Evitar blur excesivo que degrade performance
 
 ---
 
 ## 🎯 Próximos Pasos (Recomendaciones)
 
-1. **Crear `preview.html`**: Catálogo visual de componentes (light theme)
-2. **Crear `preview-dark.html`**: Catálogo visual de componentes (dark theme)
+1. **Integrar Aceternity UI**: Probar `SpotlightCard` en Features, `BentoGrid` en VSTSection
+2. **Crear `preview.html`**: Catálogo visual de componentes (dark theme only)
 3. **Documentar variables SCSS**: Crear archivo `_variables.scss` centralizado
 4. **Sistema de tokens**: Implementar design tokens (spacing, colors, breakpoints)
 5. **Documentar animaciones**: Crear página interactiva de transiciones
 6. **Accesibilidad**: Agregar contrast checker y ARIA labels
 7. **Performance**: Optimizar gradients y blur effects en mobile
+8. **Noise/Texture**: Evaluar si agregar textura sutil al canvas principal
 
 ---
 
@@ -422,4 +533,4 @@ Para preguntas sobre el diseño del dApp, consulta:
 
 ---
 
-*Última actualización: 2026-04-06*
+*Última actualización: 2026-05-01*

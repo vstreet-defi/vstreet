@@ -29,7 +29,7 @@
   margin: 0;
 
   .title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: clamp(36px, 10vw, 72px);
     font-weight: 900;
     text-transform: uppercase;
@@ -48,7 +48,7 @@
   }
 
   .subtitle {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.5);
@@ -64,7 +64,7 @@
     margin-bottom: 32px;
 
     .sectionTitle {
-      font-family: 'Montserrat', sans-serif;
+      font-family: var(--font-body);
       font-size: 24px;
       font-weight: 700;
       color: #ffffff;
@@ -111,7 +111,7 @@
   }
 
   h3 {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 12px;
     font-weight: 800;
     color: #00ffc4;
@@ -121,7 +121,7 @@
   }
 
   p {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     line-height: 1.8;
     font-size: 16px;
     color: rgba(255, 255, 255, 0.8);
@@ -152,7 +152,7 @@
   padding: 10px 20px;
   border-radius: 4px;
   cursor: pointer;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 11px;
   text-transform: uppercase;
@@ -221,14 +221,14 @@
   gap: 4px;
 
   .colorName {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
     font-weight: 700;
     color: #ffffff;
   }
 
   .colorHex {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     color: rgba(255, 255, 255, 0.5);
     font-size: 12px;
     margin-bottom: 12px;
@@ -286,7 +286,7 @@
 .downloadLink {
   color: #00ffc4;
   text-decoration: none;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -328,7 +328,7 @@
   }
 
   span {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 12px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.5);
@@ -361,7 +361,7 @@
   text-decoration: none;
   padding: 12px 24px;
   border-radius: 4px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-weight: 800;
   font-size: 11px;
   text-transform: uppercase;

@@ -2,6 +2,7 @@ import { gsap } from 'gsap';
 import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+import { GridBackground } from '@/components/atoms/GridBackground/GridBackground';
 import styles from './Hero.module.scss';
 
 function Hero() {
@@ -15,7 +16,6 @@ function Hero() {
     if (!containerRef.current) return;
 
     const ctx = gsap.context(() => {
-      // Timeline para animaciones secuenciales del Hero usando refs
       const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
 
       if (titleRef.current) {
@@ -56,13 +56,19 @@ function Hero() {
 
   return (
     <section ref={containerRef} className={styles.hero}>
-      <div className={styles.background}></div>
+      <GridBackground />
+      <div className={styles.blobs}>
+        <div className={`${styles.blob} ${styles.blobCyan}`} />
+        <div className={`${styles.blob} ${styles.blobGreen}`} />
+        <div className={`${styles.blob} ${styles.blobMix}`} />
+      </div>
+      <div className={styles.noiseLayer} />
       <div className={styles.overlay} />
 
       <div className={styles.content}>
         <h1 ref={titleRef} className={styles.title}>vStreet</h1>
         <h2 ref={subtitleRef} className={styles.subtitle}>The DeFi Core on Vara Network</h2>
-        
+
         <div ref={buttonsRef} className={styles.buttons}>
           <button
             className={styles.buttonPrimary}

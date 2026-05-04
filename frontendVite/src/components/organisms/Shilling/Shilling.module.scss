@@ -1,44 +1,27 @@
 .shilling {
   position: relative;
   width: 100%;
-  padding: 8rem 2rem;
+  padding: 5rem 2rem;
   overflow: hidden;
   min-height: 100vh;
   display: flex;
   align-items: center;
-}
-
-/* ===== Background Effects ===== */
-.bgGrid {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  opacity: 0.04;
-  background-image:
-    linear-gradient(rgba(0, 255, 196, 0.3) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0, 255, 196, 0.3) 1px, transparent 1px);
-  background-size: 60px 60px;
-  transform: perspective(600px) rotateX(60deg) translateY(-100px) scale(1.5);
-  transform-origin: center top;
-  pointer-events: none;
-  mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 30%, black 70%, transparent 100%);
+  background: var(--color-bg-main);
 }
 
 .bgGlow {
   position: absolute;
   top: 50%;
-  left: 30%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(0, 255, 196, 0.06) 0%, transparent 70%);
+  right: -100px;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(0, 255, 196, 0.07) 0%, transparent 65%);
   border-radius: 50%;
-  transform: translate(-50%, -50%);
+  transform: translateY(-50%);
   pointer-events: none;
   z-index: 0;
 }
 
-/* ===== Container Layout ===== */
 .container {
   max-width: 1200px;
   margin: 0 auto;
@@ -50,7 +33,6 @@
   align-items: center;
 }
 
-/* ===== Left Column: Logo + Terminal ===== */
 .leftColumn {
   display: flex;
   flex-direction: column;
@@ -72,7 +54,7 @@
 }
 
 .tagline {
-  font-family: 'Michroma', sans-serif;
+  font-family: var(--font-display);
   font-weight: 400;
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -82,7 +64,6 @@
   text-align: center;
 }
 
-/* ===== Right Column: Data Cards ===== */
 .rightColumn {
   display: flex;
   flex-direction: column;
@@ -94,8 +75,7 @@
   align-items: flex-start;
   gap: 1.25rem;
   padding: 1.75rem 2rem;
-  background: linear-gradient(90deg, rgba(27, 27, 31, 0.8) 0%, rgba(18, 18, 21, 0.4) 100%);
-  backdrop-filter: blur(8px);
+  background: linear-gradient(145deg, #111118 0%, #0d0d14 50%, #0a0a10 100%);
   border: 1px solid rgba(255, 255, 255, 0.05);
   border-left: 2px solid #00ffc4;
   border-radius: 0 8px 8px 0;
@@ -104,6 +84,15 @@
   overflow: hidden;
 
   &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0.025;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  &::after {
     content: '';
     position: absolute;
     top: 0;
@@ -117,12 +106,11 @@
   }
 
   &:hover {
-    background: linear-gradient(90deg, rgba(27, 27, 31, 0.95) 0%, rgba(18, 18, 21, 0.6) 100%);
     border-color: rgba(0, 255, 196, 0.15);
     transform: translateX(4px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 4px 0 20px rgba(0, 255, 196, 0.08);
 
-    &::before {
+    &::after {
       opacity: 1;
     }
 
@@ -155,7 +143,7 @@
 }
 
 .cardTitle {
-  font-family: 'Michroma', sans-serif;
+  font-family: var(--font-display);
   font-weight: 400;
   font-size: 0.95rem;
   color: #ffffff;
@@ -164,22 +152,21 @@
 }
 
 .cardText {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.6;
 }
 
-/* ===== CTA Button (matches site-wide button style) ===== */
 .ctaButton {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   margin-top: 1rem;
   padding: 0.5rem 1.4rem;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.8rem;
   color: #00ffc4;
@@ -208,7 +195,6 @@
   }
 }
 
-/* ===== Responsive ===== */
 @media (max-width: 900px) {
   .container {
     grid-template-columns: 1fr;
@@ -224,9 +210,6 @@
     align-self: center;
   }
 
-  .bgGrid {
-    background-size: 40px 40px;
-  }
 }
 
 @media (max-width: 600px) {

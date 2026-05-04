@@ -34,7 +34,6 @@
     "framer-motion": "^10.18.0",
     "gsap": "^3.14.2",
     "lenis": "^1.3.23",
-    "ogl": "^1.0.11",
     "postprocessing": "^6.39.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
@@ -43,7 +42,8 @@
     "sails-js": "0.3.1",
     "sails-js-parser": "^0.3.1",
     "sass": "1.83.4",
-    "three": "^0.183.2"
+    "three": "^0.183.2",
+    "vanta": "^0.5.24"
   },
   "devDependencies": {
     "@polkadot/types": "15.4.1",

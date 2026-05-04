@@ -43,7 +43,7 @@
 }
 
 .label {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.6);
@@ -53,7 +53,7 @@
 }
 
 .value {
-  font-family: 'Roboto Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 32px;
   font-weight: 700;
   line-height: 1.2;
@@ -61,7 +61,7 @@
 }
 
 .subtext {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-size: 12px;
   font-weight: 400;
   color: rgba(255, 255, 255, 0.5);

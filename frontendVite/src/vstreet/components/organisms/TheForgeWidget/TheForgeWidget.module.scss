@@ -38,7 +38,7 @@
 }
 
 .title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 22px;
     font-weight: 700;
     color: #ffffff;
@@ -51,7 +51,7 @@
 }
 
 .subtitle {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     font-size: 14px;
     font-weight: 400;
     color: rgba(255, 255, 255, 0.5);
@@ -71,7 +71,7 @@
 }
 
 .availableBalance {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
@@ -97,7 +97,7 @@
 
 .label {
     display: block;
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 12px;
     font-weight: 600;
     color: rgba(255, 255, 255, 0.5);
@@ -190,7 +190,7 @@
     border-radius: 8px;
 
     /* Text matching ButtonGradFill */
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 18px;
     font-weight: 700;
     color: #00ffc4;

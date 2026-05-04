@@ -2,6 +2,7 @@ import { FC, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+import { TiltWrapper } from '@/components/molecules/TiltWrapper/TiltWrapper';
 import VaraLogo from '@/assets/images/vara-logo-teal.png';
 
 import styles from './Shilling.module.scss';
@@ -165,8 +166,6 @@ const Shilling: FC = () => {
 
   return (
     <section ref={containerRef} className={styles.shilling}>
-      {/* Background grid effect */}
-      <div className={styles.bgGrid} />
       {/* Ambient glow */}
       <div className={styles.bgGlow} />
 
@@ -197,21 +196,25 @@ const Shilling: FC = () => {
               ref={(el) => { cardsRef.current[index] = el; }}
               className={styles.dataCard}
             >
-              <div className={styles.cardIcon}>
-                <div
-                  ref={(el) => {
-                    if (el) {
-                      iconsRef.current[index] = el.querySelector('svg');
-                    }
-                  }}
-                >
-                  {feature.icon}
+              <TiltWrapper max={5} scale={1.01}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1.25rem' }}>
+                  <div className={styles.cardIcon}>
+                    <div
+                      ref={(el) => {
+                        if (el) {
+                          iconsRef.current[index] = el.querySelector('svg');
+                        }
+                      }}
+                    >
+                      {feature.icon}
+                    </div>
+                  </div>
+                  <div className={styles.cardContent}>
+                    <h3 className={styles.cardTitle}>{feature.title}</h3>
+                    <p className={styles.cardText}>{feature.text}</p>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.cardContent}>
-                <h3 className={styles.cardTitle}>{feature.title}</h3>
-                <p className={styles.cardText}>{feature.text}</p>
-              </div>
+              </TiltWrapper>
             </div>
           ))}
         </div>

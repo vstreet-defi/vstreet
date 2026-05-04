@@ -16,7 +16,7 @@
     background: transparent;
     border: none;
     color: rgba(255, 255, 255, 0.4);
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
     font-weight: 700;
     text-transform: uppercase;
@@ -74,7 +74,7 @@
   border: none;
   border-radius: 8px;
   color: #000;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-size: 13px;
   font-weight: 700;
   text-transform: uppercase;

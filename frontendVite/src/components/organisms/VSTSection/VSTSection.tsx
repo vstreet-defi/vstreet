@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
+import { SpotlightCard } from '@/components/reactbits';
+import { TiltWrapper } from '@/components/molecules/TiltWrapper/TiltWrapper';
 import styles from './VSTSection.module.scss';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -11,14 +13,36 @@ const tokenFeatures = [
   {
     title: 'Protocol Utility',
     description: 'VST is the native currency of the vStreet ecosystem. Use it to pay fees, access premium features, and unlock advanced DeFi strategies.',
+    number: '01',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </svg>
+    ),
   },
   {
     title: 'Vault Staking',
     description: 'Lock your VST tokens in conviction vaults to earn protocol power (sVST). Longer lock periods multiply your voting weight and rewards.',
+    number: '02',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+        <path d="M7 11V7a5 5 0 0110 0v4" />
+      </svg>
+    ),
   },
   {
     title: 'Governance Rights',
     description: 'VST holders shape the future of the protocol. Propose and vote on key parameters, treasury allocations, and roadmap decisions.',
+    number: '03',
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+        <path d="M12 20h9" />
+        <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z" />
+      </svg>
+    ),
   },
 ];
 
@@ -108,10 +132,24 @@ const VSTSection: FC = () => {
             <div
               key={index}
               ref={(el) => { cardsRef.current[index] = el; }}
-              className={styles.card}
             >
-              <h3 className={styles.cardTitle}>{feature.title}</h3>
-              <p className={styles.cardText}>{feature.description}</p>
+              <TiltWrapper max={6} scale={1.02}>
+                <SpotlightCard
+                  className={styles.card}
+                  spotlightColor={index === 1 ? 'rgba(79, 255, 75, 0.12)' : 'rgba(0, 255, 196, 0.12)'}
+                >
+                  <div className={styles.cardInner}>
+                    <span className={styles.cardNumber}>{feature.number}</span>
+                    <div className={styles.cardTop}>
+                      <div className={styles.iconWrapper}>{feature.icon}</div>
+                    </div>
+                    <div>
+                      <h3 className={styles.cardTitle}>{feature.title}</h3>
+                      <p className={styles.cardText}>{feature.description}</p>
+                    </div>
+                  </div>
+                </SpotlightCard>
+              </TiltWrapper>
             </div>
           ))}
         </div>

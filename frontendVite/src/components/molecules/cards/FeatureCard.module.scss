@@ -1,85 +1,64 @@
-.card {
+.wrapper {
+  position: relative;
+}
+
+.cardInner {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 2.5rem 2rem;
   position: relative;
-
-  /* Glassmorphism - matching StatsPanel */
-  background: linear-gradient(135deg, rgba(27, 27, 31, 0.9), rgba(18, 18, 21, 0.7));
-  backdrop-filter: blur(12px) saturate(180%);
-  -webkit-backdrop-filter: blur(12px) saturate(180%);
-
-  /* Border - matching StatsPanel */
-  border: 1px solid rgba(0, 255, 196, 0.15);
-  border-radius: 8px;
-
-  /* Shadow */
+  background: linear-gradient(145deg, #111118 0%, #0d0d14 50%, #0a0a10 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
-
-  /* Top Accent Bar - matching StatsPanel */
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 24px;
-    width: 40px;
-    height: 2px;
-    background: #00ffc4;
-    box-shadow: 0 0 8px rgba(0, 255, 196, 0.6);
-  }
-
-  &:hover {
-    border-color: rgba(0, 255, 196, 0.3);
-    transform: translateY(-4px);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 255, 196, 0.1);
-  }
-
-  &:hover .iconContainer svg {
-    transform: scale(1.15);
-  }
 }
 
-.disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-
-  &:hover {
-    transform: none;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  }
+.cardInner::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 16px;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(0, 255, 196, 0.15), transparent 50%, rgba(79, 255, 75, 0.1));
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
 }
 
-.comingSoon {
-  opacity: 0.65;
-  background: linear-gradient(135deg, rgba(27, 27, 31, 0.5), rgba(18, 18, 21, 0.35));
-  border: 1px solid rgba(255, 255, 255, 0.08);
+.wrapper:hover .cardInner {
+  transform: translateY(-3px);
+  border-color: rgba(0, 255, 196, 0.25);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 255, 196, 0.06);
+}
 
-  &::before {
-    background: rgba(255, 255, 255, 0.15);
-    box-shadow: none;
-  }
+.wrapper:hover .cardInner::after {
+  opacity: 1;
+}
 
-  .iconContainer {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03));
-    box-shadow: none;
+.wrapper:hover .iconContainer {
+  transform: scale(1.08);
+  box-shadow: 0 0 25px rgba(0, 255, 196, 0.2);
+}
 
-    svg {
-      color: rgba(255, 255, 255, 0.5);
-      filter: grayscale(0.7);
-      animation: none;
-    }
-  }
-
-  &:hover {
-    opacity: 0.85;
-    transform: none;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    border-color: rgba(255, 255, 255, 0.12);
-  }
+.accentBar {
+  position: absolute;
+  top: 0;
+  left: 24px;
+  width: 40px;
+  height: 2px;
+  background: #00ffc4;
+  box-shadow: 0 0 8px rgba(0, 255, 196, 0.6);
 }
 
 .iconContainer {
@@ -92,6 +71,7 @@
   background: linear-gradient(135deg, rgba(0, 255, 196, 0.1), rgba(79, 255, 75, 0.1));
   border-radius: 50%;
   box-shadow: 0 0 20px rgba(0, 255, 196, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
   svg {
     width: 32px;
@@ -99,21 +79,11 @@
     color: #00ffc4;
     filter: drop-shadow(0 0 4px rgba(0, 255, 196, 0.6)) drop-shadow(0 0 10px rgba(0, 255, 196, 0.3));
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    animation: iconPulse 3s ease-in-out infinite;
-  }
-}
-
-@keyframes iconPulse {
-  0%, 100% {
-    filter: drop-shadow(0 0 4px rgba(0, 255, 196, 0.4)) drop-shadow(0 0 10px rgba(0, 255, 196, 0.2));
-  }
-  50% {
-    filter: drop-shadow(0 0 12px rgba(0, 255, 196, 0.8)) drop-shadow(0 0 20px rgba(0, 255, 196, 0.5));
   }
 }
 
 .title {
-  font-family: 'Michroma', sans-serif;
+  font-family: var(--font-display);
   font-weight: 400;
   font-size: 1.25rem;
   color: #ffffff;
@@ -123,10 +93,10 @@
 }
 
 .description {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary);
   text-align: center;
   margin-bottom: 1.5rem;
   line-height: 1.6;
@@ -135,7 +105,7 @@
 .button {
   width: 100%;
   padding: 0.8rem;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.9rem;
   color: #00ffc4;
@@ -166,10 +136,10 @@
 .soonBadge {
   display: inline-block;
   padding: 0.5rem 1.2rem;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   background: rgba(255, 255, 255, 0.06);
@@ -178,16 +148,58 @@
   text-align: center;
 }
 
-.badge {
-  display: block;
-  font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 0.25rem;
-  font-weight: 400;
+.disabled {
+  .cardInner {
+    opacity: 0.7;
+  }
+
+  &:hover .cardInner {
+    transform: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.06);
+  }
+
+  &:hover .cardInner::after {
+    opacity: 0;
+  }
+}
+
+.comingSoon {
+  .cardInner {
+    opacity: 0.65;
+    background: linear-gradient(135deg, rgba(27, 27, 31, 0.5), rgba(18, 18, 21, 0.35));
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .accentBar {
+    background: rgba(255, 255, 255, 0.15);
+    box-shadow: none;
+  }
+
+  .iconContainer {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.03));
+    box-shadow: none;
+
+    svg {
+      color: var(--color-text-tertiary);
+      filter: grayscale(0.7);
+    }
+  }
+
+  &:hover .cardInner {
+    opacity: 0.85;
+    transform: none;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+
+  &:hover .cardInner::after {
+    opacity: 0;
+  }
 }
 
 @media (max-width: 768px) {
-  .card {
+  .cardInner {
     padding: 1.5rem;
   }
 

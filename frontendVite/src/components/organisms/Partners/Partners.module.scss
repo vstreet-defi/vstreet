@@ -1,0 +1,86 @@
+.partners {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid transparent;
+  border-image: linear-gradient(141deg, rgb(0, 255, 196), #4fff4b) 1;
+  background: rgba(18, 18, 18, 0.74);
+  backdrop-filter: blur(5.4px);
+  padding: 1rem 0;
+}
+
+.track {
+  display: flex;
+  width: max-content;
+  animation: marquee-scroll 20s linear infinite;
+  will-change: transform;
+}
+
+.group {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  flex-shrink: 0;
+  width: 100vw;
+  max-width: 1200px;
+  padding: 0 2rem;
+  gap: 3rem;
+}
+
+.logo {
+  height: 3.5rem;
+  opacity: 0.5;
+  flex-shrink: 0;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  filter: grayscale(100%);
+
+  &:hover {
+    opacity: 1;
+    transform: scale(1.05);
+    filter: grayscale(0%);
+  }
+}
+
+@keyframes marquee-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.mobile {
+  composes: partners;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-around;
+  padding: 1rem;
+  border-color: #00FFC4;
+  border-image: none;
+}
+
+.mobileLogo {
+  height: 3.5rem;
+  opacity: 0.5;
+  transition: opacity 0.3s ease;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .group {
+    gap: 1.5rem;
+    padding: 0 1rem;
+  }
+
+  .logo {
+    height: 2.5rem;
+  }
+
+  .mobileLogo {
+    height: 2.5rem;
+  }
+}

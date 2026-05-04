@@ -35,14 +35,12 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
           const currentScroll = self.scroll();
           
           if (currentScroll > lastScroll && currentScroll > 100) {
-            // Scrolling down - hide header
             gsap.to(headerRef.current, {
               y: -100,
               duration: 0.3,
               ease: 'power2.out',
             });
           } else {
-            // Scrolling up - show header
             gsap.to(headerRef.current, {
               y: 0,
               duration: 0.3,

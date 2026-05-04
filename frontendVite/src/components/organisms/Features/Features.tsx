@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { FeatureCard } from '@/components/molecules/cards/FeatureCard';
+import { TiltWrapper } from '@/components/molecules/TiltWrapper/TiltWrapper';
 import LendingIcon from '@/assets/images/icons/lend.svg?react';
 import VaultsIcon from '@/assets/images/icons/vault.svg?react';
 import BondsIcon from '@/assets/images/icons/bonds.svg?react';
@@ -21,7 +22,6 @@ const Features: FC = () => {
     if (!containerRef.current) return;
 
     const ctx = gsap.context(() => {
-      // Animate header on scroll using ref
       if (headerRef.current) {
         gsap.fromTo(
           headerRef.current,
@@ -40,7 +40,6 @@ const Features: FC = () => {
         );
       }
 
-      // Stagger animation for feature cards using refs
       const validItems = gridItemsRef.current.filter(Boolean);
       if (validItems.length > 0) {
         gsap.fromTo(
@@ -121,15 +120,17 @@ const Features: FC = () => {
               ref={(el) => { gridItemsRef.current[index] = el; }}
               className={styles.gridItem}
             >
-              <FeatureCard
-                icon={feature.icon}
-                title={feature.title}
-                description={feature.description}
-                buttonText={feature.buttonText}
-                onClick={feature.onClick}
-                disabled={feature.disabled}
-                comingSoon={feature.comingSoon}
-              />
+              <TiltWrapper max={8} scale={1.03}>
+                <FeatureCard
+                  icon={feature.icon}
+                  title={feature.title}
+                  description={feature.description}
+                  buttonText={feature.buttonText}
+                  onClick={feature.onClick}
+                  disabled={feature.disabled}
+                  comingSoon={feature.comingSoon}
+                />
+              </TiltWrapper>
             </div>
           ))}
         </div>

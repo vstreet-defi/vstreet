@@ -3,6 +3,7 @@ import { useApi, useAccount } from '@gear-js/react-hooks';
 import { ApiLoader } from '@/vstreet/components';
 import { withProviders } from '@/hocs';
 import { Routing } from '@/pages';
+import { SmoothScroll } from '@/components/atoms/SmoothScroll/SmoothScroll';
 import './App.scss';
 
 function Component() {
@@ -12,7 +13,9 @@ function Component() {
   const isAppReady = isApiReady && isAccountReady;
 
   return (
-    <main>{isAppReady ? <Routing /> : <ApiLoader />}</main>
+    <SmoothScroll>
+      <main>{isAppReady ? <Routing /> : <ApiLoader />}</main>
+    </SmoothScroll>
   );
 }
 

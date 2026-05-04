@@ -37,7 +37,6 @@ const SocialMedia: FC = () => {
     if (!containerRef.current) return;
 
     const ctx = gsap.context(() => {
-      // Animate section content
       if (sectionRef.current) {
         gsap.fromTo(
           sectionRef.current,
@@ -56,7 +55,6 @@ const SocialMedia: FC = () => {
         );
       }
 
-      // Stagger animation for icons using refs
       const validIcons = iconsRef.current.filter(Boolean);
       if (validIcons.length > 0) {
         gsap.fromTo(

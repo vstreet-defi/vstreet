@@ -62,6 +62,9 @@
         // react-three-fiber custom JSX properties
         "react/no-unknown-property": ["error", { "ignore": ["args", "attach", "object", "position", "rotation", "scale", "intensity", "color", "visible", "castShadow", "receiveShadow", "dispose", "geometry", "material", "onPointerOver", "onPointerOut", "onPointerMove", "onPointerDown", "onPointerUp"] }],
 
+        // ignore style files
+        "import/no-unresolved": ["error", { "ignore": ["\\.(scss|css|sass|less)$"] }],
+
         // import sort
         "import/order": [
           1,

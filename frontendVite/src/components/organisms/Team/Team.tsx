@@ -2,6 +2,7 @@ import { FC, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ProfileCard } from '@/components/reactbits';
+import { TiltWrapper } from '@/components/molecules/TiltWrapper/TiltWrapper';
 
 import github from '@/assets/images/socials/icon _github_.png';
 import x from '@/assets/images/socials/icon _x_.png';
@@ -108,12 +109,14 @@ const Team: FC = () => {
               key={index}
               ref={(el) => { cardsRef.current[index] = el; }}
             >
-              <ProfileCard
-                avatarUrl={member.avatar}
-                name={member.name}
-                title={member.title}
-                socials={member.socials}
-              />
+              <TiltWrapper max={8} scale={1.03}>
+                <ProfileCard
+                  avatarUrl={member.avatar}
+                  name={member.name}
+                  title={member.title}
+                  socials={member.socials}
+                />
+              </TiltWrapper>
             </div>
           ))}
         </div>

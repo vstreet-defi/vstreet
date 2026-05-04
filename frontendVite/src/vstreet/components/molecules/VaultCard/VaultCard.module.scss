@@ -25,7 +25,7 @@
 }
 
 .value {
-  font-family: 'Roboto Mono', monospace;
+  font-family: var(--font-mono);
   font-size: 15px;
   font-weight: 600;
   color: #fff;
@@ -58,7 +58,7 @@
   color: #00ffc4;
   border-radius: 6px;
   padding: 8px 16px;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 11px;
   text-transform: uppercase;

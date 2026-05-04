@@ -220,6 +220,7 @@ const ProfileCardComponent: React.FC<ProfileCardProps> = ({
       <div className="pc-behind" />
       <div ref={shellRef} className="pc-card-shell">
         <section className="pc-card">
+          <div className="pc-accent-bar" />
           <div className="pc-inside">
             <div className="pc-content">
               <div className="pc-avatar-wrap">

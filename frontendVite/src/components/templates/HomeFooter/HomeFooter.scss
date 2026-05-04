@@ -22,7 +22,7 @@
     }
     h5 {
       color: #00ffc4;
-      font-family: 'Montserrat', sans-serif;
+      font-family: var(--font-body);
       font-size: 12px;
       font-style: normal;
       font-weight: 400;
@@ -31,7 +31,7 @@
     p {
       padding-top: 10px;
       color: #d9d9d9;
-      font-family: 'Montserrat', sans-serif;
+      font-family: var(--font-body);
       font-size: 12px;
       font-style: normal;
       font-weight: 400;
@@ -61,12 +61,12 @@
     a {
       color: #4fff4b;
       text-align: center;
-      font-family: 'Roboto Mono';
+      font-family: var(--font-mono);
       font-size: 16px;
       font-style: normal;
       font-weight: 400;
       line-height: normal;
-      font-family: 'Roboto Mono', monospace;
+      font-family: var(--font-mono);
     }
   }
 }

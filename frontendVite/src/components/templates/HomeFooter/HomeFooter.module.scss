@@ -2,12 +2,11 @@
   position: relative;
   width: 100%;
   padding: 4rem 2rem 2rem;
-  background: linear-gradient(180deg, #0f0f12 0%, #0a0a0d 100%);
-  border-top: 1px solid rgba(0, 255, 196, 0.1);
+  background: var(--color-bg-main);
 }
 
 .container {
-  max-width: 1200px;
+  max-width: var(--container-max);
   margin: 0 auto;
 }
 
@@ -22,7 +21,7 @@
 }
 
 .legalTitle {
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-weight: 700;
   font-size: 0.85rem;
   color: rgba(0, 255, 196, 0.9);
@@ -32,18 +31,25 @@
 }
 
 .legalText {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--color-text-tertiary);
   line-height: 1.7;
 }
 
 .bottom {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
   gap: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .bottom {
+    flex-direction: column;
+  }
 }
 
 .logo {
@@ -53,20 +59,30 @@
 }
 
 .copyright {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: var(--color-text-tertiary);
+}
+
+.rightsText {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary);
+  text-align: center;
+  margin: 2rem 0;
+  letter-spacing: 0.05em;
 }
 
 .email {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-weight: 500;
   font-size: 0.9rem;
   color: rgba(0, 255, 196, 0.8);
   text-decoration: none;
   transition: all 0.3s ease;
-  
+
   &:hover {
     color: #00ffc4;
     text-shadow: 0 0 10px rgba(0, 255, 196, 0.5);

@@ -1,19 +1,18 @@
 .features {
   position: relative;
   width: 100%;
-  padding: 6rem 2rem;
-  background: linear-gradient(180deg, #0f0f12 0%, #0a0a0d 100%);
+  padding: 5rem 2rem;
+  background: var(--color-bg-main);
   overflow: hidden;
 
   &::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 800px;
-    height: 800px;
-    background: radial-gradient(circle, rgba(0, 255, 196, 0.08) 0%, transparent 70%);
-    transform: translate(-50%, -50%);
+    top: -200px;
+    right: -200px;
+    width: 700px;
+    height: 700px;
+    background: radial-gradient(circle, rgba(0, 255, 196, 0.07) 0%, transparent 65%);
     border-radius: 50%;
     pointer-events: none;
     z-index: 0;
@@ -21,7 +20,7 @@
 }
 
 .container {
-  max-width: 960px;
+  max-width: var(--container-max);
   margin: 0 auto;
   position: relative;
   z-index: 1;
@@ -33,10 +32,10 @@
 }
 
 .title {
-  font-family: 'Michroma', sans-serif;
+  font-family: var(--font-display);
   font-weight: 400;
   font-size: clamp(1.8rem, 5vw, 3rem);
-  background: linear-gradient(135deg, #00ffc4 0%, #4fff4b 100%);
+  background: var(--gradient-section);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -45,10 +44,10 @@
 }
 
 .subtitle {
-  font-family: 'Inter', sans-serif;
+  font-family: var(--font-body);
   font-weight: 400;
   font-size: 1.1rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--color-text-secondary);
   max-width: 600px;
   margin: 0 auto;
   line-height: 1.6;
