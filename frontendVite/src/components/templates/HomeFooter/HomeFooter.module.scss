@@ -1,8 +1,9 @@
 .footer {
   position: relative;
   width: 100%;
-  padding: 4rem 2rem 2rem;
+  padding: var(--section-padding-y) var(--section-padding-x) 2rem;
   background: var(--color-bg-main);
+  border-top: 1px solid rgba(0, 255, 196, 0.08);
 }
 
 .container {
@@ -63,16 +64,6 @@
   font-weight: 400;
   font-size: 0.85rem;
   color: var(--color-text-tertiary);
-}
-
-.rightsText {
-  font-family: var(--font-body);
-  font-weight: 400;
-  font-size: 0.8rem;
-  color: var(--color-text-tertiary);
-  text-align: center;
-  margin: 2rem 0;
-  letter-spacing: 0.05em;
 }
 
 .email {

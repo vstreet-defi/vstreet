@@ -1,9 +1,10 @@
 .features {
   position: relative;
   width: 100%;
-  padding: 5rem 2rem;
+  padding: var(--section-padding-y) var(--section-padding-x);
   background: var(--color-bg-main);
   overflow: hidden;
+  border-top: 1px solid rgba(0, 255, 196, 0.06);
 
   &::before {
     content: '';
@@ -34,7 +35,7 @@
 .title {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(1.8rem, 5vw, 3rem);
+  font-size: var(--text-h2);
   background: var(--gradient-section);
   background-clip: text;
   -webkit-background-clip: text;
@@ -46,7 +47,7 @@
 .subtitle {
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: 1.1rem;
+  font-size: var(--text-body);
   color: var(--color-text-secondary);
   max-width: 600px;
   margin: 0 auto;

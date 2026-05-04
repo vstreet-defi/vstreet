@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { TiltWrapper } from '@/components/molecules/TiltWrapper/TiltWrapper';
+import { useMagnetic } from '@/hooks/useMagnetic';
 import VaraLogo from '@/assets/images/vara-logo-teal.png';
 
 import styles from './Shilling.module.scss';
@@ -56,6 +57,7 @@ const Shilling: FC = () => {
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const iconsRef = useRef<(SVGSVGElement | null)[]>([]);
   const ctaRef = useRef<HTMLAnchorElement>(null);
+  const magneticCtaRef = useMagnetic(0.25);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -178,7 +180,10 @@ const Shilling: FC = () => {
           <p className={styles.tagline}>Powered by</p>
 
           <a
-            ref={ctaRef}
+            ref={(el) => {
+              ctaRef.current = el;
+              (magneticCtaRef as React.MutableRefObject<HTMLElement | null>).current = el;
+            }}
             href="https://vara-network.io/"
             target="_blank"
             rel="noopener noreferrer"

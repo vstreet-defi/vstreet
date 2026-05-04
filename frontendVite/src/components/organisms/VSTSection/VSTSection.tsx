@@ -5,6 +5,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import { SpotlightCard } from '@/components/reactbits';
 import { TiltWrapper } from '@/components/molecules/TiltWrapper/TiltWrapper';
+import { useMagnetic } from '@/hooks/useMagnetic';
 import styles from './VSTSection.module.scss';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -52,6 +53,7 @@ const VSTSection: FC = () => {
   const headerRef = useRef<HTMLDivElement>(null);
   const cardsRef = useRef<(HTMLDivElement | null)[]>([]);
   const ctaRef = useRef<HTMLButtonElement>(null);
+  const magneticCtaRef = useMagnetic(0.25);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -79,20 +81,36 @@ const VSTSection: FC = () => {
       if (validCards.length > 0) {
         gsap.fromTo(
           validCards,
-          { opacity: 0, y: 50 },
+          { opacity: 0, y: 60, rotateY: -5 },
           {
             scrollTrigger: {
               trigger: validCards[0],
-              start: 'top 80%',
+              start: 'top 85%',
               toggleActions: 'play none none none',
             },
             opacity: 1,
             y: 0,
-            duration: 0.7,
+            rotateY: 0,
+            duration: 0.8,
             stagger: 0.15,
             ease: 'power3.out',
           }
         );
+
+        // Parallax: each card moves at a different speed on scroll
+        validCards.forEach((card, i) => {
+          const speed = [20, -10, 15][i] || 0;
+          gsap.to(card, {
+            y: speed,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: containerRef.current,
+              start: 'top bottom',
+              end: 'bottom top',
+              scrub: 0.6,
+            },
+          });
+        });
       }
 
       if (ctaRef.current) {
@@ -155,7 +173,10 @@ const VSTSection: FC = () => {
         </div>
 
         <button
-          ref={ctaRef}
+          ref={(el) => {
+            ctaRef.current = el;
+            (magneticCtaRef as React.MutableRefObject<HTMLElement | null>).current = el;
+          }}
           className={styles.ctaButton}
           onClick={() => navigate('/vst')}
         >

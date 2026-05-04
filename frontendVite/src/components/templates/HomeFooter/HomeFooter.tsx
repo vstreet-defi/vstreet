@@ -68,11 +68,9 @@ const HomeFooter: FC = () => {
           </p>
         </div>
 
-        <p className={styles.rightsText}>© 2026 vStreet. All rights reserved.</p>
-
         <div ref={bottomRef} className={styles.bottom}>
           <img className={styles.logo} src={vStreetLogoWhite} alt="vStreet" />
-          <p className={styles.copyright}>2024 © All rights reserved by vStreet</p>
+          <p className={styles.copyright}>© {new Date().getFullYear()} vStreet. All rights reserved.</p>
           <a href="mailto:contact@vstreet.io" className={styles.email}>
             contact@vstreet.io
           </a>

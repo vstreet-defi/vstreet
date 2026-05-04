@@ -1,9 +1,10 @@
 .socialMedia {
   position: relative;
   width: 100%;
-  padding: 5rem 2rem;
+  padding: var(--section-padding-y) var(--section-padding-x);
   background: var(--color-bg-main);
   overflow: hidden;
+  border-top: 1px solid rgba(0, 255, 196, 0.06);
 
   &::before {
     content: '';
@@ -20,7 +21,7 @@
 }
 
 .container {
-  max-width: 600px;
+  max-width: var(--container-max);
   margin: 0 auto;
   text-align: center;
   position: relative;
@@ -30,8 +31,8 @@
 .title {
   font-family: var(--font-display);
   font-weight: 400;
-  font-size: clamp(1.8rem, 5vw, 2.5rem);
-  background: var(--gradient-card);
+  font-size: var(--text-h2);
+  background: var(--gradient-section);
   background-clip: text;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
@@ -41,10 +42,13 @@
 .description {
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: 1rem;
+  font-size: var(--text-body);
   color: var(--color-text-secondary);
   line-height: 1.6;
   margin-bottom: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .icons {

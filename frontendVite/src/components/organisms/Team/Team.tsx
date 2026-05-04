@@ -2,7 +2,6 @@ import { FC, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ProfileCard } from '@/components/reactbits';
-import { TiltWrapper } from '@/components/molecules/TiltWrapper/TiltWrapper';
 
 import github from '@/assets/images/socials/icon _github_.png';
 import x from '@/assets/images/socials/icon _x_.png';
@@ -75,18 +74,19 @@ const Team: FC = () => {
       if (validCards.length > 0) {
         gsap.fromTo(
           validCards,
-          { opacity: 0, y: 50, scale: 0.95 },
+          { opacity: 0, y: 80, rotateZ: (i: number) => [-4, 0, 4][i] || 0, scale: 0.92 },
           {
             scrollTrigger: {
               trigger: validCards[0],
-              start: 'top 80%',
+              start: 'top 85%',
               toggleActions: 'play none none none',
             },
             opacity: 1,
             y: 0,
+            rotateZ: 0,
             scale: 1,
-            duration: 0.7,
-            stagger: 0.2,
+            duration: 0.9,
+            stagger: 0.18,
             ease: 'power3.out',
           }
         );
@@ -109,14 +109,12 @@ const Team: FC = () => {
               key={index}
               ref={(el) => { cardsRef.current[index] = el; }}
             >
-              <TiltWrapper max={8} scale={1.03}>
-                <ProfileCard
-                  avatarUrl={member.avatar}
-                  name={member.name}
-                  title={member.title}
-                  socials={member.socials}
-                />
-              </TiltWrapper>
+              <ProfileCard
+                avatarUrl={member.avatar}
+                name={member.name}
+                title={member.title}
+                socials={member.socials}
+              />
             </div>
           ))}
         </div>

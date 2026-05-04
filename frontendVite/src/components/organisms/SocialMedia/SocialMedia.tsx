@@ -59,17 +59,18 @@ const SocialMedia: FC = () => {
       if (validIcons.length > 0) {
         gsap.fromTo(
           validIcons,
-          { opacity: 0, scale: 0.8 },
+          { opacity: 0, scale: 0.6, y: 20 },
           {
             scrollTrigger: {
               trigger: validIcons[0],
-              start: 'top 85%',
+              start: 'top 90%',
               toggleActions: 'play none none none',
             },
             opacity: 1,
             scale: 1,
-            duration: 0.5,
-            stagger: 0.1,
+            y: 0,
+            duration: 0.6,
+            stagger: 0.12,
             ease: 'back.out(1.7)',
           }
         );

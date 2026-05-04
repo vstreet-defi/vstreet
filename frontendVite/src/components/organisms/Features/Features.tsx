@@ -44,17 +44,18 @@ const Features: FC = () => {
       if (validItems.length > 0) {
         gsap.fromTo(
           validItems,
-          { opacity: 0, y: 50 },
+          { opacity: 0, y: 60, rotateX: 8 },
           {
             scrollTrigger: {
               trigger: validItems[0],
-              start: 'top 80%',
+              start: 'top 85%',
               toggleActions: 'play none none none',
             },
             opacity: 1,
             y: 0,
-            duration: 0.7,
-            stagger: 0.15,
+            rotateX: 0,
+            duration: 0.8,
+            stagger: 0.12,
             ease: 'power3.out',
           }
         );

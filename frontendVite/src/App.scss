@@ -19,6 +19,19 @@
   --shadow-glow: 0 0 8px currentColor;
   --container-max: 1200px;
   --transition-default: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Unified type scale */
+  --text-h1: clamp(3rem, 8vw, 5rem);
+  --text-h2: clamp(1.8rem, 5vw, 3rem);
+  --text-h3: clamp(1.25rem, 3vw, 1.5rem);
+  --text-body: clamp(0.95rem, 2vw, 1.1rem);
+  --text-caption: 0.85rem;
+  --text-overline: 0.75rem;
+
+  /* Unified section spacing */
+  --section-padding-y: 6rem;
+  --section-padding-x: 2rem;
+  --section-gap: 0;
 }
 
 html {

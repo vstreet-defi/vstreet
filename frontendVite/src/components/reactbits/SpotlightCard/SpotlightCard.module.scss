@@ -7,7 +7,7 @@
   --rotate-x: 0deg;
   --rotate-y: 0deg;
   transform-style: preserve-3d;
-  transition: transform 0.15s ease-out;
+  transition: transform 0.25s ease-out;
 
   &::before {
     content: '';

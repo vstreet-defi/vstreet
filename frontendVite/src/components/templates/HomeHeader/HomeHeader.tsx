@@ -20,6 +20,7 @@ type Props = {
 
 const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
   const [menuOpen, setMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -27,13 +28,15 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
 
     const ctx = gsap.context(() => {
       let lastScroll = 0;
-      
+
       ScrollTrigger.create({
         start: 'top top',
         end: 99999,
         onUpdate: (self) => {
           const currentScroll = self.scroll();
-          
+
+          setScrolled(currentScroll > 50);
+
           if (currentScroll > lastScroll && currentScroll > 100) {
             gsap.to(headerRef.current, {
               y: -100,
@@ -47,7 +50,7 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
               ease: 'power2.out',
             });
           }
-          
+
           lastScroll = currentScroll;
         },
       });
@@ -91,7 +94,7 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
     ));
 
   return (
-    <header ref={headerRef} className={styles.header}>
+    <header ref={headerRef} className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
       <button className={styles.logoButton} onClick={handleLogoClick}>
         <img className={styles.logo} src={Logo} alt="Logo" />
       </button>
@@ -102,17 +105,15 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
             <div className={`${styles.line} ${menuOpen ? styles.open : ''}`}></div>
             <div className={`${styles.line} ${menuOpen ? styles.open : ''}`}></div>
           </button>
-          {menuOpen && (
-            <div className={styles.mobileMenu}>
-              <ul>
-                {items.map((item, index) => (
-                  <li key={index}>
-                    <button onClick={() => handleClick(item)}>{item}</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <div className={`${styles.mobileMenu} ${menuOpen ? styles.menuOpen : ''}`}>
+            <ul>
+              {items.map((item, index) => (
+                <li key={index}>
+                  <button onClick={() => handleClick(item)}>{item}</button>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       ) : (
         <>
