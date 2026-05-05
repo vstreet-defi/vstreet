@@ -402,12 +402,20 @@ where VftClient: Vft, {
         Ok(())
     }
 
-    // Lender APR = base_rate + (utilization_factor × risk_multiplier)
+    // Lender APR = base_rate + ((utilization_factor × risk_multiplier) / decimals_factor)
     pub fn calculate_apr(&mut self) -> u128 {
         self.calculate_utilization_factor();
         let state_mut = self.state_mut();
-        let apr = state_mut.config.base_rate
-            .saturating_add(state_mut.utilization_factor.saturating_mul(state_mut.config.risk_multiplier));
+        let variable_rate = state_mut
+            .utilization_factor
+            .saturating_mul(state_mut.config.risk_multiplier)
+            .checked_div(state_mut.config.decimals_factor)
+            .unwrap_or(0);
+
+        let apr = state_mut
+            .config
+            .base_rate
+            .saturating_add(variable_rate);
         state_mut.apr = apr;
         apr
     }

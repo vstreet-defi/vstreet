@@ -15,6 +15,7 @@ import { fungibleTokenProgramID, idlVFT, idlVSTREET, vstreetProgramID } from '..
 
 import { Loader } from 'components/molecules/alert-modal/AlertModal';
 import { GearApi } from '@gear-js/api';
+import { toRawUnits } from 'utils/index';
 
 interface ButtonProps {
   label: string;
@@ -150,7 +151,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
       functionNames: Object.keys(sails.services?.Vft?.functions ?? {}),
     });
 
-    const amountConverted = parsedAmount * 1000000;
+    const amountConverted = toRawUnits(parsedAmount);
 
     const transaction = await sails.services.Vft.functions.Approve(vstreetProgramID, Number(amountConverted));
     const { signer } = await web3FromSource(accountWEB.meta.source);
@@ -175,7 +176,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     const parsedAmount = validateTransactionPreconditions('deposit');
     const sails = await createConfiguredSails('deposit', idlVSTREET);
     const accountWEB = getRequiredAccount();
-    const amountConverted = parsedAmount * 1000000;
+    const amountConverted = toRawUnits(parsedAmount);
 
     const transaction = await sails.services.LiquidityInjectionService.functions.DepositLiquidity(
       Number(amountConverted),
@@ -202,7 +203,7 @@ const ButtonGradFill: React.FC<ButtonProps> = ({ amount, label, balance }) => {
     const parsedAmount = validateTransactionPreconditions('withdraw');
     const sails = await createConfiguredSails('withdraw', idlVSTREET);
     const accountWEB = getRequiredAccount();
-    const amountConverted = parsedAmount * 1000000;
+    const amountConverted = toRawUnits(parsedAmount);
 
     const transaction = await sails.services.LiquidityInjectionService.functions.WithdrawLiquidity(
       Number(amountConverted),

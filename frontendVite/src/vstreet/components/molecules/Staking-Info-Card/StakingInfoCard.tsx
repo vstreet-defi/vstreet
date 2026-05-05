@@ -1,13 +1,9 @@
 import React, { useContext, useRef, useState, useCallback, useEffect } from 'react';
-import { useAccount, useApi } from '@gear-js/react-hooks';
+import { useApi } from '@gear-js/react-hooks';
 import { GearApi } from '@gear-js/api';
 import { ButtonGradientBorder } from 'components/atoms/Button-Gradient-Border/Button-Gradient-Border';
 import InfoIcon from 'assets/images/icons/info_Icon.png';
 import { useWallet } from 'contexts/accountContext';
-import {
-  createWithdrawRewardsMessage,
-  // withdrawRewardsTransaction,
-} from 'smart-contracts-tools/index';
 import { Sails } from 'sails-js';
 import { SailsIdlParser } from 'sails-js-parser';
 import { AlertModalContext } from 'contexts/alertContext';
@@ -17,12 +13,7 @@ import { idlVSTREET, vstreetProgramID } from 'utils/smartPrograms';
 import { web3FromSource } from '@polkadot/extension-dapp';
 import { Codec, CodecClass } from '@polkadot/types/types';
 import { Signer } from '@polkadot/types/types';
-
-const formatWithCommas = (number: number) => {
-  const decimalsFactor = 1000000;
-  const formattedNumber = number / decimalsFactor;
-  return formattedNumber.toLocaleString();
-};
+import { formatWithCommasVUSD, fromRawUnits } from 'utils/index';
 
 const formatApr = (apr: number): string => {
   return (apr / 1000000).toFixed(2);
@@ -89,7 +80,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const [depositedBalance, setDepositedBalance] = useState<number>(0);
 
-  const { fetchUserInfo, userInfo, balance } = useUserInfo();
+  const { fetchUserInfo, userInfo } = useUserInfo();
 
   useEffect(() => {
     const getUserData = async () => {
@@ -216,7 +207,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
 
   useEffect(() => {
     if (userInfo) {
-      const formatedBalance = userInfo.balance ? userInfo.balance / 1000000 : 0;
+      const formatedBalance = userInfo.balance ? userInfo.balance : 0;
       setDepositedBalance(formatedBalance);
     }
   }, [userInfo]);
@@ -225,10 +216,10 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
     <div>
       <div className="BasicCard">
         {showMessage && <Tooltip message="Minimum claim: $1 USD." />}
-        <InfoRow label="Total Deposited" value={`$${formatWithCommas(depositedBalance)} vUSD`} />
+        <InfoRow label="Total Deposited" value={`$${formatWithCommasVUSD(depositedBalance)} vUSD`} />
         <InfoRow
           label="Total Earned"
-          value={`$${formatWithCommas(userInfo?.rewards ?? 0)} vUSD`}
+          value={`$${formatWithCommasVUSD(userInfo?.rewards ?? 0)} vUSD`}
           icon={
             <img
               onClick={() => setShowMessage((prev) => !prev)}
@@ -249,7 +240,7 @@ const StakingInfoCard: React.FC<StakingInfoCardProps> = () => {
           <ButtonGradientBorder
             onClick={() => handleClick('Claim')}
             text="Claim"
-            isDisabled={userInfo.rewards <= 1000000 || isLoading}
+            isDisabled={fromRawUnits(userInfo.rewards) < 1 || isLoading}
           />
         </div>
       </div>
