@@ -106,7 +106,7 @@ where
         })?;
 
     service.update_user_ltv(caller);
-    service.calculate_apr();
+    service.refresh_rates();
 
     let _ = service.calculate_mla(caller);
 

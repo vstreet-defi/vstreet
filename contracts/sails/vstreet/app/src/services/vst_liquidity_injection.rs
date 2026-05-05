@@ -402,15 +402,14 @@ where VftClient: Vft, {
         Ok(())
     }
 
-    // Lenders APR (INTEREST RATE)
+    // Lender APR = base_rate + (utilization_factor × risk_multiplier)
     pub fn calculate_apr(&mut self) -> u128 {
-        let state_mut = self.state_mut();
-
         self.calculate_utilization_factor();
-
-        state_mut.interest_rate = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor * state_mut.config.risk_multiplier);
-
-        state_mut.interest_rate
+        let state_mut = self.state_mut();
+        let apr = state_mut.config.base_rate
+            .saturating_add(state_mut.utilization_factor.saturating_mul(state_mut.config.risk_multiplier));
+        state_mut.apr = apr;
+        apr
     }
 
     // Update User Rewards
@@ -448,7 +447,7 @@ where VftClient: Vft, {
 
         for user_info in state_mut.users.values_mut() {
             if user_info.balance > 0 {
-                Self::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+                Self::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
             }
         }
     }
@@ -564,24 +563,30 @@ where VftClient: Vft, {
         return utilization_factor;
     }
 
-    //Calculate Interest Rate = Base Rate+(Utilization Factor×Risk Multiplier)×(1+Dev Fee)
+    // Borrower interest rate = lender APR + dev_fee
     fn calculate_interest_rate(&mut self) -> u128 {
+        let apr = self.calculate_apr();
         let state_mut = self.state_mut();
-        let utilization_factor = state_mut.utilization_factor;
-        let base_rate = state_mut.config.base_rate;
-        let risk_multiplier = state_mut.config.risk_multiplier;
-        let dev_fee = state_mut.config.dev_fee;
+        let borrow_rate = apr.saturating_add(state_mut.config.dev_fee);
+        state_mut.interest_rate = borrow_rate;
+        borrow_rate
+    }
 
-        base_rate.saturating_add(utilization_factor * risk_multiplier).saturating_add(dev_fee)
+    // Refresh utilization_factor, state.apr (lender APR), and state.interest_rate (borrower rate).
+    // Call this whenever total_deposited or total_borrowed changes.
+    pub fn refresh_rates(&mut self) {
+        self.calculate_interest_rate();
     }
     
-    //Calculate Loan Interest Rate Amount 
+    // Calculate accrued loan interest and add it to the user's loan_amount.
+    // Uses borrower interest rate (lender APR + dev_fee).
     pub fn calculate_loan_interest_rate_amount(&mut self, user: ActorId) -> String {
+        // Refresh rates BEFORE borrowing state_mut to avoid aliased mutable references.
+        let interest_rate = self.calculate_interest_rate();
         let state_mut = self.state_mut();
         let user_info = state_mut.users.get_mut(&user).unwrap();
 
         let loan_amount = user_info.loan_amount;
-        let interest_rate = self.calculate_interest_rate();
         let current_timestamp = exec::block_timestamp() as u128;
         let time_diff_seconds = (current_timestamp - user_info.borrow_last_updated) / 1000;
         let decimals_factor = state_mut.config.decimals_factor;

@@ -90,10 +90,10 @@ where
             error_message
         })?;
 
-    service.calculate_apr();
+    service.refresh_rates();
     debug!("New APR after deposit: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
 
     // Notify the deposit event
     service.notify_deposit(amount);
@@ -190,12 +190,10 @@ where
         return sails_rs::Err(error_message);
     }
 
-    service.calculate_utilization_factor();
-    state_mut.apr = service.calculate_apr();
-
+    service.refresh_rates();
     debug!("New APR after Withdraw: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
 
     // Notify the withdraw event
     service.notify_withdraw_liquidity(amount);
@@ -213,86 +211,110 @@ where
     service.update_all_rewards();
     service.update_all_collateral_available_to_withdraw();
 
-    let state_mut = service.state_mut();
     let caller = msg::source();
-    let decimals_factor = state_mut.config.decimals_factor;
 
-    let user_info = match state_mut.users.get_mut(&caller) {
-        Some(user_info) => user_info,
-        None => {
-            let error_message = ERROR_USER_NOT_FOUND.to_string();
+    let (rewards_to_withdraw, decimals_factor) = {
+        let state_mut = service.state_mut();
+        let decimals_factor = state_mut.config.decimals_factor;
+
+        let user_info = match state_mut.users.get_mut(&caller) {
+            Some(user_info) => user_info,
+            None => {
+                let error_message = ERROR_USER_NOT_FOUND.to_string();
+                service.notify_error(error_message.clone());
+                return Err(error_message);
+            }
+        };
+
+        let rewards_to_withdraw = user_info
+            .rewards
+            .checked_sub(user_info.rewards_withdrawn)
+            .ok_or_else(|| {
+                let error_message = ERROR_INVALID_AMOUNT.to_string();
+                service.notify_error(error_message.clone());
+                error_message
+            })?;
+
+        if rewards_to_withdraw < state_mut.config.min_rewards_withdraw {
+            let error_message = ERROR_USER_REWARDS_INSUFFICIENT.to_string();
             service.notify_error(error_message.clone());
             return Err(error_message);
         }
+
+        if rewards_to_withdraw > state_mut.available_rewards_pool {
+            let error_message = ERROR_REWARDS_POOL_INSUFFICIENT.to_string();
+            service.notify_error(error_message.clone());
+            return Err(error_message);
+        }
+
+        (rewards_to_withdraw, decimals_factor)
     };
 
-    state_mut.apr = service.calculate_apr();
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
-    
-    let rewards_to_withdraw = user_info
-        .rewards
-        .checked_sub(user_info.rewards_withdrawn)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
+    // CEI: actualizar state antes del transfer
+    {
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
 
-    if rewards_to_withdraw < state_mut.config.min_rewards_withdraw {
-        let error_message = ERROR_USER_REWARDS_INSUFFICIENT.to_string();
-        service.notify_error(error_message.clone());
-        return sails_rs::Err(error_message);
+        user_info.rewards = user_info
+            .rewards
+            .checked_sub(rewards_to_withdraw)
+            .ok_or_else(|| {
+                let error_message = ERROR_INVALID_AMOUNT.to_string();
+                service.notify_error(error_message.clone());
+                error_message
+            })?;
+
+        user_info.rewards_withdrawn = user_info
+            .rewards_withdrawn
+            .checked_add(rewards_to_withdraw)
+            .ok_or_else(|| {
+                let error_message = ERROR_INVALID_AMOUNT.to_string();
+                service.notify_error(error_message.clone());
+                error_message
+            })?;
+
+        user_info.rewards_usdc = user_info.rewards / decimals_factor;
+        user_info.rewards_usdc_withdrawn = user_info.rewards_withdrawn / decimals_factor;
+
+        state_mut.total_rewards_distributed = state_mut
+            .total_rewards_distributed
+            .checked_add(rewards_to_withdraw)
+            .ok_or_else(|| {
+                let error_message = ERROR_INVALID_AMOUNT.to_string();
+                service.notify_error(error_message.clone());
+                error_message
+            })?;
     }
 
-    if rewards_to_withdraw > state_mut.available_rewards_pool {
-        let error_message = ERROR_REWARDS_POOL_INSUFFICIENT.to_string();
-        service.notify_error(error_message.clone());
-        return sails_rs::Err(error_message);
-    }
-
-    user_info.rewards = user_info
-        .rewards
-        .checked_sub(rewards_to_withdraw)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
-    user_info.rewards_withdrawn = user_info
-        .rewards_withdrawn
-        .checked_add(rewards_to_withdraw)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
-    // Recalculate USDC display values from the scaled values
-    user_info.rewards_usdc = user_info.rewards / decimals_factor;
-    user_info.rewards_usdc_withdrawn = user_info.rewards_withdrawn / decimals_factor;
-
-    state_mut.total_rewards_distributed = state_mut
-        .total_rewards_distributed
-        .checked_add(rewards_to_withdraw)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-    
-    // Transfer tokens from contract to user
-    let result = service.transfer_tokens(exec::program_id(), caller, rewards_to_withdraw).await;
+    let result = service
+        .transfer_tokens(exec::program_id(), caller, rewards_to_withdraw)
+        .await;
 
     if let Err(_) = result {
+        // rollback
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
+
+        user_info.rewards = user_info.rewards.saturating_add(rewards_to_withdraw);
+        user_info.rewards_withdrawn = user_info.rewards_withdrawn.saturating_sub(rewards_to_withdraw);
+        user_info.rewards_usdc = user_info.rewards / decimals_factor;
+        user_info.rewards_usdc_withdrawn = user_info.rewards_withdrawn / decimals_factor;
+
+        state_mut.total_rewards_distributed = state_mut
+            .total_rewards_distributed
+            .saturating_sub(rewards_to_withdraw);
+
         let error_message = ERROR_TRANSFER_FAILED.to_string();
         service.notify_error(error_message.clone());
-        return sails_rs::Err(error_message);
+        return Err(error_message);
     }
 
-    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
-    
-    // Notify the WithdrawRewards event
+    {
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
+        LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    }
+
     service.notify_withdraw_rewards(rewards_to_withdraw);
 
     Ok(())
@@ -355,7 +377,7 @@ where
             error_message
         })?;
 
-    service.calculate_apr();
+    service.refresh_rates();
 
     // Notify the deposit event
     service.notify_deposited_vara(amount);
@@ -434,8 +456,7 @@ where
 
     let _ = service.liquidate_user_loan(caller).await;
 
-    service.calculate_utilization_factor();
-    service.calculate_apr();
+    service.refresh_rates();
 
     // Notify the withdraw event
     service.notify_withdrawn_vara(amount);
