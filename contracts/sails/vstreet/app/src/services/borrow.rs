@@ -196,10 +196,12 @@ where
             service.notify_error(error_message.clone());
             error_message
         })?;
-    
+
     service.update_user_ltv(caller);
     let _ = service.calculate_mla(caller);
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+
+    service.refresh_rates();
     
     service.notify_loan_payed(loan_amount);
 
@@ -281,6 +283,8 @@ where
     service.update_user_ltv(caller);
     let _ = service.calculate_mla(caller);
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+
+    service.refresh_rates();
     
     service.notify_loan_payed(amount);
 

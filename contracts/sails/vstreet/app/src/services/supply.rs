@@ -93,8 +93,6 @@ where
     service.refresh_rates();
     debug!("New APR after deposit: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
-
     // Notify the deposit event
     service.notify_deposit(amount);
     
@@ -193,8 +191,6 @@ where
     service.refresh_rates();
     debug!("New APR after Withdraw: {}", state_mut.apr);
 
-    LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
-
     // Notify the withdraw event
     service.notify_withdraw_liquidity(amount);
     
@@ -226,14 +222,7 @@ where
             }
         };
 
-        let rewards_to_withdraw = user_info
-            .rewards
-            .checked_sub(user_info.rewards_withdrawn)
-            .ok_or_else(|| {
-                let error_message = ERROR_INVALID_AMOUNT.to_string();
-                service.notify_error(error_message.clone());
-                error_message
-            })?;
+        let rewards_to_withdraw = user_info.rewards;
 
         if rewards_to_withdraw < state_mut.config.min_rewards_withdraw {
             let error_message = ERROR_USER_REWARDS_INSUFFICIENT.to_string();
