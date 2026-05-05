@@ -273,6 +273,16 @@ where
                 service.notify_error(error_message.clone());
                 error_message
             })?;
+
+        // Decrement the rewards pool (was never decremented, allowing over-withdrawal)
+        state_mut.available_rewards_pool = state_mut
+            .available_rewards_pool
+            .checked_sub(rewards_to_withdraw)
+            .ok_or_else(|| {
+                let error_message = ERROR_REWARDS_POOL_INSUFFICIENT.to_string();
+                service.notify_error(error_message.clone());
+                error_message
+            })?;
     }
 
     let result = service
@@ -292,6 +302,9 @@ where
         state_mut.total_rewards_distributed = state_mut
             .total_rewards_distributed
             .saturating_sub(rewards_to_withdraw);
+        state_mut.available_rewards_pool = state_mut
+            .available_rewards_pool
+            .saturating_add(rewards_to_withdraw);
 
         let error_message = ERROR_TRANSFER_FAILED.to_string();
         service.notify_error(error_message.clone());
