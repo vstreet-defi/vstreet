@@ -51,14 +51,6 @@ where
         return sails_rs::Err(error_message);
     }
 
-    let scaled_amount = amount
-        .checked_mul(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
     // Update user balance
     let current_timestamp = exec::block_timestamp() as u128;
     let user_info = state_mut.users
@@ -67,7 +59,7 @@ where
 
     user_info.balance = user_info
         .balance
-        .checked_add(scaled_amount)
+        .checked_add(amount)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -91,7 +83,7 @@ where
 
     state_mut.total_deposited = state_mut
         .total_deposited
-        .checked_add(scaled_amount)
+        .checked_add(amount)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -104,7 +96,7 @@ where
     LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
 
     // Notify the deposit event
-    service.notify_deposit(scaled_amount);
+    service.notify_deposit(amount);
     
     Ok(())
 }
@@ -139,16 +131,8 @@ where
         return sails_rs::Err(error_message);
     }
 
-    let scaled_amount = amount
-        .checked_mul(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-    
-    // Check if scaled amount is valid
-    if scaled_amount == 0 || scaled_amount > user_info.balance {
+    // Check if amount is valid in raw token units
+    if amount > user_info.balance {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
@@ -160,7 +144,7 @@ where
     // balance if we do not debit first.
     user_info.balance = user_info
         .balance
-        .checked_sub(scaled_amount)
+        .checked_sub(amount)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -184,7 +168,7 @@ where
 
     state_mut.total_deposited = state_mut
         .total_deposited
-        .checked_sub(scaled_amount)
+        .checked_sub(amount)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -198,9 +182,9 @@ where
     if let Err(_) = result {
         let state_mut = service.state_mut();
         let user_info = state_mut.users.get_mut(&caller).unwrap();
-        user_info.balance = user_info.balance.saturating_add(scaled_amount);
+        user_info.balance = user_info.balance.saturating_add(amount);
         user_info.balance_usdc = user_info.balance / decimals_factor;
-        state_mut.total_deposited = state_mut.total_deposited.saturating_add(scaled_amount);
+        state_mut.total_deposited = state_mut.total_deposited.saturating_add(amount);
         let error_message = ERROR_TRANSFER_FAILED.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
@@ -214,7 +198,7 @@ where
     LiquidityInjectionService::<VftClient>::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
 
     // Notify the withdraw event
-    service.notify_withdraw_liquidity(scaled_amount);
+    service.notify_withdraw_liquidity(amount);
     
     Ok(())
 }
@@ -297,22 +281,8 @@ where
             error_message
         })?;
     
-    if rewards_to_withdraw % decimals_factor != 0 {
-        let error_message = ERROR_INVALID_AMOUNT.to_string();
-        service.notify_error(error_message.clone());
-        return Err(error_message);
-    }
-
-    let amount = rewards_to_withdraw
-        .checked_div(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
     // Transfer tokens from contract to user
-    let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
+    let result = service.transfer_tokens(exec::program_id(), caller, rewards_to_withdraw).await;
 
     if let Err(_) = result {
         let error_message = ERROR_TRANSFER_FAILED.to_string();
@@ -323,7 +293,7 @@ where
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
     
     // Notify the WithdrawRewards event
-    service.notify_withdraw_rewards(amount);
+    service.notify_withdraw_rewards(rewards_to_withdraw);
 
     Ok(())
 }

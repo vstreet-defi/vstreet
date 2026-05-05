@@ -87,12 +87,6 @@ where
             error_message
         })?;
 
-    if user_info.loan_amount % decimals_factor != 0 {
-        let error_message = ERROR_INVALID_AMOUNT.to_string();
-        service.notify_error(error_message.clone());
-        return Err(error_message);
-    }
-
     user_info.loan_amount_usdc = user_info
         .loan_amount
         .checked_div(decimals_factor)
@@ -253,15 +247,6 @@ where
         return sails_rs::Err(error_message);
     }
 
-    // Convert scaled amount to USDC for state updates and notification
-    let amount_usdc = amount
-        .checked_div(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
     user_info.loan_amount = user_info
         .loan_amount
         .checked_sub(amount)
@@ -272,8 +257,8 @@ where
         })?;
 
     user_info.loan_amount_usdc = user_info
-        .loan_amount_usdc
-        .checked_sub(amount_usdc)
+        .loan_amount
+        .checked_div(decimals_factor)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());

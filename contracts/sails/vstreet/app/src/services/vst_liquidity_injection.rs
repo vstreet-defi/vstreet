@@ -257,11 +257,10 @@ where VftClient: Vft, {
         self.update_all_collateral_available_to_withdraw();
 
         let state_mut = self.state_mut();
-        let decimals_factor = state_mut.config.decimals_factor;
-        state_mut.available_rewards_pool = amount * decimals_factor;
+        state_mut.available_rewards_pool = amount;
 
         // Notify the AvailableRewardsPoolModified event
-        let new_rewards_pool: u128 = amount * decimals_factor;
+        let new_rewards_pool: u128 = amount;
         self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
                 .expect("Notification Error");
 
