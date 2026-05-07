@@ -1,7 +1,7 @@
-import Twitter from 'assets/images/socials/twitter.svg?react';
-import Github from 'assets/images/socials/github.svg?react';
-import Discord from 'assets/images/socials/discord.svg?react';
-import Medium from 'assets/images/socials/medium.svg?react';
+import { ReactComponent as Twitter } from 'assets/images/socials/twitter.svg';
+import { ReactComponent as Github } from 'assets/images/socials/github.svg';
+import { ReactComponent as Discord } from 'assets/images/socials/discord.svg';
+import { ReactComponent as Medium } from 'assets/images/socials/medium.svg';
 import styles from './Socials.module.scss';
 
 const socials = [

@@ -22,7 +22,11 @@
     }
     h5 {
       color: #00ffc4;
+<<<<<<< HEAD
       font-family: 'Montserrat', sans-serif;
+=======
+      font-family: var(--font-body);
+>>>>>>> VST-182-FE-MIGRATION-VITE
       font-size: 12px;
       font-style: normal;
       font-weight: 400;
@@ -31,7 +35,11 @@
     p {
       padding-top: 10px;
       color: #d9d9d9;
+<<<<<<< HEAD
       font-family: 'Montserrat', sans-serif;
+=======
+      font-family: var(--font-body);
+>>>>>>> VST-182-FE-MIGRATION-VITE
       font-size: 12px;
       font-style: normal;
       font-weight: 400;
@@ -61,12 +69,20 @@
     a {
       color: #4fff4b;
       text-align: center;
+<<<<<<< HEAD
       font-family: 'Roboto Mono';
+=======
+      font-family: var(--font-mono);
+>>>>>>> VST-182-FE-MIGRATION-VITE
       font-size: 16px;
       font-style: normal;
       font-weight: 400;
       line-height: normal;
+<<<<<<< HEAD
       font-family: 'Roboto Mono', monospace;
+=======
+      font-family: var(--font-mono);
+>>>>>>> VST-182-FE-MIGRATION-VITE
     }
   }
 }

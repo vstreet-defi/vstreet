@@ -1,0 +1,52 @@
+.grid {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+  overflow: visible;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+}
+
+/* ── Variant positions & sizes ── */
+.features {
+  width: 45%;
+  height: 55%;
+  top: 5%;
+  right: 0;
+}
+
+.vst {
+  width: 38%;
+  height: 65%;
+  top: 15%;
+  left: 0;
+}
+
+.shilling {
+  width: 50%;
+  height: 45%;
+  bottom: 8%;
+  right: 0;
+}
+
+.team {
+  width: 42%;
+  height: 55%;
+  top: 8%;
+  left: 2%;
+}
+
+@media (max-width: 900px) {
+  .features,
+  .vst,
+  .shilling,
+  .team {
+    width: 60%;
+    height: 40%;
+    opacity: 0.6;
+  }
+}

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import BasicInput from 'components/molecules/Basic-Input/BasicInput';
 import React, { useContext, useState, useEffect, useCallback } from 'react';
 import styles from 'components/molecules/cards/Card.module.scss';
@@ -20,6 +21,35 @@ import { useUserInfo } from 'contexts/userInfoContext';
 
 import { Sails } from 'sails-js';
 import { SailsIdlParser } from 'sails-js-parser';
+=======
+import BasicInput from "components/molecules/Basic-Input/BasicInput";
+import React, { useContext, useState, useEffect, useCallback } from "react";
+import styles from "components/molecules/cards/Card.module.scss";
+import TokenSelectorBorrowUnder from "components/atoms/Token-Selector-Borrow/TokenSelectorBorrowUnder";
+import { ButtonGradientBorderBorrow } from "components/atoms/Button-Gradient-Border/Button-Gradient-Border-Borrow";
+
+import { useAccount, useApi } from "@gear-js/react-hooks";
+import { GearApi } from "@gear-js/api";
+import { FullState, FullStateVST } from "smart-contracts-tools";
+import { hexToBn } from "@polkadot/util";
+import { Codec, CodecClass } from "@polkadot/types/types";
+import { Signer } from "@polkadot/types/types";
+import { web3FromSource } from "@polkadot/extension-dapp";
+
+import { useWallet } from "contexts/accountContext";
+import { getVFTBalance } from "smart-contracts-tools";
+import {
+  idlVSTREET,
+  idlVFT,
+  vstreetProgramID,
+  fungibleTokenProgramID,
+} from "utils/smartPrograms";
+import { AlertModalContext } from "contexts/alertContext";
+import { useUserInfo } from "contexts/userInfoContext";
+
+import { Sails } from "sails-js";
+import { SailsIdlParser } from "sails-js-parser";
+>>>>>>> VST-182-FE-MIGRATION-VITE
 
 type props = {
   buttonLabel: string;
@@ -28,7 +58,11 @@ type props = {
 type TransactionFunction = () => Promise<void>;
 
 function BorrowCard() {
+<<<<<<< HEAD
   const [inputValue, setInputValue] = useState('');
+=======
+  const [inputValue, setInputValue] = useState("");
+>>>>>>> VST-182-FE-MIGRATION-VITE
   const alertModalContext = useContext(AlertModalContext);
   const [balanceVFT, setBalanceVFT] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,16 +90,29 @@ function BorrowCard() {
 
   useEffect(() => {
     if (userInfo) {
+<<<<<<< HEAD
       console.log('User Info in BorrowCard:', userInfo);
       const mla = Number(userInfo.mla);
       setMaxLoanAmount(mla ?? 0);
       const la = Number(userInfo.loan_amount_usdc);
+=======
+      console.log("User Info in BorrowCard:", userInfo);
+      const mla = Number(userInfo.mla);
+      setMaxLoanAmount(mla ?? 0);
+      const la = Number(userInfo.loan_amount_usdc) ;
+>>>>>>> VST-182-FE-MIGRATION-VITE
       setLoanAmount(la ?? 0);
     }
   }, [userInfo]);
 
   const handleTransaction = useCallback(
+<<<<<<< HEAD
     async (transactions: { transaction: TransactionFunction; infoText: string }[]) => {
+=======
+    async (
+      transactions: { transaction: TransactionFunction; infoText: string }[]
+    ) => {
+>>>>>>> VST-182-FE-MIGRATION-VITE
       for (let i = 0; i < transactions.length; i++) {
         const { transaction, infoText } = transactions[i];
 
@@ -85,7 +132,11 @@ function BorrowCard() {
         fetchUserInfo(hexAddress);
       }, 3000);
     },
+<<<<<<< HEAD
     [alertModalContext, fetchUserInfo, hexAddress],
+=======
+    [alertModalContext, fetchUserInfo, hexAddress]
+>>>>>>> VST-182-FE-MIGRATION-VITE
   );
 
   const createApprovalTransaction = useCallback(async () => {
@@ -97,22 +148,41 @@ function BorrowCard() {
 
     const accountWEB = accountData;
     if (!accountWEB) {
+<<<<<<< HEAD
       throw new Error('No account data found');
     }
 
     const gearApi = await GearApi.create({
       providerAddress: 'wss://testnet.vara.network',
+=======
+      throw new Error("No account data found");
+    }
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+>>>>>>> VST-182-FE-MIGRATION-VITE
     });
 
     sails.setApi(gearApi);
 
     if (allAccounts.length === 0) {
+<<<<<<< HEAD
       throw new Error('No account found');
+=======
+      throw new Error("No account found");
+>>>>>>> VST-182-FE-MIGRATION-VITE
     }
 
     const amountConverted = Number(inputValue) * 1000000;
 
+<<<<<<< HEAD
     const transaction = await sails.services.Vft.functions.Approve(vstreetProgramID, amountConverted);
+=======
+    const transaction = await sails.services.Vft.functions.Approve(
+      vstreetProgramID,
+      amountConverted
+    );
+>>>>>>> VST-182-FE-MIGRATION-VITE
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
@@ -120,14 +190,23 @@ function BorrowCard() {
     await transaction.calculateGas(true, 15);
 
     return async () => {
+<<<<<<< HEAD
       const { msgId, blockHash, txHash, response, isFinalized } = await transaction.signAndSend();
+=======
+      const { msgId, blockHash, txHash, response, isFinalized } =
+        await transaction.signAndSend();
+>>>>>>> VST-182-FE-MIGRATION-VITE
 
       const finalized = await isFinalized;
 
       try {
         const result = await response();
       } catch (error) {
+<<<<<<< HEAD
         console.error('Error executing message:', error);
+=======
+        console.error("Error executing message:", error);
+>>>>>>> VST-182-FE-MIGRATION-VITE
       }
     };
   }, [accountData, allAccounts, inputValue]);
@@ -141,16 +220,25 @@ function BorrowCard() {
 
     const accountWEB = accountData;
     if (!accountWEB) {
+<<<<<<< HEAD
       throw new Error('No account data found');
     }
 
     const gearApi = await GearApi.create({
       providerAddress: 'wss://testnet.vara.network',
+=======
+      throw new Error("No account data found");
+    }
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+>>>>>>> VST-182-FE-MIGRATION-VITE
     });
 
     sails.setApi(gearApi);
 
     if (allAccounts.length === 0) {
+<<<<<<< HEAD
       throw new Error('No account found');
     }
 
@@ -158,6 +246,18 @@ function BorrowCard() {
 
     const transaction = await sails.services.LiquidityInjectionService.functions.PayLoan(amountConverted);
     console.log('PayLoan amount:', amountConverted);
+=======
+      throw new Error("No account found");
+    }
+
+  const amountConverted = Number(inputValue) * 1000000;
+
+    const transaction =
+      await sails.services.LiquidityInjectionService.functions.PayLoan(
+        amountConverted
+      );
+      console.log("PayLoan amount:", amountConverted);
+>>>>>>> VST-182-FE-MIGRATION-VITE
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
@@ -166,14 +266,23 @@ function BorrowCard() {
     await transaction.calculateGas(true, 15);
 
     return async () => {
+<<<<<<< HEAD
       const { msgId, blockHash, txHash, response, isFinalized } = await transaction.signAndSend();
+=======
+      const { msgId, blockHash, txHash, response, isFinalized } =
+        await transaction.signAndSend();
+>>>>>>> VST-182-FE-MIGRATION-VITE
 
       const finalized = await isFinalized;
 
       try {
         const result = await response();
       } catch (error) {
+<<<<<<< HEAD
         console.error('Error executing message:', error);
+=======
+        console.error("Error executing message:", error);
+>>>>>>> VST-182-FE-MIGRATION-VITE
       }
     };
   }, [accountData, allAccounts, inputValue]);
@@ -187,22 +296,42 @@ function BorrowCard() {
 
     const accountWEB = accountData;
     if (!accountWEB) {
+<<<<<<< HEAD
       throw new Error('No account data found');
     }
 
     const gearApi = await GearApi.create({
       providerAddress: 'wss://testnet.vara.network',
+=======
+      throw new Error("No account data found");
+    }
+
+    const gearApi = await GearApi.create({
+      providerAddress: "wss://testnet.vara.network",
+>>>>>>> VST-182-FE-MIGRATION-VITE
     });
 
     sails.setApi(gearApi);
 
     if (allAccounts.length === 0) {
+<<<<<<< HEAD
       throw new Error('No account found');
     }
     const amountConverted = Number(inputValue) * 1000000;
 
     const transaction = await sails.services.LiquidityInjectionService.functions.TakeLoan(amountConverted);
     console.log('TakeLoan amount:', amountConverted);
+=======
+      throw new Error("No account found");
+    }
+    const amountConverted = Number(inputValue) * 1000000;
+
+    const transaction =
+      await sails.services.LiquidityInjectionService.functions.TakeLoan(
+        amountConverted
+      );
+      console.log("TakeLoan amount:", amountConverted);
+>>>>>>> VST-182-FE-MIGRATION-VITE
     const { signer } = await web3FromSource(accountWEB.meta.source);
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
@@ -211,14 +340,23 @@ function BorrowCard() {
     await transaction.calculateGas(true, 15);
 
     return async () => {
+<<<<<<< HEAD
       const { msgId, blockHash, txHash, response, isFinalized } = await transaction.signAndSend();
+=======
+      const { msgId, blockHash, txHash, response, isFinalized } =
+        await transaction.signAndSend();
+>>>>>>> VST-182-FE-MIGRATION-VITE
 
       const finalized = await isFinalized;
 
       try {
         const result = await response();
       } catch (error) {
+<<<<<<< HEAD
         console.error('Error executing message:', error);
+=======
+        console.error("Error executing message:", error);
+>>>>>>> VST-182-FE-MIGRATION-VITE
       }
     };
   }, [accountData, allAccounts, inputValue]);
@@ -229,11 +367,21 @@ function BorrowCard() {
     await handleTransaction([
       {
         transaction: approvalTransaction,
+<<<<<<< HEAD
         infoText: 'Approval in progress. Please check your wallet to approve the transaction.',
       },
       {
         transaction: payLoanTransaction,
         infoText: 'Loan pay in progress. Please check your wallet to sign the transaction.',
+=======
+        infoText:
+          "Approval in progress. Please check your wallet to approve the transaction.",
+      },
+      {
+        transaction: payLoanTransaction,
+        infoText:
+          "Loan pay in progress. Please check your wallet to sign the transaction.",
+>>>>>>> VST-182-FE-MIGRATION-VITE
       },
     ]);
   }, [createApprovalTransaction, createPayLoanTransaction, handleTransaction]);
@@ -243,7 +391,12 @@ function BorrowCard() {
     await handleTransaction([
       {
         transaction: takeLoanTransaction,
+<<<<<<< HEAD
         infoText: 'Loan taking in progress. Please check your wallet to sign the transaction.',
+=======
+        infoText:
+          "Loan taking in progress. Please check your wallet to sign the transaction.",
+>>>>>>> VST-182-FE-MIGRATION-VITE
       },
     ]);
   }, [createTakeLoanTransaction, handleTransaction]);
@@ -253,7 +406,12 @@ function BorrowCard() {
     try {
       await handleTakeLoan();
     } catch (error) {
+<<<<<<< HEAD
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+=======
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred.";
+>>>>>>> VST-182-FE-MIGRATION-VITE
       alertModalContext?.showErrorModal(errorMessage);
       setTimeout(() => {
         alertModalContext?.hideAlertModal();
@@ -267,7 +425,12 @@ function BorrowCard() {
     try {
       await handleApproveAndPayLoan();
     } catch (error) {
+<<<<<<< HEAD
       const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+=======
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred.";
+>>>>>>> VST-182-FE-MIGRATION-VITE
       alertModalContext?.showErrorModal(errorMessage);
       setTimeout(() => {
         alertModalContext?.hideAlertModal();
@@ -280,18 +443,42 @@ function BorrowCard() {
     <div className={styles.ContainerBorrow}>
       <div className={styles.BasicCardBorrow}>
         <TokenSelectorBorrowUnder />
+<<<<<<< HEAD
         <BasicInput inputValue={inputValue} onInputChange={handleInputChange} balance={balanceVFT} />
         <div style={{ display: 'flex', gap: '6rem', marginTop: '20px' }}>
           <ButtonGradientBorderBorrow
             text="Borrow"
             isDisabled={Number(inputValue) * 1000000 > maxLoanAmount || Number(inputValue) === 0 || isLoading}
+=======
+        <BasicInput
+          inputValue={inputValue}
+          onInputChange={handleInputChange}
+          balance={balanceVFT}
+        />
+        <div style={{ display: "flex", gap: "6rem", marginTop: "20px" }}>
+          <ButtonGradientBorderBorrow
+            text="Borrow"
+            isDisabled={
+              Number(inputValue) * 1000000 > maxLoanAmount ||
+              Number(inputValue) === 0 ||
+              isLoading
+            }
+>>>>>>> VST-182-FE-MIGRATION-VITE
             onClick={handleClickTakeLoan}
             isLoading={isLoading}
           />
 
           <ButtonGradientBorderBorrow
             text="Pay Loan"
+<<<<<<< HEAD
             isDisabled={Number(inputValue) > loanAmount || Number(inputValue) === 0 || isLoading}
+=======
+            isDisabled={
+              Number(inputValue)  > loanAmount ||
+              Number(inputValue) === 0 ||
+              isLoading
+            }
+>>>>>>> VST-182-FE-MIGRATION-VITE
             onClick={handleClickApproveAndPayLoan}
             isLoading={isLoading}
           />

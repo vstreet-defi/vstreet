@@ -1,0 +1,69 @@
+.container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  background: #0D0D14;
+  perspective: 1000px;
+}
+
+.gridPlane {
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  width: 140%;
+  height: 160%;
+  transform: translate(-50%, -50%) perspective(900px) rotateX(28deg);
+  transform-style: preserve-3d;
+  transition: transform 0.3s ease-out;
+}
+
+.hLine {
+  position: absolute;
+  left: -20%;
+  width: 140%;
+  height: 1px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(0, 255, 196, 0.15) 20%,
+    rgba(79, 255, 75, 0.25) 50%,
+    rgba(0, 255, 196, 0.15) 80%,
+    transparent 100%
+  );
+}
+
+.vLine {
+  position: absolute;
+  top: -20%;
+  width: 1px;
+  height: 140%;
+  background: linear-gradient(180deg,
+    transparent 0%,
+    rgba(0, 255, 196, 0.12) 20%,
+    rgba(79, 255, 75, 0.2) 50%,
+    rgba(0, 255, 196, 0.12) 80%,
+    transparent 100%
+  );
+}
+
+@media (max-width: 768px) {
+  .gridPlane {
+    top: 85%;
+    width: 180%;
+    height: 140%;
+    transform: translate(-50%, -50%) perspective(700px) rotateX(18deg);
+  }
+
+  .hLine {
+    left: -30%;
+    width: 160%;
+  }
+
+  .vLine {
+    top: -30%;
+    height: 160%;
+  }
+}

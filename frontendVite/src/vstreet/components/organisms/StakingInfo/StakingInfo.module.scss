@@ -37,7 +37,7 @@
   margin-bottom: 32px;
 
   .title {
-    font-family: 'Montserrat', sans-serif;
+    font-family: var(--font-body);
     font-size: 15px;
     font-weight: 800;
     color: #00ffc4;
@@ -56,7 +56,7 @@
 
 .statItem {
   .statLabel {
-    font-family: 'Inter', sans-serif;
+    font-family: var(--font-body);
     font-size: 13px;
     font-weight: 500;
     color: rgba(255, 255, 255, 0.6);
@@ -64,7 +64,7 @@
   }
 
   .statValue {
-    font-family: 'Roboto Mono', monospace;
+    font-family: var(--font-mono);
     font-size: 20px;
     font-weight: 800;
     color: #ffffff;
@@ -84,7 +84,7 @@
   border-radius: 8px;
 
   /* Text */
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-body);
   font-size: 14px;
   font-weight: 600;
   color: #00ffc4;

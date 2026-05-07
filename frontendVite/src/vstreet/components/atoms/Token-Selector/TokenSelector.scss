@@ -1,9 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap');
 
 // Parent Component
 .Token-Selector {
   position: relative;
-  font-family: "Roboto Mono", monospace;
+  font-family: 'Roboto Mono', monospace;
   cursor: pointer;
   width: 100%;
 
@@ -76,7 +76,7 @@
       &::before,
       &::after {
         --size: 0.4rem;
-        content: "";
+        content: '';
         position: absolute;
         width: 0;
         height: 0;
@@ -99,7 +99,7 @@
     top: -6rem;
     color: #fff;
     text-align: center;
-    font-family: Montserrat, sans-serif;
+    font-family: var(--font-body);
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
@@ -111,7 +111,7 @@
     background-repeat: no-repeat;
     background-position: center;
     background-size: contain;
-    background-image: url("../../../assets/images/icons/Tooltip.svg");
+    background-image: url('../../../assets/images/icons/Tooltip.svg');
 
     @media (max-width: 768px) {
       font-size: 10px;

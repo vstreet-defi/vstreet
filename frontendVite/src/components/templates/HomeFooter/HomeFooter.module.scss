@@ -1,0 +1,120 @@
+.footer {
+  position: relative;
+  width: 100%;
+  padding: calc(var(--section-padding-y) * 0.8) var(--section-padding-x) 2rem;
+  background: linear-gradient(180deg, var(--color-bg-main) 0%, #08080c 100%);
+}
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+}
+
+.legal {
+  background: linear-gradient(135deg, rgba(27, 27, 31, 0.4), rgba(18, 18, 21, 0.2));
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 1.5rem 2rem;
+  margin-bottom: 3rem;
+}
+
+.legalTitle {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: rgba(0, 255, 196, 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin-bottom: 1rem;
+}
+
+.legalText {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary);
+  line-height: 1.7;
+}
+
+.bottom {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.logo {
+  max-width: 120px;
+  opacity: 0.8;
+  filter: grayscale(100%) brightness(1.5);
+}
+
+.copyright {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: 0.8rem;
+  color: var(--color-text-tertiary);
+}
+
+.socials {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.socialLink {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: rgba(0, 255, 196, 0.3);
+    background: rgba(0, 255, 196, 0.05);
+  }
+
+  img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+    opacity: 0.7;
+    transition: opacity 0.25s ease;
+  }
+
+  &:hover img {
+    opacity: 1;
+  }
+}
+
+.email {
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.85rem;
+  color: rgba(0, 255, 196, 0.7);
+  text-decoration: none;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: #00ffc4;
+  }
+}
+
+@media (max-width: 768px) {
+  .bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.25rem;
+  }
+
+  .legal {
+    padding: 1.25rem;
+  }
+}
