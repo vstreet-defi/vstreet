@@ -11,7 +11,7 @@ interface Props {
 export function TiltWrapper({ children, className = '', max = 8, scale = 1.03 }: Props) {
   const { ref, style, onMouseMove, onMouseLeave } = useTilt({ max, scale });
   return (
-    <div ref={ref} style={style} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave} className={className}>
+    <div ref={ref} style={{ ...style, height: '100%' }} onMouseMove={onMouseMove} onMouseLeave={onMouseLeave} className={className}>
       {children}
     </div>
   );

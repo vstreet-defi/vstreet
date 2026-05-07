@@ -3,10 +3,19 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 import vStreetLogoWhite from '@/assets/images/icons/vStreet-Logo-White-Big.png';
+import discordIcon from '@/assets/images/icons/discord-icon.png';
+import githubIcon from '@/assets/images/icons/github-icon.png';
+import xIcon from '@/assets/images/icons/x-social-media-white-icon.png';
 
 import styles from './HomeFooter.module.scss';
 
 gsap.registerPlugin(ScrollTrigger);
+
+const socialLinks = [
+  { icon: xIcon, alt: 'X', url: 'https://twitter.com/vstreet_io' },
+  { icon: discordIcon, alt: 'Discord', url: 'https://discord.gg/jBMqWd8kET' },
+  { icon: githubIcon, alt: 'GitHub', url: 'https://github.com/vstreet-defi/vstreet' },
+];
 
 const HomeFooter: FC = () => {
   const containerRef = useRef<HTMLElement>(null);
@@ -24,7 +33,7 @@ const HomeFooter: FC = () => {
           {
             scrollTrigger: {
               trigger: legalRef.current,
-              start: 'top 80%',
+              start: 'top 85%',
               toggleActions: 'play none none none',
             },
             opacity: 1,
@@ -48,7 +57,7 @@ const HomeFooter: FC = () => {
             opacity: 1,
             y: 0,
             duration: 0.7,
-            delay: 0.2,
+            delay: 0.15,
             ease: 'power3.out',
           }
         );
@@ -71,6 +80,20 @@ const HomeFooter: FC = () => {
         <div ref={bottomRef} className={styles.bottom}>
           <img className={styles.logo} src={vStreetLogoWhite} alt="vStreet" />
           <p className={styles.copyright}>© {new Date().getFullYear()} vStreet. All rights reserved.</p>
+          <div className={styles.socials}>
+            {socialLinks.map((link, i) => (
+              <a
+                key={i}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={styles.socialLink}
+                aria-label={link.alt}
+              >
+                <img src={link.icon} alt="" />
+              </a>
+            ))}
+          </div>
           <a href="mailto:contact@vstreet.io" className={styles.email}>
             contact@vstreet.io
           </a>

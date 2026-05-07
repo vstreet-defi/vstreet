@@ -1,9 +1,8 @@
 .footer {
   position: relative;
   width: 100%;
-  padding: var(--section-padding-y) var(--section-padding-x) 2rem;
-  background: var(--color-bg-main);
-  border-top: 1px solid rgba(0, 255, 196, 0.08);
+  padding: calc(var(--section-padding-y) * 0.8) var(--section-padding-x) 2rem;
+  background: linear-gradient(180deg, var(--color-bg-main) 0%, #08080c 100%);
 }
 
 .container {
@@ -12,10 +11,8 @@
 }
 
 .legal {
-  background: linear-gradient(135deg, rgba(27, 27, 31, 0.6), rgba(18, 18, 21, 0.4));
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 255, 196, 0.1);
+  background: linear-gradient(135deg, rgba(27, 27, 31, 0.4), rgba(18, 18, 21, 0.2));
+  border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   padding: 1.5rem 2rem;
   margin-bottom: 3rem;
@@ -24,10 +21,10 @@
 .legalTitle {
   font-family: var(--font-body);
   font-weight: 700;
-  font-size: 0.85rem;
-  color: rgba(0, 255, 196, 0.9);
+  font-size: 0.75rem;
+  color: rgba(0, 255, 196, 0.7);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   margin-bottom: 1rem;
 }
 
@@ -45,51 +42,79 @@
   align-items: center;
   justify-content: space-between;
   gap: 1.5rem;
-}
-
-@media (max-width: 768px) {
-  .bottom {
-    flex-direction: column;
-  }
+  padding-top: 2rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .logo {
-  max-width: 150px;
-  filter: drop-shadow(0 0 15px rgba(0, 255, 196, 0.2));
-  opacity: 0.9;
+  max-width: 120px;
+  opacity: 0.8;
+  filter: grayscale(100%) brightness(1.5);
 }
 
 .copyright {
   font-family: var(--font-body);
   font-weight: 400;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   color: var(--color-text-tertiary);
+}
+
+.socials {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.socialLink {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.25s ease;
+
+  &:hover {
+    border-color: rgba(0, 255, 196, 0.3);
+    background: rgba(0, 255, 196, 0.05);
+  }
+
+  img {
+    width: 18px;
+    height: 18px;
+    filter: brightness(0) invert(1);
+    opacity: 0.7;
+    transition: opacity 0.25s ease;
+  }
+
+  &:hover img {
+    opacity: 1;
+  }
 }
 
 .email {
   font-family: var(--font-body);
   font-weight: 500;
-  font-size: 0.9rem;
-  color: rgba(0, 255, 196, 0.8);
+  font-size: 0.85rem;
+  color: rgba(0, 255, 196, 0.7);
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: color 0.3s ease;
 
   &:hover {
     color: #00ffc4;
-    text-shadow: 0 0 10px rgba(0, 255, 196, 0.5);
   }
 }
 
-@media (max-width: 480px) {
-  .footer {
-    padding: 3rem 1.5rem 1.5rem;
+@media (max-width: 768px) {
+  .bottom {
+    flex-direction: column;
+    text-align: center;
+    gap: 1.25rem;
   }
-  
+
   .legal {
-    padding: 1rem 1.25rem;
-  }
-  
-  .legalText {
-    font-size: 0.75rem;
+    padding: 1.25rem;
   }
 }
