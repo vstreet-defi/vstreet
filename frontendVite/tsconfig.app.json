@@ -29,7 +29,9 @@
       "services/*": ["./src/vstreet/services/*"],
       "types/*": ["./src/vstreet/types/*"],
       "utils/*": ["./src/vstreet/utils/*"],
+      "smart-contracts-tools": ["./src/vstreet/smart-contracts-tools/index.ts"],
       "smart-contracts-tools/*": ["./src/vstreet/smart-contracts-tools/*"],
+      "utils": ["./src/vstreet/utils/index.ts"],
       "consts": ["./src/vstreet/consts.ts"]
     }
   },
