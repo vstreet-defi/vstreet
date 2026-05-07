@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-import React, { useEffect, useState } from 'react';
-import { hexToBn } from '@polkadot/util';
-import { useUserInfo } from 'contexts/userInfoContext';
-import { useWallet } from 'contexts/accountContext';
-import { useLiquidity } from 'contexts/stateContext';
-import { formatWithCommasVUSD } from 'utils/index';
-import styles from './StatsPanel.module.scss';
-=======
 import React, { useEffect, useState } from "react";
 import { hexToBn } from "@polkadot/util";
 import { useUserInfo } from "contexts/userInfoContext";
@@ -14,7 +5,6 @@ import { useWallet } from "contexts/accountContext";
 import { useLiquidity } from "contexts/stateContext";
 import { formatWithCommasVUSD } from "utils";
 import styles from "./StatsPanel.module.scss";
->>>>>>> VST-182-FE-MIGRATION-VITE
 
 /**
  * StatsPanel Component
@@ -24,11 +14,7 @@ import styles from "./StatsPanel.module.scss";
 const StatsPanel: React.FC = () => {
   const { balance } = useUserInfo();
   const { selectedAccount } = useWallet();
-<<<<<<< HEAD
-  const [formatBalanceVUSD, setFormatBalanceVUSD] = useState('0.00');
-=======
   const [formatBalanceVUSD, setFormatBalanceVUSD] = useState("0.00");
->>>>>>> VST-182-FE-MIGRATION-VITE
 
   const formatApr = (apr: number): string => {
     return (apr / 1000000).toFixed(2);
@@ -58,11 +44,7 @@ const StatsPanel: React.FC = () => {
       const balanceNum = balance / 1000000;
       setFormatBalanceVUSD(balanceNum.toLocaleString());
     } else {
-<<<<<<< HEAD
-      setFormatBalanceVUSD('0.00');
-=======
       setFormatBalanceVUSD("0.00");
->>>>>>> VST-182-FE-MIGRATION-VITE
     }
   }, [selectedAccount, balance]);
 
@@ -87,14 +69,10 @@ const StatsPanel: React.FC = () => {
 
         <div className={styles.statItem}>
           <p className={styles.statLabel}>ANNUAL INTEREST (APR)</p>
-<<<<<<< HEAD
-          <p className={styles.statValue}> {liquidityData ? formatApr(liquidityData.APR) : '...'}%</p>
-=======
           <p className={styles.statValue}>
             {" "}
             {liquidityData ? formatApr(liquidityData.APR) : "..."}%
           </p>
->>>>>>> VST-182-FE-MIGRATION-VITE
         </div>
       </div>
     </div>

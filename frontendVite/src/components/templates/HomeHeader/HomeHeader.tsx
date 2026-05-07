@@ -1,9 +1,3 @@
-<<<<<<< HEAD
-import React, { useState } from 'react';
-import Logo from '@/assets/images/icons/vStreet-Navbar-Color-White.png';
-import styles from './HomeHeader.module.scss';
-
-=======
 import React, { useState, useRef, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
@@ -13,7 +7,6 @@ import styles from './HomeHeader.module.scss';
 
 gsap.registerPlugin(ScrollTrigger, ScrollToPlugin);
 
->>>>>>> VST-182-FE-MIGRATION-VITE
 export enum HomeTab {
   GitHub = 'GitHub',
   Team = 'Team',
@@ -27,8 +20,6 @@ type Props = {
 
 const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
   const [menuOpen, setMenuOpen] = useState(false);
-<<<<<<< HEAD
-=======
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
 
@@ -67,7 +58,6 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
 
     return () => ctx.revert();
   }, []);
->>>>>>> VST-182-FE-MIGRATION-VITE
 
   const homeTabActions: Record<HomeTab, () => void> = {
     [HomeTab.GitHub]: () => window.open('https://github.com/vstreet-defi/vstreet', '_blank'),
@@ -86,8 +76,6 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
     setMenuOpen(false);
   };
 
-<<<<<<< HEAD
-=======
   const handleLogoClick = () => {
     gsap.to(window, {
       scrollTo: { y: 0, autoKill: true },
@@ -96,7 +84,6 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
     });
   };
 
->>>>>>> VST-182-FE-MIGRATION-VITE
   const renderItems = () =>
     items.map((item, index) => (
       <div className={styles.itemWrapper} key={index}>
@@ -107,13 +94,8 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
     ));
 
   return (
-<<<<<<< HEAD
-    <header className={styles.header}>
-      <button className={styles.logoButton} onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-=======
     <header ref={headerRef} className={`${styles.header} ${scrolled ? styles.scrolled : ''}`}>
       <button className={styles.logoButton} onClick={handleLogoClick}>
->>>>>>> VST-182-FE-MIGRATION-VITE
         <img className={styles.logo} src={Logo} alt="Logo" />
       </button>
       {isMobile ? (
@@ -123,19 +105,6 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
             <div className={`${styles.line} ${menuOpen ? styles.open : ''}`}></div>
             <div className={`${styles.line} ${menuOpen ? styles.open : ''}`}></div>
           </button>
-<<<<<<< HEAD
-          {menuOpen && (
-            <div className={styles.mobileMenu}>
-              <ul>
-                {items.map((item, index) => (
-                  <li key={index}>
-                    <button onClick={() => handleClick(item)}>{item}</button>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-=======
           <div className={`${styles.mobileMenu} ${menuOpen ? styles.menuOpen : ''}`}>
             <ul>
               {items.map((item, index) => (
@@ -145,7 +114,6 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
               ))}
             </ul>
           </div>
->>>>>>> VST-182-FE-MIGRATION-VITE
         </div>
       ) : (
         <>
