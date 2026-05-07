@@ -1,6 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 // Template & Layout
 import DappTemplate from 'components/templates/Dapp';
@@ -44,7 +44,6 @@ function DappPage() {
   const variants = {
     initial: { opacity: 0, x: 20, filter: 'blur(10px)' },
     animate: { opacity: 1, x: 0, filter: 'blur(0px)' },
-    exit: { opacity: 0, x: -20, filter: 'blur(10px)' },
   };
 
   const { allAccounts } = useWallet();
@@ -58,44 +57,41 @@ function DappPage() {
       <AlertModalProvider>
         <Header isAccountVisible={isAccountReady} items={NAV_ITEMS} isMobile={isMobileDevice()} />
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tab}
-            initial="initial"
-            animate="animate"
-            exit="exit"
-            variants={variants}
-            transition={{ duration: 0.4, ease: 'easeInOut' }}
-            style={{ width: '100%', overflow: 'hidden' }}>
-            <DappTemplate
-              bannerComponent={
-                isVaultsTab || isVSTTab ? null : (
-                  <>
-                    <AlertModal />
-                    {isSupplyTab ? (
-                      <CollateralAndBorrowBanner text="DEPOSIT AND EARN REWARDS" />
-                    ) : (
-                      <CollateralAndBorrowBanner />
-                    )}
-                  </>
-                )
-              }
-              sidebarLeft={isBorrowTab || isVaultsTab || isVSTTab ? null : <StatsPanel />}
-              mainContent={
-                isSupplyTab ? (
-                  <FundsManager />
-                ) : isVaultsTab ? (
-                  <VaultsManager />
-                ) : isVSTTab ? (
-                  <ForgeManager />
-                ) : (
-                  <FundsManagerBorrow />
-                )
-              }
-              sidebarRight={isSupplyTab ? <StakingInfo /> : isVaultsTab || isVSTTab ? null : <LoanInfo />}
-            />
-          </motion.div>
-        </AnimatePresence>
+        <motion.div
+          key={tab}
+          initial="initial"
+          animate="animate"
+          variants={variants}
+          transition={{ duration: 0.4, ease: 'easeInOut' }}
+          style={{ width: '100%', overflow: 'hidden' }}>
+          <DappTemplate
+            bannerComponent={
+              isVaultsTab || isVSTTab ? null : (
+                <>
+                  <AlertModal />
+                  {isSupplyTab ? (
+                    <CollateralAndBorrowBanner text="DEPOSIT AND EARN REWARDS" />
+                  ) : (
+                    <CollateralAndBorrowBanner />
+                  )}
+                </>
+              )
+            }
+            sidebarLeft={isBorrowTab || isVaultsTab || isVSTTab ? null : <StatsPanel />}
+            mainContent={
+              isSupplyTab ? (
+                <FundsManager />
+              ) : isVaultsTab ? (
+                <VaultsManager />
+              ) : isVSTTab ? (
+                <ForgeManager />
+              ) : (
+                <FundsManagerBorrow />
+              )
+            }
+            sidebarRight={isSupplyTab ? <StakingInfo /> : isVaultsTab || isVSTTab ? null : <LoanInfo />}
+          />
+        </motion.div>
       </AlertModalProvider>
     </LiquidityProvider>
   );
