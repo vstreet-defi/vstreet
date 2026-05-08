@@ -87,12 +87,6 @@ where
             error_message
         })?;
 
-    if user_info.loan_amount % decimals_factor != 0 {
-        let error_message = ERROR_INVALID_AMOUNT.to_string();
-        service.notify_error(error_message.clone());
-        return Err(error_message);
-    }
-
     user_info.loan_amount_usdc = user_info
         .loan_amount
         .checked_div(decimals_factor)
@@ -112,7 +106,7 @@ where
         })?;
 
     service.update_user_ltv(caller);
-    service.calculate_apr();
+    service.refresh_rates();
 
     let _ = service.calculate_mla(caller);
 
@@ -175,37 +169,48 @@ where
         return sails_rs::Err(error_message);
     }
 
-    // Transfer tokens from user to contract
+    // CEI: update state BEFORE the external transfer to prevent re-entrancy.
+    {
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
+        user_info.is_loan_active = false;
+        user_info.loan_amount = 0;
+        user_info.loan_amount_usdc = 0;
+
+        state_mut.total_borrowed = state_mut
+            .total_borrowed
+            .checked_sub(loan_amount)
+            .ok_or_else(|| {
+                let error_message = ERROR_INVALID_AMOUNT.to_string();
+                service.notify_error(error_message.clone());
+                error_message
+            })?;
+    }
+
+    // Transfer tokens from user to contract AFTER state update (CEI).
     let result = service.transfer_tokens(caller, exec::program_id(), loan_amount).await;
 
-    // Check if transfer was successful
+    // If transfer fails, roll back state
     if let Err(_) = result {
+        let state_mut = service.state_mut();
+        let decimals_factor = state_mut.config.decimals_factor;
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
+        user_info.is_loan_active = true;
+        user_info.loan_amount = loan_amount;
+        user_info.loan_amount_usdc = loan_amount / decimals_factor;
+        state_mut.total_borrowed = state_mut.total_borrowed.saturating_add(loan_amount);
         let error_message = ERROR_TRANSFER_FAILED.to_string();
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
     }
 
-    // Update loan amount and total borrowed
-    let state_mut = service.state_mut();
-    let user_info = state_mut.users.get_mut(&caller).unwrap();
-    let loan_amount_to_subtract = user_info.loan_amount;
-
-    user_info.is_loan_active = false;
-    user_info.loan_amount = 0;
-    user_info.loan_amount_usdc = 0;
-
-    state_mut.total_borrowed = state_mut
-        .total_borrowed
-        .checked_sub(loan_amount_to_subtract)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-    
     service.update_user_ltv(caller);
     let _ = service.calculate_mla(caller);
+    let state_mut = service.state_mut();
+    let user_info = state_mut.users.get_mut(&caller).unwrap();
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+
+    service.refresh_rates();
     
     service.notify_loan_payed(loan_amount);
 
@@ -243,25 +248,7 @@ where
         return sails_rs::Err(error_message);
     }
 
-    // Transfer tokens from user to contract
-    let result = service.transfer_tokens(caller, exec::program_id(), amount).await;
-
-    // Check if transfer was successful
-    if let Err(_) = result {
-        let error_message = ERROR_TRANSFER_FAILED.to_string();
-        service.notify_error(error_message.clone());
-        return sails_rs::Err(error_message);
-    }
-
-    // Convert scaled amount to USDC for state updates and notification
-    let amount_usdc = amount
-        .checked_div(decimals_factor)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
+    // CEI: update state BEFORE the external transfer to prevent re-entrancy.
     user_info.loan_amount = user_info
         .loan_amount
         .checked_sub(amount)
@@ -272,17 +259,8 @@ where
         })?;
 
     user_info.loan_amount_usdc = user_info
-        .loan_amount_usdc
-        .checked_sub(amount_usdc)
-        .ok_or_else(|| {
-            let error_message = ERROR_INVALID_AMOUNT.to_string();
-            service.notify_error(error_message.clone());
-            error_message
-        })?;
-
-    state_mut.total_borrowed = state_mut
-        .total_borrowed
-        .checked_sub(amount)
+        .loan_amount
+        .checked_div(decimals_factor)
         .ok_or_else(|| {
             let error_message = ERROR_INVALID_AMOUNT.to_string();
             service.notify_error(error_message.clone());
@@ -293,9 +271,38 @@ where
         user_info.is_loan_active = false;
     }
 
+    state_mut.total_borrowed = state_mut
+        .total_borrowed
+        .checked_sub(amount)
+        .ok_or_else(|| {
+            let error_message = ERROR_INVALID_AMOUNT.to_string();
+            service.notify_error(error_message.clone());
+            error_message
+        })?;
+
+    // Transfer tokens from user to contract AFTER state update (CEI).
+    let result = service.transfer_tokens(caller, exec::program_id(), amount).await;
+
+    // If transfer fails, roll back state
+    if let Err(_) = result {
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
+        user_info.loan_amount = user_info.loan_amount.saturating_add(amount);
+        user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
+        if user_info.loan_amount > 0 {
+            user_info.is_loan_active = true;
+        }
+        state_mut.total_borrowed = state_mut.total_borrowed.saturating_add(amount);
+        let error_message = ERROR_TRANSFER_FAILED.to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
+    }
+
     service.update_user_ltv(caller);
     let _ = service.calculate_mla(caller);
     LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+
+    service.refresh_rates();
     
     service.notify_loan_payed(amount);
 

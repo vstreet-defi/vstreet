@@ -16,7 +16,8 @@ use crate::services::utils::{
     EventNotifier,
     ERROR_INSUFFICIENT_ADMIN_PRIVILEGES,
     ERROR_ADMIN_ALREADY_EXISTS,
-    ERROR_ADMIN_DOESNT_EXIST
+    ERROR_ADMIN_DOESNT_EXIST,
+    ERROR_TRANSFER_FAILED
 };
 
 static mut VSTREET_STATE: Option<VstreetState> = None;
@@ -206,7 +207,23 @@ where VftClient: Vft, {
     pub fn remove_admin(&mut self, admin: ActorId) -> Result<(), String> {
         self.ensure_admin()?;
 
+        // Prevent self-removal to avoid accidental lockout
+        if admin == msg::source() {
+            let error_message = "Cannot remove yourself as admin".to_string();
+            self.notify_on(LiquidityEvent::Error(error_message.clone()))
+                .expect("Notification Error");
+            return Err(error_message);
+        }
+
         let state = self.state_mut();
+
+        // Ensure at least one admin always remains
+        if state.admins.len() <= 1 {
+            let error_message = "Cannot remove the last admin".to_string();
+            self.notify_on(LiquidityEvent::Error(error_message.clone()))
+                .expect("Notification Error");
+            return Err(error_message);
+        }
 
         if let Some(pos) = state.admins.iter().position(|x| *x == admin) {
             state.admins.remove(pos);
@@ -243,6 +260,10 @@ where VftClient: Vft, {
     pub fn set_ltv(&mut self, ltv: u128) -> String {
         self.ensure_admin_or_panic();
 
+        if ltv == 0 || ltv > 95 {
+            panic!("LTV must be between 1 and 95");
+        }
+
         let state = self.state_mut();
 
         state.ltv = ltv;
@@ -257,11 +278,10 @@ where VftClient: Vft, {
         self.update_all_collateral_available_to_withdraw();
 
         let state_mut = self.state_mut();
-        let decimals_factor = state_mut.config.decimals_factor;
-        state_mut.available_rewards_pool = amount * decimals_factor;
+        state_mut.available_rewards_pool = amount;
 
         // Notify the AvailableRewardsPoolModified event
-        let new_rewards_pool: u128 = amount * decimals_factor;
+        let new_rewards_pool: u128 = amount;
         self.notify_on(LiquidityEvent::AvailableRewardsPoolModified { pool : new_rewards_pool })
                 .expect("Notification Error");
 
@@ -293,29 +313,37 @@ where VftClient: Vft, {
     //Service's query seted VFT of the contract
     pub fn vft_contract_id(&self) -> String {
         let state = self.state_ref();
-        let contract_id = state.vft_contract_id.unwrap();
-        contract_id.to_string() 
+        match state.vft_contract_id {
+            Some(contract_id) => contract_id.to_string(),
+            None => "VFT contract ID not configured".to_string(),
+        }
     } 
 
     //Service's query user-balance
     pub fn user_balance(&self, user: ActorId) -> String {
         let state = self.state_ref();
-        let user_info = state.users.get(&user).unwrap();
-        user_info.balance_usdc.to_string()
+        match state.users.get(&user) {
+            Some(user_info) => user_info.balance_usdc.to_string(),
+            None => "User not found".to_string(),
+        }
     }
 
     //Service's query user-rewards
     pub fn user_rewards(&self, user: ActorId) -> String {
         let state = self.state_ref();
-        let user_info = state.users.get(&user).unwrap();
-        user_info.rewards_usdc.to_string()
+        match state.users.get(&user) {
+            Some(user_info) => user_info.rewards_usdc.to_string(),
+            None => "User not found".to_string(),
+        }
     }
 
     //Service's query user info
     pub fn user_info(&self, user: ActorId) -> String {
         let state = self.state_ref();
-        let user_info = state.users.get(&user).unwrap();
-        format!("User Info: {:?}", user_info)
+        match state.users.get(&user) {
+            Some(user_info) => format!("User Info: {:?}", user_info),
+            None => "User not found".to_string(),
+        }
     }
 
     //Service's query all users
@@ -382,10 +410,14 @@ where VftClient: Vft, {
     pub async fn transfer_tokens(&mut self, from: ActorId, to: ActorId, amount: u128) -> Result<(), String> {
         let state = self.state_ref();
 
+        let contract_id = state.vft_contract_id.ok_or_else(|| {
+            "VFT contract ID not configured".to_string()
+        })?;
+
         let response = self
         .vft_client
         .transfer_from(from, to, U256::from(amount))
-        .send_recv(state.vft_contract_id.unwrap())
+        .send_recv(contract_id)
         .await;
 
         let Ok(transfer_status) = response else {
@@ -403,15 +435,22 @@ where VftClient: Vft, {
         Ok(())
     }
 
-    // Lenders APR (INTEREST RATE)
+    // Lender APR = base_rate + ((utilization_factor × risk_multiplier) / decimals_factor)
     pub fn calculate_apr(&mut self) -> u128 {
-        let state_mut = self.state_mut();
-
         self.calculate_utilization_factor();
+        let state_mut = self.state_mut();
+        let variable_rate = state_mut
+            .utilization_factor
+            .saturating_mul(state_mut.config.risk_multiplier)
+            .checked_div(state_mut.config.decimals_factor)
+            .unwrap_or(0);
 
-        state_mut.interest_rate = state_mut.config.base_rate.saturating_add(state_mut.utilization_factor * state_mut.config.risk_multiplier);
-
-        state_mut.interest_rate
+        let apr = state_mut
+            .config
+            .base_rate
+            .saturating_add(variable_rate);
+        state_mut.apr = apr;
+        apr
     }
 
     // Update User Rewards
@@ -419,7 +458,8 @@ where VftClient: Vft, {
         let current_timestamp = exec::block_timestamp() as u128;
 
         // Seconds elapsed since last update (block_timestamp returns milliseconds)
-        let time_elapsed = (current_timestamp - user_info.liquidity_last_updated) / 1000;
+        // Use saturating_sub to prevent underflow if timestamp is ever out of order.
+        let time_elapsed = current_timestamp.saturating_sub(user_info.liquidity_last_updated) / 1000;
 
         if time_elapsed > 0 {
             // Calculate rewards based on user balance, interest rate and time elapsed
@@ -449,7 +489,7 @@ where VftClient: Vft, {
 
         for user_info in state_mut.users.values_mut() {
             if user_info.balance > 0 {
-                Self::update_user_rewards(user_info, state_mut.interest_rate, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+                Self::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
             }
         }
     }
@@ -480,12 +520,18 @@ where VftClient: Vft, {
     // This functions need to be running every time vara price changes or user balance vara changes
     pub fn calculate_cv(&mut self, user: ActorId) -> String {
         let state_mut = self.state_mut();
-        let user_info = state_mut.users.get_mut(&user).unwrap();
+        let user_info = match state_mut.users.get_mut(&user) {
+            Some(u) => u,
+            None => return "User not found".to_string(),
+        };
         let vara_price = state_mut.config.vara_price;
+        let one_tvara = state_mut.config.one_tvara;
 
-        let tvaras = user_info.balance_vara / state_mut.config.one_tvara;
-
-        let cv = tvaras * vara_price;
+        // Multiply before dividing to preserve sub-TVara precision
+        let cv = user_info.balance_vara
+            .saturating_mul(vara_price)
+            .checked_div(one_tvara)
+            .unwrap_or(0);
         user_info.cv = cv;
 
         format!("CV: {:?}", cv)
@@ -494,7 +540,10 @@ where VftClient: Vft, {
     // Calculate Maximum Loan Amount
     pub fn calculate_mla(&mut self, user: ActorId) -> String {
         let state_mut = self.state_mut();
-        let user_info = state_mut.users.get_mut(&user).unwrap();
+        let user_info = match state_mut.users.get_mut(&user) {
+            Some(u) => u,
+            None => return "User not found".to_string(),
+        };
 
         let max_loan = (user_info.cv * state_mut.ltv) / 100;
 
@@ -523,7 +572,10 @@ where VftClient: Vft, {
 
     pub fn update_user_ltv(&mut self, user: ActorId) -> String {
         let state_mut = self.state_mut();
-        let user_info = state_mut.users.get_mut(&user).unwrap();
+        let user_info = match state_mut.users.get_mut(&user) {
+            Some(u) => u,
+            None => return "User not found".to_string(),
+        };
 
         // Prevent division by zero
         if user_info.cv == 0 {
@@ -565,26 +617,36 @@ where VftClient: Vft, {
         return utilization_factor;
     }
 
-    //Calculate Interest Rate = Base Rate+(Utilization Factor×Risk Multiplier)×(1+Dev Fee)
+    // Borrower interest rate = lender APR + dev_fee
     fn calculate_interest_rate(&mut self) -> u128 {
+        let apr = self.calculate_apr();
         let state_mut = self.state_mut();
-        let utilization_factor = state_mut.utilization_factor;
-        let base_rate = state_mut.config.base_rate;
-        let risk_multiplier = state_mut.config.risk_multiplier;
-        let dev_fee = state_mut.config.dev_fee;
+        let borrow_rate = apr.saturating_add(state_mut.config.dev_fee);
+        state_mut.interest_rate = borrow_rate;
+        borrow_rate
+    }
 
-        base_rate.saturating_add(utilization_factor * risk_multiplier).saturating_add(dev_fee)
+    // Refresh utilization_factor, state.apr (lender APR), and state.interest_rate (borrower rate).
+    // Call this whenever total_deposited or total_borrowed changes.
+    pub fn refresh_rates(&mut self) {
+        self.calculate_interest_rate();
     }
     
-    //Calculate Loan Interest Rate Amount 
+    // Calculate accrued loan interest and add it to the user's loan_amount.
+    // Uses borrower interest rate (lender APR + dev_fee).
     pub fn calculate_loan_interest_rate_amount(&mut self, user: ActorId) -> String {
+        // Refresh rates BEFORE borrowing state_mut to avoid aliased mutable references.
+        let interest_rate = self.calculate_interest_rate();
         let state_mut = self.state_mut();
-        let user_info = state_mut.users.get_mut(&user).unwrap();
+        let user_info = match state_mut.users.get_mut(&user) {
+            Some(u) => u,
+            None => return "User not found".to_string(),
+        };
 
         let loan_amount = user_info.loan_amount;
-        let interest_rate = self.calculate_interest_rate();
         let current_timestamp = exec::block_timestamp() as u128;
-        let time_diff_seconds = (current_timestamp - user_info.borrow_last_updated) / 1000;
+        // Use saturating_sub to prevent underflow if timestamp is ever out of order.
+        let time_diff_seconds = current_timestamp.saturating_sub(user_info.borrow_last_updated) / 1000;
         let decimals_factor = state_mut.config.decimals_factor;
 
         // let interest_rate_amount = (loan_amount * interest_rate * time_diff_seconds)
@@ -628,7 +690,12 @@ where VftClient: Vft, {
     //Liquidate Loan
     pub async fn liquidate_user_loan(&mut self, user: ActorId) -> Result<(), String> {
         let state_mut = self.state_mut();
-        let user_info = state_mut.users.get_mut(&user).unwrap();
+        let owner = state_mut.owner;
+        let protocol_ltv = state_mut.ltv;
+        let user_info = match state_mut.users.get_mut(&user) {
+            Some(u) => u,
+            None => return Ok(()),
+        };
 
         let loan_amount = user_info.loan_amount;
         let balance_vara = user_info.balance_vara;
@@ -636,7 +703,7 @@ where VftClient: Vft, {
         let locked = (balance_vara * user_info.ltv) / 100;
 
         //Condition to liquidate loan
-        if user_info.ltv >= state_mut.ltv {
+        if user_info.ltv >= protocol_ltv && locked > 0 {
             //Set user loan status to false and reset all loan info values
             user_info.balance_vara = user_info.balance_vara.saturating_sub(locked);
             user_info.is_loan_active = false;
@@ -647,7 +714,27 @@ where VftClient: Vft, {
             self.calculate_mla(user);
             state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(loan_amount);
             Self::update_user_available_to_withdraw_vara(user_info);
-            
+
+            // Transfer seized collateral to protocol owner
+            if let Err(_) = msg::send(
+                owner,
+                LiquidityEvent::LoanLiquidated { user, loan_amount, collateral_seized: locked },
+                locked,
+            ) {
+                // Roll back user state if the VARA transfer fails
+                let state_mut = self.state_mut();
+                let decimals_factor = state_mut.config.decimals_factor;
+                let user_info = state_mut.users.get_mut(&user).unwrap();
+                user_info.balance_vara = user_info.balance_vara.saturating_add(locked);
+                user_info.is_loan_active = true;
+                user_info.loan_amount = loan_amount;
+                user_info.loan_amount_usdc = loan_amount / decimals_factor;
+                state_mut.total_borrowed = state_mut.total_borrowed.saturating_add(loan_amount);
+                self.notify_on(LiquidityEvent::Error(ERROR_TRANSFER_FAILED.to_string()))
+                    .expect("Notification Error");
+                return Err(ERROR_TRANSFER_FAILED.to_string());
+            }
+
             // Emit liquidation event for off-chain tracking
             self.notify_on(LiquidityEvent::LoanLiquidated { 
                 user, 
