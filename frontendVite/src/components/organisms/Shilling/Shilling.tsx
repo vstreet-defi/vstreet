@@ -1,6 +1,6 @@
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { FC, useRef, useEffect } from 'react';
+import { FC, useRef, useLayoutEffect } from 'react';
 
 import { SectionGrid } from '@/components/atoms/SectionGrid/SectionGrid';
 import { useMagnetic } from '@/hooks/useMagnetic';
@@ -16,7 +16,14 @@ const features = [
     text: 'Asynchronous messaging enables parallel execution and stronger security through isolated contract state.',
     number: '01',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={styles.iconSvg}>
         <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
       </svg>
     ),
@@ -26,7 +33,14 @@ const features = [
     text: 'Schedule autonomous on-chain actions without centralized inputs. Build self-sustaining applications.',
     number: '02',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={styles.iconSvg}>
         <circle cx="12" cy="12" r="10" />
         <polyline points="12 6 12 12 16 14" />
       </svg>
@@ -37,7 +51,14 @@ const features = [
     text: 'Execute transactions without gas fees or signatures, reducing costs and expanding dApp design possibilities.',
     number: '03',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={styles.iconSvg}>
         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         <path d="M9 12l2 2 4-4" />
       </svg>
@@ -48,7 +69,14 @@ const features = [
     text: 'Data always available and secure. Programs access only their own memory space, enhancing reliability.',
     number: '04',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={styles.iconSvg}>
         <rect x="4" y="4" width="16" height="16" rx="2" ry="2" />
         <rect x="9" y="9" width="6" height="6" />
         <line x1="9" y1="1" x2="9" y2="4" />
@@ -67,7 +95,14 @@ const features = [
     text: 'Parallel task execution dramatically boosts performance beyond legacy smart contract platforms.',
     number: '05',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={styles.iconSvg}>
         <path d="M12 2L2 7l10 5 10-5-10-5z" />
         <path d="M2 17l10 5 10-5" />
         <path d="M2 12l10 5 10-5" />
@@ -79,7 +114,14 @@ const features = [
     text: 'Integrate with other chains in a decentralized way to leverage more DeFi legos for feature-rich dApps.',
     number: '06',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={styles.iconSvg}>
         <circle cx="12" cy="5" r="2" />
         <circle cx="5" cy="12" r="2" />
         <circle cx="19" cy="12" r="2" />
@@ -92,7 +134,14 @@ const features = [
     text: 'Elevate privacy and security for your applications with built-in ZKP support, ensuring user trust.',
     number: '07',
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className={styles.iconSvg}>
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className={styles.iconSvg}>
         <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
         <path d="M7 11V7a5 5 0 0110 0v4" />
         <circle cx="12" cy="16" r="1" />
@@ -114,7 +163,7 @@ const Shilling: FC = () => {
     pauseDuration: 2200,
   });
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!containerRef.current) return;
 
     const mm = gsap.matchMedia();
@@ -138,7 +187,7 @@ const Shilling: FC = () => {
               duration: 0.8,
               stagger: 0.1,
               ease: 'power3.out',
-            }
+            },
           );
         }
 
@@ -192,7 +241,7 @@ const Shilling: FC = () => {
               duration: 0.6,
               stagger: 0.08,
               ease: 'power2.out',
-            }
+            },
           );
         }
       }, containerRef);
@@ -210,9 +259,7 @@ const Shilling: FC = () => {
         <div ref={leftRef} className={styles.left}>
           <span className={styles.overline}>Infrastructure</span>
           <h2 className={styles.headline}>
-            Built on the{' '}
-            <span className={styles.headlineAccent}>fastest chain</span>{' '}
-            for{' '}
+            Built on the <span className={styles.headlineAccent}>fastest chain</span> for{' '}
             <span className={styles.typewriter}>
               {typedWord}
               <span className={styles.cursor} />
@@ -223,8 +270,7 @@ const Shilling: FC = () => {
             href="https://vara-network.io/"
             target="_blank"
             rel="noopener noreferrer"
-            className={styles.cta}
-          >
+            className={styles.cta}>
             Explore Vara
           </a>
         </div>
@@ -232,14 +278,9 @@ const Shilling: FC = () => {
         <div ref={rightRef} className={styles.right}>
           <div ref={cardsStripRef} className={styles.cardsStrip}>
             {features.map((feature, index) => (
-              <div
-                key={index}
-                className={styles.card}
-              >
+              <div key={index} className={styles.card}>
                 <div className={styles.cardHeader}>
-                  <div className={styles.cardIconWrap}>
-                    {feature.icon}
-                  </div>
+                  <div className={styles.cardIconWrap}>{feature.icon}</div>
                   <span className={styles.cardNumber}>{feature.number}</span>
                 </div>
                 <h3 className={styles.cardTitle}>{feature.title}</h3>
