@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { ScrollToPlugin } from 'gsap/ScrollToPlugin';
@@ -22,6 +23,7 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const headerRef = useRef<HTMLElement>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!headerRef.current) return;
@@ -118,7 +120,7 @@ const HomeHeader: React.FC<Props> = ({ items, isMobile }) => {
       ) : (
         <>
           <div className={styles.itemsContainer}>{renderItems()}</div>
-          <button className={styles.connectButton} type="button" onClick={() => (window.location.href = '/dapp')}>
+          <button className={styles.connectButton} type="button" onClick={() => navigate('/dapp')}>
             Launch App
           </button>
         </>
