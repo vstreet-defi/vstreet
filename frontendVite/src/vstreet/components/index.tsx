@@ -2,13 +2,11 @@ import { Route, Routes } from "react-router-dom";
 import Home from "./pages/Home";
 import DappPage from "./pages/Dapp";
 import ApiLoader from "./atoms/ApiLoader";
-//import { Faucet } from "./pages/Faucet";
 
 const routes = [
   { path: "/", Page: Home },
   { path: "/dapp", Page: DappPage },
   { path: "/vst", Page: DappPage },
-  //{ path: "/faucet", Page: Faucet },
 ];
 
 function Routing() {

@@ -1,0 +1,35 @@
+.cardSpotlight {
+  position: relative;
+  overflow: hidden;
+  --mouse-x: 50%;
+  --mouse-y: 50%;
+  --spotlight-color: rgba(0, 255, 196, 0.15);
+  --rotate-x: 0deg;
+  --rotate-y: 0deg;
+  transform-style: preserve-3d;
+  transition: transform 0.25s ease-out;
+  height: 100%;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      450px circle at var(--mouse-x) var(--mouse-y),
+      var(--spotlight-color),
+      transparent 55%
+    );
+    opacity: 0;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &:hover::before {
+    opacity: 1;
+  }
+}
+
+.tiltEnabled {
+  transform: perspective(900px) rotateX(var(--rotate-x)) rotateY(var(--rotate-y));
+}

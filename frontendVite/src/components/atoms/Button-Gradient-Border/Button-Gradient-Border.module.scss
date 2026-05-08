@@ -3,7 +3,7 @@
   border-width: 1px;
   background-color: transparent !important;
   color: white !important;
-  font-family: 'Montserrat';
+  font-family: var(--font-body);
   font-weight: 200;
 }
 .ButtonGradientBorder:hover {

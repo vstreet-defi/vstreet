@@ -42,6 +42,12 @@
 
       "plugins": ["@typescript-eslint/eslint-plugin"],
 
+      "settings": {
+        "react": {
+          "version": "detect"
+        }
+      },
+
       "rules": {
         // airbnb cfg
         "no-shadow": "error",
@@ -52,6 +58,12 @@
 
         // react-hook-form onSubmit
         "@typescript-eslint/no-misused-promises": [2, { "checksVoidReturn": { "attributes": false } }],
+
+        // react-three-fiber custom JSX properties
+        "react/no-unknown-property": ["error", { "ignore": ["args", "attach", "object", "position", "rotation", "scale", "intensity", "color", "visible", "castShadow", "receiveShadow", "dispose", "geometry", "material", "onPointerOver", "onPointerOut", "onPointerMove", "onPointerDown", "onPointerUp"] }],
+
+        // ignore style files
+        "import/no-unresolved": ["error", { "ignore": ["\\.(scss|css|sass|less)$"] }],
 
         // import sort
         "import/order": [

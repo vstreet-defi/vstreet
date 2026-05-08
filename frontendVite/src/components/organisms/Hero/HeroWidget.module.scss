@@ -1,0 +1,270 @@
+/* Glassmorphism card — replica exacta de FundsManager */
+.mainContentCard {
+  position: relative;
+  z-index: 1;
+  width: 320px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, rgba(27, 27, 31, 0.9), rgba(18, 18, 21, 0.7));
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1.5px solid;
+  border-image: linear-gradient(135deg, rgba(0, 255, 196, 0.3), rgba(79, 255, 75, 0.2)) 1;
+  border-radius: 12px;
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.4);
+  padding: 20px 24px;
+  overflow: visible;
+  will-change: transform;
+  transform-style: preserve-3d;
+  opacity: 0;
+  transform: perspective(1000px) rotateY(-8deg) rotateX(4deg);
+  transition: transform 0.1s ease-out;
+
+  &.visible {
+    animation: widgetEntrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+
+  &.animDone {
+    animation: none;
+    opacity: 1;
+    transform: perspective(1000px) rotateY(-8deg) rotateX(4deg);
+  }
+}
+
+@keyframes widgetEntrance {
+  0% {
+    opacity: 0;
+    transform: perspective(1000px) rotateY(-8deg) rotateX(4deg) translateY(40px) scale3d(0.9, 0.9, 0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(1000px) rotateY(-8deg) rotateX(4deg) translateY(0) scale3d(1, 1, 1);
+  }
+}
+
+/* Corner accents replica */
+.cornerAccent {
+  position: absolute;
+  pointer-events: none;
+  z-index: 2;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    background: #00ffc4;
+    box-shadow: 0 0 8px #00ffc4;
+  }
+
+  &.topleft {
+    top: 0; left: 0;
+    &::before { top: 0; left: 0; width: 40px; height: 2px; }
+    &::after { top: 0; left: 0; width: 2px; height: 40px; }
+  }
+
+  &.topright {
+    top: 0; right: 0;
+    &::before { top: 0; right: 0; width: 40px; height: 2px; background: #4fff4b; box-shadow: 0 0 8px #4fff4b; }
+    &::after { top: 0; right: 0; width: 2px; height: 40px; background: #4fff4b; box-shadow: 0 0 8px #4fff4b; }
+  }
+
+  &.bottomleft {
+    bottom: 0; left: 0;
+    &::before { bottom: 0; left: 0; width: 40px; height: 2px; background: #4fff4b; box-shadow: 0 0 8px #4fff4b; }
+    &::after { bottom: 0; left: 0; width: 2px; height: 40px; background: #4fff4b; box-shadow: 0 0 8px #4fff4b; }
+  }
+
+  &.bottomright {
+    bottom: 0; right: 0;
+    &::before { bottom: 0; right: 0; width: 40px; height: 2px; }
+    &::after { bottom: 0; right: 0; width: 2px; height: 40px; }
+  }
+}
+
+.header {
+  margin-bottom: 10px;
+
+  .title {
+    font-family: var(--font-body);
+    font-size: 18px;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 6px;
+  }
+
+  .subtitle {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.5);
+    margin: 0 0 12px;
+  }
+
+  .divider {
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 196, 0.3), transparent);
+  }
+}
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+
+  .tab {
+    flex: 1;
+    height: 44px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.5);
+    cursor: default;
+    pointer-events: none;
+    user-select: none;
+    transition: none;
+    clip-path: polygon(0 0, 95% 0, 100% 100%, 5% 100%);
+
+    &.active {
+      background: rgba(0, 255, 196, 0.12);
+      border: 2px solid #00ffc4;
+      color: #00ffc4;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 5%;
+        right: 5%;
+        height: 2px;
+        background: #00ffc4;
+        filter: drop-shadow(0 0 8px rgba(0, 255, 196, 0.6));
+      }
+    }
+  }
+}
+
+/* Inner card content */
+.fundsCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 4px;
+}
+
+.inputSection {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.availableBalance {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+
+  span {
+    color: #00ffc4;
+    font-weight: 600;
+  }
+}
+
+.inputRow {
+  display: flex;
+  gap: 10px;
+}
+
+.inputWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.inputLabel {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.amountInput {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+}
+
+.input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  color: #fff;
+
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+  }
+}
+
+.percentageRow {
+  display: flex;
+  gap: 6px;
+}
+
+.percentageBtn {
+  flex: 1;
+  padding: 6px 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: default;
+  pointer-events: none;
+  user-select: none;
+  transition: none;
+}
+
+.actionBtn {
+  width: 100%;
+  padding: 0.6rem 1.8rem;
+  background: rgba(0, 255, 196, 0.1);
+  border: 2px solid rgba(0, 255, 196, 0.4);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #00ffc4;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-align: center;
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (max-width: 768px) {
+  .mainContentCard {
+    width: 100%;
+    padding: 16px;
+  }
+
+  .header .title {
+    font-size: 16px;
+  }
+
+  .tabs .tab {
+    height: 38px;
+    font-size: 12px;
+  }
+}

@@ -10,7 +10,8 @@ import 'components/atoms/Button-Gradient-Fill/ButtonGradFill.scss';
 import { useEffect, useState } from 'react';
 import { useUserInfo } from 'contexts/userInfoContext';
 import { useWallet } from 'contexts/accountContext';
-import { formatHumanVUSD, formatWithCommasVUSD, fromRawUnits } from 'utils/index';
+import { hexToBn } from '@polkadot/util';
+import { formatWithCommasVUSD } from 'utils';
 
 interface Props {
   buttonLabel: string;
@@ -33,22 +34,28 @@ function FundsCard({ buttonLabel }: Props) {
     setInputValue(value);
   };
 
+  const convertHexToDecimal = (hexValue: string) => {
+    return hexToBn(hexValue).toString();
+  };
+
   useEffect(() => {
     if (selectedAccount) {
       fetchUserInfo(hexAddress);
-      setBalanceVFT(fromRawUnits(balance));
+      const balanceConverted = convertHexToDecimal(balance.toString());
+      setBalanceVFT(Number(balanceConverted) / 1000000);
     }
-  }, [selectedAccount, hexAddress, balance, fetchUserInfo]);
+  }, [selectedAccount, hexAddress, balance]);
 
   useEffect(() => {
     if (userInfo) {
+      const vUSDWalletBalance = userInfo.balance ? userInfo.balance : 0;
       const vUSDDepositedBalance = userInfo.balance_usdc ? userInfo.balance_usdc : 0;
-      setDepositedBalance(vUSDDepositedBalance);
-      setConvertedBalanceVUSD(fromRawUnits(balance));
+      setDepositedBalance(vUSDDepositedBalance / 1000000);
+      setConvertedBalanceVUSD(balance / 1000000);
       setFormatBalanceVUSD(formatWithCommasVUSD(balance));
-      setFormatDepositedVUSD(formatHumanVUSD(vUSDDepositedBalance));
+      setFormatDepositedVUSD(vUSDDepositedBalance.toLocaleString());
     }
-  }, [userInfo, balance]);
+  }, [userInfo]);
 
   console.log('VUSD Balance:', balanceVFT);
   console.log('userINFO:', userInfo);

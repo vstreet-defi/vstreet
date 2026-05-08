@@ -14,7 +14,6 @@ import { Loader } from 'components/molecules/alert-modal/AlertModal';
 import { GearApi } from '@gear-js/api';
 import { Codec, CodecClass } from '@polkadot/types/types';
 import { Signer } from '@polkadot/types/types';
-import { RAW_DECIMALS_FACTOR_VARA, toRawUnits } from 'utils/index';
 
 interface ButtonProps {
   label: string;
@@ -65,10 +64,6 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({ amount, label, balance })
 
     if (!Number.isFinite(parsedAmount) || parsedAmount <= 0) {
       throw new Error(`Invalid transaction amount: ${amount}`);
-    }
-
-    if (operation === 'withdraw' && !Number.isInteger(parsedAmount)) {
-      throw new Error('Collateral withdrawal only accepts whole TVARA amounts.');
     }
 
     return parsedAmount;
@@ -144,12 +139,11 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({ amount, label, balance })
     transaction.withAccount(accountWEB.address, {
       signer: signer as string | CodecClass<Codec, any[]> as Signer,
     });
-    const value = BigInt(toRawUnits(amount, RAW_DECIMALS_FACTOR_VARA));
-    transaction.withValue(value);
+    transaction.withValue(BigInt(Number(amount) * 1e12));
     await transaction.calculateGas(true, 15);
 
     logTransactionContext('deposit:transaction-created', {
-      value: value.toString(),
+      value: BigInt(Number(amount) * 1e12).toString(),
       signerSource: accountWEB.meta.source,
     });
 
@@ -163,8 +157,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({ amount, label, balance })
     const parsedAmount = validateTransactionPreconditions('withdraw');
     const sails = await createConfiguredSails('withdraw', idlVSTREET, vstreetProgramID);
     const accountWEB = getRequiredAccount();
-    // Contract expects amount in TVARA units here and internally scales by one_tvara.
-    const amountConverted = Math.round(parsedAmount);
+    const amountConverted = parsedAmount * 1e12;
 
     const transaction = await sails.services.LiquidityInjectionService.functions.WithdrawCollateral(amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);
@@ -188,7 +181,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({ amount, label, balance })
     const parsedAmount = validateTransactionPreconditions('borrow');
     const sails = await createConfiguredSails('borrow', idlVSTREET, vstreetProgramID);
     const accountWEB = getRequiredAccount();
-    const amountConverted = toRawUnits(parsedAmount);
+    const amountConverted = parsedAmount * 1000000;
 
     const transaction = await sails.services.LiquidityInjectionService.functions.TakeLoan(amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);
@@ -212,7 +205,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({ amount, label, balance })
     const parsedAmount = validateTransactionPreconditions('pay');
     const sails = await createConfiguredSails('pay', idlVSTREET, vstreetProgramID);
     const accountWEB = getRequiredAccount();
-    const amountConverted = toRawUnits(parsedAmount);
+    const amountConverted = parsedAmount * 1000000;
 
     const transaction = await sails.services.LiquidityInjectionService.functions.PayLoan(amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);
@@ -236,7 +229,7 @@ const ButtonGradFillBorrow: React.FC<ButtonProps> = ({ amount, label, balance })
     const parsedAmount = validateTransactionPreconditions('approve');
     const sails = await createConfiguredSails('approve', idlVFT, fungibleTokenProgramID);
     const accountWEB = getRequiredAccount();
-    const amountConverted = toRawUnits(parsedAmount);
+    const amountConverted = parsedAmount * 1000000;
 
     const transaction = await sails.services.Vft.functions.Approve(vstreetProgramID, amountConverted);
     const { signer } = await web3FromSource(accountWEB.meta.source);

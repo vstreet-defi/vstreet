@@ -11,7 +11,8 @@ import 'components/atoms/Button-Gradient-Fill/ButtonGradFill.scss';
 import { useEffect, useState } from 'react';
 import { useWallet } from 'contexts/accountContext';
 import { useUserInfo } from 'contexts/userInfoContext';
-import { fromRawUnits, RAW_DECIMALS_FACTOR_VARA } from 'utils/index';
+import { formatWithDecimalsVARA, formatWithCommasVUSD } from 'utils';
+import { hexToBn } from '@polkadot/util';
 
 interface Props {
   buttonLabel: string;
@@ -35,6 +36,10 @@ function FundsCardBorrow({ buttonLabel, mode }: Props) {
 
   const handleInputChange = (value: string) => {
     setInputValue(value);
+  };
+
+  const convertHexToDecimal = (hexValue: string) => {
+    return hexToBn(hexValue).toString();
   };
 
   useEffect(() => {
@@ -62,12 +67,15 @@ function FundsCardBorrow({ buttonLabel, mode }: Props) {
 
   const getActiveBalance = () => {
     if (isCollateralMode) {
-      return isDeposit
-        ? fromRawUnits(balanceVara, RAW_DECIMALS_FACTOR_VARA)
-        : fromRawUnits(depositedBalance, RAW_DECIMALS_FACTOR_VARA);
+      return isDeposit ? balanceVara / 1e12 : depositedBalance / 1e12;
     } else {
-      return isBorrow ? fromRawUnits(mla) : fromRawUnits(loanAmount);
+      return isBorrow ? mla / 1e6 : loanAmount / 1e6;
     }
+  };
+
+  const getFormattedBalance = () => {
+    const bal = getActiveBalance();
+    return isCollateralMode ? formatWithDecimalsVARA(bal * 1e12) : formatWithCommasVUSD(mla);
   };
 
   const getSymbol = () => (isCollateralMode ? 'TVARA' : 'vUSD');

@@ -1,0 +1,203 @@
+.team {
+  position: relative;
+  width: 100%;
+  padding: calc(var(--section-padding-y) * 1.2) var(--section-padding-x);
+  background: var(--color-bg-main);
+  overflow: hidden;
+}
+
+.container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.header {
+  margin-bottom: 4rem;
+  max-width: 400px;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-h2);
+  color: var(--color-primary);
+  line-height: 1.15;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--text-body);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.card {
+  position: relative;
+  padding: 2rem 2rem 1.75rem;
+  background: linear-gradient(145deg, rgba(17, 17, 24, 0.8) 0%, rgba(13, 13, 20, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  will-change: transform;
+  transform: perspective(700px) rotateX(0deg) rotateY(0deg) translateY(0);
+  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-primary) 0%, var(--color-secondary) 50%, transparent 100%);
+    opacity: 0.4;
+    transition: opacity 0.4s ease;
+  }
+
+  &:hover {
+    border-color: rgba(0, 255, 196, 0.14);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 255, 196, 0.06);
+
+    &::before {
+      opacity: 1;
+    }
+
+    .avatarWrap {
+      box-shadow: 0 0 24px rgba(0, 255, 196, 0.2);
+      border-color: rgba(0, 255, 196, 0.45);
+    }
+  }
+}
+
+.cardTop {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.avatarWrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid rgba(0, 255, 196, 0.25);
+  box-shadow: 0 0 14px rgba(0, 255, 196, 0.12);
+  flex-shrink: 0;
+  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center top;
+  }
+}
+
+.cardIndex {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: rgba(0, 255, 196, 0.2);
+  letter-spacing: 0.1em;
+  line-height: 72px;
+}
+
+.memberName {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 1.15rem;
+  color: #ffffff;
+  margin: 0 0 0.4rem 0;
+  letter-spacing: 0.3px;
+}
+
+.memberRole {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.82rem;
+  background: linear-gradient(135deg, var(--color-primary) 0%, var(--color-secondary) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin: 0 0 1.25rem 0;
+  letter-spacing: 0.02em;
+}
+
+.socials {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.socialLink {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(0, 255, 196, 0.06);
+  border: 1px solid rgba(0, 255, 196, 0.15);
+  transition: all 0.3s ease;
+
+  img {
+    width: 16px;
+    height: 16px;
+    filter: brightness(0) invert(1);
+    opacity: 0.75;
+  }
+
+  &:hover {
+    background: rgba(0, 255, 196, 0.14);
+    border-color: rgba(0, 255, 196, 0.4);
+    box-shadow: 0 0 12px rgba(0, 255, 196, 0.18);
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 900px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .team {
+    padding: 4rem 1.5rem;
+  }
+
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header {
+    margin-bottom: 3rem;
+  }
+
+  .card {
+    align-items: center;
+    text-align: center;
+  }
+
+  .cardTop {
+    justify-content: center;
+  }
+
+  .avatarWrap {
+    align-self: center;
+  }
+
+  .socials {
+    justify-content: center;
+  }
+}

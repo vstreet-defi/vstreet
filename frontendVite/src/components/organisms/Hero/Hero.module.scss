@@ -1,0 +1,328 @@
+.hero {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 80px 60px;
+  gap: 6rem;
+  background-color: #0d0d14;
+
+  background-image:
+    /* FADE VERTICAL */
+    linear-gradient(
+      to bottom,
+      #0d0d14 0%,
+      #0d0d14 75%,
+      #0d0d14 85%,
+      #0d0d14 100%
+    );
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.blobs {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.blob {
+  position: absolute;
+  border-radius: 50%;
+}
+
+.blobCyan {
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, rgba(0, 255, 196, 0.45) 0%, rgba(0, 255, 196, 0.12) 40%, transparent 70%);
+  filter: blur(80px);
+  top: 50%;
+  right: 10%;
+  transform: translateY(-50%);
+}
+
+.blobGreen {
+  width: 380px;
+  height: 380px;
+  background: radial-gradient(circle, rgba(79, 255, 75, 0.35) 0%, rgba(79, 255, 75, 0.08) 45%, transparent 70%);
+  filter: blur(90px);
+  top: 55%;
+  right: 15%;
+  transform: translateY(-50%);
+}
+
+.blobMix {
+  width: 320px;
+  height: 320px;
+  background: radial-gradient(circle, rgba(0, 255, 196, 0.2) 0%, rgba(79, 255, 75, 0.2) 35%, transparent 65%);
+  filter: blur(70px);
+  top: 48%;
+  right: 17%;
+  transform: translateY(-50%);
+}
+
+.gridOverlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      rgba(0, 255, 196, 0.06) 0px,
+      rgba(0, 255, 196, 0.06) 1px,
+      transparent 1px,
+      transparent 40px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      rgba(0, 255, 196, 0.06) 0px,
+      rgba(0, 255, 196, 0.06) 1px,
+      transparent 1px,
+      transparent 40px
+    );
+  background-size: 40px 40px, 40px 40px;
+  mask-image: radial-gradient(
+    ellipse 500px 400px at 68% 50%,
+    black 0%,
+    black 30%,
+    rgba(0, 0, 0, 0.3) 55%,
+    transparent 75%
+  );
+  -webkit-mask-image: radial-gradient(
+    ellipse 500px 400px at 68% 50%,
+    black 0%,
+    black 30%,
+    rgba(0, 0, 0, 0.3) 55%,
+    transparent 75%
+  );
+}
+
+.content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  max-width: 560px;
+  flex-shrink: 0;
+}
+
+.badge {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: 16px;
+  padding: 6px 12px;
+  background: transparent;
+  margin-bottom: 24px;
+  width: fit-content;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: var(--text-h1);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: var(--color-primary);
+  margin-bottom: 0.5rem;
+  position: relative;
+  z-index: 2;
+}
+
+.subtitle {
+  font-family: var(--font-body);
+  font-weight: 400;
+  font-size: var(--text-h3);
+  color: var(--color-text-secondary);
+  margin-bottom: 1.5rem;
+  max-width: 760px;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.buttonPrimary {
+  padding: 0.6rem 1.8rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #00ffc4;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  background: rgba(0, 255, 196, 0.1);
+  border: 2px solid rgba(0, 255, 196, 0.4);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  &:hover {
+    transform: translateY(-2px);
+    background: rgba(0, 255, 196, 0.2);
+    border-color: #00ffc4;
+    box-shadow: 0 4px 25px rgba(0, 255, 196, 0.3);
+    text-shadow: 0 0 15px rgba(0, 255, 196, 0.8);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.buttonSecondary {
+  padding: 0.6rem 1.8rem;
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: rgba(0, 255, 196, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  background: rgba(0, 255, 196, 0.05);
+  border: 2px solid rgba(0, 255, 196, 0.2);
+  border-radius: 8px;
+  cursor: not-allowed;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+  text-shadow: none;
+  box-shadow: none;
+
+  &:hover {
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.widget {
+  position: relative;
+  z-index: 1;
+  width: 300px;
+  flex-shrink: 0;
+  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(79, 255, 75, 0.3);
+  border-radius: 16px;
+  padding: 24px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.widgetHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.widgetBadge {
+  font-family: var(--font-body);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #00ffc4;
+  background: rgba(0, 255, 196, 0.1);
+  border: 1px solid rgba(0, 255, 196, 0.25);
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+
+.widgetTitle {
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.widgetDivider {
+  height: 1px;
+  background: linear-gradient(90deg, rgba(0, 255, 196, 0.3), rgba(79, 255, 75, 0.1), transparent);
+  margin-bottom: 16px;
+}
+
+.statRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+
+  &:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+.statLabel {
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.statValue {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.statHighlight {
+  color: #00ffc4;
+}
+
+.statWarning {
+  color: #ffb800;
+}
+
+@media (max-width: 768px) {
+  .hero {
+    flex-direction: column;
+    justify-content: center;
+    padding: 100px 30px 60px;
+    gap: 2rem;
+  }
+
+  .content {
+    align-items: center;
+    text-align: center;
+    max-width: 100%;
+  }
+
+  .badge {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .title {
+    font-size: clamp(1.8rem, 10vw, 3rem);
+    letter-spacing: 0.2rem;
+  }
+
+  .buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 280px;
+    justify-content: center;
+  }
+
+  .buttonPrimary,
+  .buttonSecondary {
+    width: 100%;
+  }
+
+  .widget {
+    width: 100%;
+  }
+}
