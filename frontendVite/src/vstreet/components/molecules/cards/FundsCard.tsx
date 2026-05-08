@@ -50,7 +50,7 @@ function FundsCard({ buttonLabel }: Props) {
     if (userInfo) {
       const vUSDWalletBalance = userInfo.balance ? userInfo.balance : 0;
       const vUSDDepositedBalance = userInfo.balance_usdc ? userInfo.balance_usdc : 0;
-      setDepositedBalance(vUSDDepositedBalance / 1000000);
+      setDepositedBalance(vUSDDepositedBalance);
       setConvertedBalanceVUSD(balance / 1000000);
       setFormatBalanceVUSD(formatWithCommasVUSD(balance));
       setFormatDepositedVUSD(vUSDDepositedBalance.toLocaleString());
@@ -59,7 +59,7 @@ function FundsCard({ buttonLabel }: Props) {
 
   console.log('VUSD Balance:', balanceVFT);
   console.log('userINFO:', userInfo);
-  console.log('formatBalancevUSD:', formatBalanceVUSD);
+  console.log('depositedBalance:', depositedBalance);
 
   return (
     <div className={styles.fundsCard}>

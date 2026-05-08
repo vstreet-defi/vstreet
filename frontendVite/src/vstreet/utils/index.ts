@@ -1,8 +1,7 @@
-import type { InjectedAccountWithMeta } from "@polkadot/extension-inject/types";
-import { LOCAL_STORAGE } from "consts";
+import type { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
+import { LOCAL_STORAGE } from 'consts';
 
-export const isLoggedIn = ({ address }: InjectedAccountWithMeta) =>
-  localStorage[LOCAL_STORAGE.ACCOUNT] === address;
+export const isLoggedIn = ({ address }: InjectedAccountWithMeta) => localStorage[LOCAL_STORAGE.ACCOUNT] === address;
 
 export function formatNumber(num: number): number {
   return parseFloat(num.toFixed(2));
@@ -25,3 +24,13 @@ export const formatWithCommasVUSD = (number: number) => {
   const formattedNumber = number / decimalsFactor;
   return formattedNumber.toLocaleString();
 };
+
+const USDC_DECIMALS = 6;
+
+export function formatUSDC(rawValue: string | number | bigint): string {
+  const value = Number(rawValue) / 10 ** USDC_DECIMALS;
+  return value.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}

@@ -78,7 +78,7 @@ function FundsCardBorrow({ buttonLabel, mode }: Props) {
     return isCollateralMode ? formatWithDecimalsVARA(bal * 1e12) : formatWithCommasVUSD(mla);
   };
 
-  const getSymbol = () => (isCollateralMode ? 'TVARA' : 'vUSD');
+  const getSymbol = () => (isCollateralMode ? 'TVARA' : 'wUSD');
 
   console.log('Balance Vara:', balanceVara);
 
