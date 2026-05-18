@@ -406,7 +406,8 @@ where VftClient: Vft, {
         }
     }
 
-    //Transfer tokens
+    //Transfer tokens — use transfer() when the contract itself is the sender,
+    //transfer_from() only when moving tokens on behalf of an external user.
     pub async fn transfer_tokens(&mut self, from: ActorId, to: ActorId, amount: u128) -> Result<(), String> {
         let state = self.state_ref();
 
@@ -414,11 +415,17 @@ where VftClient: Vft, {
             "VFT contract ID not configured".to_string()
         })?;
 
-        let response = self
-        .vft_client
-        .transfer_from(from, to, U256::from(amount))
-        .send_recv(contract_id)
-        .await;
+        let response = if from == exec::program_id() {
+            self.vft_client
+                .transfer(to, U256::from(amount))
+                .send_recv(contract_id)
+                .await
+        } else {
+            self.vft_client
+                .transfer_from(from, to, U256::from(amount))
+                .send_recv(contract_id)
+                .await
+        };
 
         let Ok(transfer_status) = response else {
             self.notify_on(LiquidityEvent::Error("Error in VFT Contract".to_string()))

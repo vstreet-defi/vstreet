@@ -173,6 +173,13 @@ where
             error_message
         })?;
 
+    // Ensure sufficient liquidity remains to cover outstanding loans
+    if state_mut.total_deposited < state_mut.total_borrowed {
+        let error_message = "Insufficient contract liquidity for withdrawal".to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
+    }
+
     // Transfer tokens from contract to user
     let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
 
