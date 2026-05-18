@@ -287,9 +287,6 @@ where VftClient: Vft, {
     pub async fn modify_available_rewards_pool(&mut self, amount: u128) -> Result<(), String> {
         self.ensure_admin()?;
 
-        self.update_all_rewards();
-        self.update_all_collateral_available_to_withdraw();
-
         let state_mut = self.state_mut();
         state_mut.available_rewards_pool = amount;
 
@@ -496,7 +493,26 @@ where VftClient: Vft, {
         }
     }
 
-    // Update All User Rewards
+    // Update rewards for a single user (lazy update)
+    pub fn update_user_rewards_for(&mut self, user: ActorId) {
+        let state_mut = self.state_mut();
+        if let Some(user_info) = state_mut.users.get_mut(&user) {
+            if user_info.balance > 0 {
+                Self::update_user_rewards(user_info, state_mut.apr, state_mut.config.decimals_factor, state_mut.config.year_in_seconds);
+            }
+        }
+    }
+
+    // Update collateral available for a single user (lazy update)
+    pub fn update_user_collateral_available(&mut self, user: ActorId) {
+        let state_mut = self.state_mut();
+        let protocol_ltv = state_mut.ltv;
+        if let Some(user_info) = state_mut.users.get_mut(&user) {
+            Self::update_user_available_to_withdraw_vara(user_info, protocol_ltv);
+        }
+    }
+
+    // Update All User Rewards (deprecated — use update_user_rewards_for per user)
     pub fn update_all_rewards(&mut self) {
         let state_mut = self.state_mut();
 
@@ -507,7 +523,7 @@ where VftClient: Vft, {
         }
     }
 
-    // Update all user's collateral available to withdraw.
+    // Update all user's collateral available to withdraw (deprecated — use update_user_collateral_available per user)
     pub fn update_all_collateral_available_to_withdraw(&mut self) {
         let state_mut = self.state_mut();
 

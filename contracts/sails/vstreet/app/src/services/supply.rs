@@ -29,7 +29,8 @@ pub async fn deposit_liquidity<VftClient>(
 where
     VftClient: Vft,
 {
-    service.update_all_rewards();
+    let caller = msg::source();
+    service.update_user_rewards_for(caller);
     let state_mut = service.state_mut();
 
     debug!("Depositing funds");
@@ -38,8 +39,8 @@ where
         service.notify_error(error_message.clone());
         return sails_rs::Err(error_message);
     }
- 
-    let caller = msg::source();
+
+    let decimals_factor = state_mut.config.decimals_factor;
     let decimals_factor = state_mut.config.decimals_factor;
 
     // Transfer tokens from user to contract
@@ -107,10 +108,10 @@ pub async fn withdraw_liquidity<VftClient>(
 where
     VftClient: Vft,
 {
-    service.update_all_rewards();
+    let caller = msg::source();
+    service.update_user_rewards_for(caller);
 
     let state_mut = service.state_mut();
-    let caller = msg::source();
     let decimals_factor = state_mut.config.decimals_factor;
 
     let user_info = match state_mut.users.get_mut(&caller) {
@@ -211,10 +212,9 @@ pub async fn withdraw_rewards<VftClient>(
 where
     VftClient: Vft,
 {
-    service.update_all_rewards();
-    service.update_all_collateral_available_to_withdraw();
-
     let caller = msg::source();
+    service.update_user_rewards_for(caller);
+    service.update_user_collateral_available(caller);
 
     let (rewards_to_withdraw, decimals_factor) = {
         let state_mut = service.state_mut();
