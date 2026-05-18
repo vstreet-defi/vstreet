@@ -297,7 +297,7 @@ where VftClient: Vft, {
 
         self.update_cv_and_mla_for_all_users();
         self.update_all_ltv().await;
-        let _ = self.liquidate_all_loans();
+        let _ = self.liquidate_all_loans().await;
 
         format!("New Vara price set: {:?}", vara_price)
     }
@@ -498,17 +498,18 @@ where VftClient: Vft, {
     pub fn update_all_collateral_available_to_withdraw(&mut self) {
         let state_mut = self.state_mut();
 
+        let protocol_ltv = state_mut.ltv;
         for user_info in state_mut.users.values_mut() {
-            Self::update_user_available_to_withdraw_vara(user_info);
+            Self::update_user_available_to_withdraw_vara(user_info, protocol_ltv);
         }
     }
 
     // Calculate Collateral Available to Withdraw
-    pub fn update_user_available_to_withdraw_vara(user_info: &mut UserInfo) {
+    pub fn update_user_available_to_withdraw_vara(user_info: &mut UserInfo, protocol_ltv: u128) {
         if user_info.is_loan_active == false {
             user_info.available_to_withdraw_vara = user_info.balance_vara;
         }else{
-            let locked = (user_info.balance_vara * user_info.ltv) / 100;
+            let locked = (user_info.balance_vara * protocol_ltv) / 100;
             let available = user_info.balance_vara.saturating_sub(locked);
             debug!("Calculated available: {}", available);
 
@@ -666,6 +667,7 @@ where VftClient: Vft, {
 
 
         user_info.loan_amount = user_info.loan_amount.saturating_add(interest_rate_amount);
+        state_mut.total_borrowed = state_mut.total_borrowed.saturating_add(interest_rate_amount);
         user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
         user_info.borrow_last_updated = current_timestamp;
 
@@ -713,7 +715,7 @@ where VftClient: Vft, {
             self.calculate_cv(user);
             self.calculate_mla(user);
             state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(loan_amount);
-            Self::update_user_available_to_withdraw_vara(user_info);
+            Self::update_user_available_to_withdraw_vara(user_info, state_mut.ltv);
 
             // Transfer seized collateral to protocol owner
             if let Err(_) = msg::send(

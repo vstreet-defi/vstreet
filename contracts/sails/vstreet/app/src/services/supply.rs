@@ -313,8 +313,9 @@ where
 
     {
         let state_mut = service.state_mut();
+        let protocol_ltv = state_mut.ltv;
         let user_info = state_mut.users.get_mut(&caller).unwrap();
-        LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+        LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info, protocol_ltv);
     }
 
     service.notify_withdraw_rewards(rewards_to_withdraw);
@@ -334,6 +335,7 @@ where
     let value = msg::value();
     let caller = msg::source();
     let one_tvara = state_mut.config.one_tvara;
+    let protocol_ltv = state_mut.ltv;
 
     if value == 0 {
         let error_message = ERROR_INVALID_AMOUNT.to_string();
@@ -369,7 +371,7 @@ where
     service.calculate_mla(caller);
 
     // Calculate available to withdraw vara
-    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info, protocol_ltv);
 
     let amount = value
         .checked_div(one_tvara)
@@ -398,6 +400,7 @@ where
     let state_mut = service.state_mut();
     let caller = msg::source();
     let one_tvara = state_mut.config.one_tvara;
+    let protocol_ltv = state_mut.ltv;
 
     let user_info = match state_mut.users.get_mut(&caller) {
         Some(user_info) => user_info,
@@ -433,6 +436,27 @@ where
             error_message
         })?;
 
+    // Recalculate health metrics BEFORE releasing VARA
+    service.calculate_cv(caller);
+    service.calculate_mla(caller);
+    service.update_user_ltv(caller);
+
+    // Validate position remains healthy after withdrawal
+    let is_healthy = {
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get(&caller).unwrap();
+        !user_info.is_loan_active || user_info.ltv <= state_mut.ltv
+    };
+
+    if !is_healthy {
+        let state_mut = service.state_mut();
+        let user_info = state_mut.users.get_mut(&caller).unwrap();
+        user_info.balance_vara = user_info.balance_vara.saturating_add(amount_vara);
+        let error_message = "Withdrawal would leave position undercollateralized".to_string();
+        service.notify_error(error_message.clone());
+        return sails_rs::Err(error_message);
+    }
+
     if let Err(_err) = msg::send(
         caller,
         LiquidityEvent::WithdrawnVara { amount: amount }, 
@@ -447,14 +471,10 @@ where
         return sails_rs::Err(error_message);
     }
 
-    // Update CV, MLA and LTV after the send succeeded
-    service.calculate_cv(caller);
-    service.calculate_mla(caller);
-
-    service.update_user_ltv(caller);
-   
-    // Calculate available to withdraw vara
-    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    // Update available to withdraw after successful send
+    let state_mut = service.state_mut();
+    let user_info = state_mut.users.get_mut(&caller).unwrap();
+    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info, protocol_ltv);
 
     let _ = service.liquidate_user_loan(caller).await;
 

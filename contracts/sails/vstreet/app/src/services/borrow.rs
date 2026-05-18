@@ -45,6 +45,7 @@ where
     let _ = service.calculate_mla(caller);
     let state_mut = service.state_mut();
     let decimals_factor = state_mut.config.decimals_factor;
+    let protocol_ltv = state_mut.ltv;
     let user_info = state_mut.users.get_mut(&caller).unwrap();
 
     let mla = user_info.mla;
@@ -110,7 +111,7 @@ where
 
     let _ = service.calculate_mla(caller);
 
-    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info, protocol_ltv);
 
     // Transfer tokens from contract to user AFTER state has been updated (CEI).
     let result = service.transfer_tokens(exec::program_id(), caller, amount).await;
@@ -207,8 +208,9 @@ where
     service.update_user_ltv(caller);
     let _ = service.calculate_mla(caller);
     let state_mut = service.state_mut();
+    let protocol_ltv = state_mut.ltv;
     let user_info = state_mut.users.get_mut(&caller).unwrap();
-    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info, protocol_ltv);
 
     service.refresh_rates();
     
@@ -232,6 +234,7 @@ where
     
     let state_mut = service.state_mut();
     let decimals_factor = state_mut.config.decimals_factor;
+    let protocol_ltv = state_mut.ltv;
 
     let user_info = match state_mut.users.get_mut(&caller) {
         Some(user_info) => user_info,
@@ -300,7 +303,7 @@ where
 
     service.update_user_ltv(caller);
     let _ = service.calculate_mla(caller);
-    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info);
+    LiquidityInjectionService::<VftClient>::update_user_available_to_withdraw_vara(user_info, protocol_ltv);
 
     service.refresh_rates();
     
