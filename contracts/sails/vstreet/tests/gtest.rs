@@ -45,7 +45,7 @@ async fn test_contract_owner() {
     
     assert!(result.is_ok());
     let owner = result.unwrap();
-    assert!(owner.starts_with("0x"));
+    assert!(!owner.is_zero());
 }
 
 #[tokio::test]
@@ -67,8 +67,9 @@ async fn test_set_vft_contract_id() {
         .await;
     
     assert!(vft_id.is_ok());
-    let vft_id_str = vft_id.unwrap();
-    assert!(vft_id_str.starts_with("0x"));
+    let vft_id_opt = vft_id.unwrap();
+    assert!(vft_id_opt.is_some());
+    assert!(!vft_id_opt.unwrap().is_zero());
 }
 
 #[tokio::test]
@@ -443,7 +444,8 @@ async fn test_user_info_query() {
         .await;
 
     assert!(user_info.is_ok());
-    assert!(user_info.unwrap().contains("User Info:"));
+    let user_info_opt = user_info.unwrap();
+    assert!(user_info_opt.is_some());
 }
 
 #[tokio::test]
@@ -470,11 +472,9 @@ async fn test_contract_info_query() {
         .await;
 
     assert!(info.is_ok());
-    let info_str = info.unwrap();
-    assert!(info_str.contains("APR:"));
-    assert!(info_str.contains("Interest Rate:"));
-    assert!(info_str.contains("Total Deposited:"));
-    assert!(info_str.contains("Total Borrowed:"));
+    let info = info.unwrap();
+    assert_eq!(info.total_deposited, 0);
+    assert_eq!(info.total_borrowed, 0);
 }
 
 #[tokio::test]
@@ -567,7 +567,8 @@ async fn test_interest_accrual() {
         .user_rewards(ACTOR_ID.into())
         .recv(program_id)
         .await
-        .unwrap();
+        .unwrap()
+        .unwrap_or(0);
 
     // Perform another action to trigger time passage
     let _ = service_client
@@ -580,7 +581,8 @@ async fn test_interest_accrual() {
         .user_rewards(ACTOR_ID.into())
         .recv(program_id)
         .await
-        .unwrap();
+        .unwrap()
+        .unwrap_or(0);
 
     assert!(new_rewards >= initial_rewards);
 }

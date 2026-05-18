@@ -22,6 +22,19 @@ use crate::services::utils::{
 
 static mut VSTREET_STATE: Option<VstreetState> = None;
 
+#[derive(Decode, Encode, TypeInfo, Clone, Debug, PartialEq)]
+pub struct ContractInfo {
+    pub apr: u128,
+    pub interest_rate: u128,
+    pub dev_fee: u128,
+    pub total_deposited: u128,
+    pub total_borrowed: u128,
+    pub available_rewards_pool: u128,
+    pub base_rate: u128,
+    pub risk_multiplier: u128,
+    pub utilization_factor: u128,
+}
+
 #[derive(Decode, Encode, TypeInfo)]
 pub enum LiquidityEvent {
     Deposit{amount:u128},
@@ -305,68 +318,61 @@ where VftClient: Vft, {
     // Queries
 
     // Service's query owner of the contract
-    pub fn contract_owner(&self) -> String {
+    pub fn contract_owner(&self) -> ActorId {
         let state = self.state_ref();
-        state.owner.to_string()
-    } 
+        state.owner
+    }
 
     //Service's query seted VFT of the contract
-    pub fn vft_contract_id(&self) -> String {
+    pub fn vft_contract_id(&self) -> Option<ActorId> {
         let state = self.state_ref();
-        match state.vft_contract_id {
-            Some(contract_id) => contract_id.to_string(),
-            None => "VFT contract ID not configured".to_string(),
-        }
-    } 
+        state.vft_contract_id
+    }
 
     //Service's query user-balance
-    pub fn user_balance(&self, user: ActorId) -> String {
+    pub fn user_balance(&self, user: ActorId) -> Option<u128> {
         let state = self.state_ref();
-        match state.users.get(&user) {
-            Some(user_info) => user_info.balance_usdc.to_string(),
-            None => "User not found".to_string(),
-        }
+        state.users.get(&user).map(|u| u.balance_usdc)
     }
 
     //Service's query user-rewards
-    pub fn user_rewards(&self, user: ActorId) -> String {
+    pub fn user_rewards(&self, user: ActorId) -> Option<u128> {
         let state = self.state_ref();
-        match state.users.get(&user) {
-            Some(user_info) => user_info.rewards_usdc.to_string(),
-            None => "User not found".to_string(),
-        }
+        state.users.get(&user).map(|u| u.rewards_usdc)
     }
 
     //Service's query user info
-    pub fn user_info(&self, user: ActorId) -> String {
+    pub fn user_info(&self, user: ActorId) -> Option<UserInfo> {
         let state = self.state_ref();
-        match state.users.get(&user) {
-            Some(user_info) => format!("User Info: {:?}", user_info),
-            None => "User not found".to_string(),
-        }
+        state.users.get(&user).cloned()
     }
 
     //Service's query all users
-    pub fn all_users(&self) -> String {
+    pub fn all_users(&self) -> Vec<ActorId> {
         let state = self.state_ref();
-        let users = state.users.keys().map(|id| id.to_string()).collect::<Vec<_>>();
-        users.join(", ")
+        state.users.keys().cloned().collect()
     }
 
     //Service's query APR , interest rate, dev fee, total borrowed, available rewards pool, base rate, risk multiplier, utilization factor
-    pub fn contract_info(&self) -> String {
+    pub fn contract_info(&self) -> ContractInfo {
         let state = self.state_ref();
-        format!(
-            "APR: {:?}, Interest Rate: {:?}, Dev Fee: {:?}, Total Deposited: {:?}, Total Borrowed: {:?}, Available Rewards Pool: {:?}, Base Rate: {:?}, Risk Multiplier: {:?}, Utilization Factor: {:?}", 
-            state.apr, state.interest_rate, state.config.dev_fee, state.total_deposited, state.total_borrowed, 
-            state.available_rewards_pool, state.config.base_rate, state.config.risk_multiplier, state.utilization_factor
-        )
+        ContractInfo {
+            apr: state.apr,
+            interest_rate: state.interest_rate,
+            dev_fee: state.config.dev_fee,
+            total_deposited: state.total_deposited,
+            total_borrowed: state.total_borrowed,
+            available_rewards_pool: state.available_rewards_pool,
+            base_rate: state.config.base_rate,
+            risk_multiplier: state.config.risk_multiplier,
+            utilization_factor: state.utilization_factor,
+        }
     }
 
     //Service's query total deposited
-    pub fn total_deposited(&self) -> String {
+    pub fn total_deposited(&self) -> u128 {
         let state = self.state_ref();
-        state.total_deposited.to_string()
+        state.total_deposited
     }
 
     // State mutable & ref functions
