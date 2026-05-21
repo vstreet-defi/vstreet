@@ -1,2 +1,6 @@
 target/
 .binpath
+
+# Local planning docs and Vara skills references (not committed)
+docs/plans/
+vara-skills-ref/
