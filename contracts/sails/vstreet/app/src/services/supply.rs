@@ -41,7 +41,17 @@ where
     }
 
     let decimals_factor = state_mut.config.decimals_factor;
-    let decimals_factor = state_mut.config.decimals_factor;
+
+    // Validate the future balance BEFORE the external transfer (CEI pattern).
+    // Compute what the balance will be after this deposit and reject early if
+    // it would not be an exact multiple of `decimals_factor`.
+    let current_balance = state_mut.users.get(&caller).map(|u| u.balance).unwrap_or(0);
+    let future_balance = current_balance.saturating_add(amount);
+    if future_balance % decimals_factor != 0 {
+        let error_message = ERROR_INVALID_AMOUNT.to_string();
+        service.notify_error(error_message.clone());
+        return Err(error_message);
+    }
 
     // Transfer tokens from user to contract
     let result = service.transfer_tokens(caller, exec::program_id(), amount).await;
@@ -66,12 +76,6 @@ where
             service.notify_error(error_message.clone());
             error_message
         })?;
-
-    if user_info.balance % decimals_factor != 0 {
-        let error_message = ERROR_INVALID_AMOUNT.to_string();
-        service.notify_error(error_message.clone());
-        return Err(error_message);
-    }
 
     user_info.balance_usdc = user_info
         .balance

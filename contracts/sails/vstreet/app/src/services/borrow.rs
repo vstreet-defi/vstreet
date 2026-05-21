@@ -47,6 +47,7 @@ where
     let decimals_factor = state_mut.config.decimals_factor;
     let protocol_ltv = state_mut.ltv;
     let user_info = state_mut.users.get_mut(&caller).unwrap();
+    let previous_is_loan_active = user_info.is_loan_active;
 
     let mla = user_info.mla;
     let loan_amount = user_info.loan_amount;
@@ -120,7 +121,7 @@ where
     if let Err(_) = result {
         let state_mut = service.state_mut();
         let user_info = state_mut.users.get_mut(&caller).unwrap();
-        user_info.is_loan_active = false;
+        user_info.is_loan_active = previous_is_loan_active;
         user_info.loan_amount = user_info.loan_amount.saturating_sub(scaled_amount);
         user_info.loan_amount_usdc = user_info.loan_amount / decimals_factor;
         state_mut.total_borrowed = state_mut.total_borrowed.saturating_sub(scaled_amount);

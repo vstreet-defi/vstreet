@@ -1,5 +1,9 @@
+mod extended_vft_client;
+
 use sails_rs::{calls::*, gtest::{calls::*, System}, ActorId};
 use vstreet_client::traits::*;
+use extended_vft_client::traits::ExtendedVftFactory as _;
+use extended_vft_client::traits::Vft as _;
 
 const ACTOR_ID: u64 = 42;
 const ACTOR_ID_2: u64 = 44;
@@ -7,6 +11,7 @@ const VFT_CONTRACT_ID: u64 = 43;
 const LTV: u128 = 70;
 const DEPOSIT_AMOUNT: u128 = 10_000_000_000;
 const COLLATERAL_AMOUNT: u128 = 50_000_000_000_000; // 50 TVARA (1 TVARA = 1_000_000_000_000)
+const LOAN_AMOUNT: u128 = 10_000_000; // $10 (with 6 decimals), well under MLA for 50 TVARA collateral
 
 // Setup Helpers
 
@@ -19,12 +24,42 @@ async fn setup_system() -> (GTestRemoting, ActorId) {
     let remoting = GTestRemoting::new(system, ACTOR_ID.into());
     remoting.system().init_logger();
 
+    // Deploy real VFT from this repo
+    let vft_wasm = include_bytes!("../../extended-vft/target/wasm32-unknown-unknown/debug/extended_vft_wasm.opt.wasm");
+    let vft_code_id = remoting.system().submit_code(vft_wasm);
+    let vft_factory = extended_vft_client::ExtendedVftFactory::new(remoting.clone());
+    let vft_id = vft_factory
+        .new("TestVFT".to_string(), "TVFT".to_string(), 6)
+        .send_recv(vft_code_id, b"vftsalt")
+        .await
+        .unwrap();
+
+    // Mint tokens to test actors so they can deposit / interact
+    let mut vft = extended_vft_client::Vft::new(remoting.clone());
+    let mint_amount = sails_rs::prelude::U256::from(1_000_000_000_000_000u128);
+    vft.mint(ACTOR_ID.into(), mint_amount)
+        .send_recv(vft_id)
+        .await
+        .unwrap();
+    vft.mint(ACTOR_ID_2.into(), mint_amount)
+        .send_recv(vft_id)
+        .await
+        .unwrap();
+
+    // Deploy VStreet with real VFT
     let program_code_id = remoting.system().submit_code(vstreet::WASM_BINARY);
     let program_factory = vstreet_client::VstreetFactory::new(remoting.clone());
 
     let program_id = program_factory
-        .new_with_vft(VFT_CONTRACT_ID.into(), LTV)
+        .new_with_vft(vft_id, LTV)
         .send_recv(program_code_id, b"salt")
+        .await
+        .unwrap();
+
+    // Approve VStreet to spend VFT tokens on behalf of test actor
+    let approve_amount = sails_rs::prelude::U256::from(u128::MAX);
+    vft.approve(program_id, approve_amount)
+        .send_recv(vft_id)
         .await
         .unwrap();
 
@@ -151,7 +186,6 @@ async fn test_modify_available_rewards_pool() {
 // Liquidity Supply Tests
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract deployment
 async fn test_deposit_liquidity() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -177,7 +211,6 @@ async fn test_deposit_liquidity() {
 }
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract deployment
 async fn test_withdraw_liquidity() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -203,7 +236,6 @@ async fn test_withdraw_liquidity() {
 }
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract deployment
 async fn test_withdraw_rewards() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -222,13 +254,15 @@ async fn test_withdraw_rewards() {
 
     match result {
         Ok(Ok(())) => (),
+        // In gtest blocks don't advance real time, so rewards are 0.
+        // Expect the contract to reject the withdrawal correctly.
+        Ok(Err(e)) if e == "Not enough rewards to withdraw" => (),
         Ok(Err(e)) => panic!("Withdraw rewards failed: {:?}", e),
         Err(e) => panic!("Transaction error: {:?}", e),
     }
 }
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract deployment
 async fn test_user_rewards() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -297,7 +331,6 @@ async fn test_withdraw_collateral() {
 // Borrowing Tests
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract and liquidity pool
 async fn test_take_loan() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -316,7 +349,7 @@ async fn test_take_loan() {
         .await;
 
     // Take a loan
-    let loan_amount = DEPOSIT_AMOUNT / 4;
+    let loan_amount = LOAN_AMOUNT;
     let result = service_client
         .take_loan(loan_amount)
         .send_recv(program_id)
@@ -330,7 +363,6 @@ async fn test_take_loan() {
 }
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract and active loan
 async fn test_pay_loan() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -347,7 +379,7 @@ async fn test_pay_loan() {
         .send_recv(program_id)
         .await;
 
-    let loan_amount = DEPOSIT_AMOUNT / 4;
+    let loan_amount = LOAN_AMOUNT;
     let _ = service_client
         .take_loan(loan_amount)
         .send_recv(program_id)
@@ -368,7 +400,6 @@ async fn test_pay_loan() {
 }
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract and active loan
 async fn test_pay_all_loan() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -385,7 +416,7 @@ async fn test_pay_all_loan() {
         .send_recv(program_id)
         .await;
 
-    let loan_amount = DEPOSIT_AMOUNT / 4;
+    let loan_amount = LOAN_AMOUNT;
     let _ = service_client
         .take_loan(loan_amount)
         .send_recv(program_id)
@@ -407,7 +438,6 @@ async fn test_pay_all_loan() {
 // Query Tests
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract deployment
 async fn test_user_balance_query() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -427,7 +457,6 @@ async fn test_user_balance_query() {
 }
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract deployment
 async fn test_user_info_query() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -478,7 +507,6 @@ async fn test_contract_info_query() {
 }
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract deployment
 async fn test_total_deposited_query() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -500,7 +528,6 @@ async fn test_total_deposited_query() {
 // Integration & Edge Case Tests
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract deployment
 async fn test_full_lending_cycle() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
@@ -521,7 +548,7 @@ async fn test_full_lending_cycle() {
         .expect("Deposit collateral failed");
 
     // Take a loan
-    let loan_amount = DEPOSIT_AMOUNT / 4;
+    let loan_amount = LOAN_AMOUNT;
     let _ = service_client
         .take_loan(loan_amount)
         .send_recv(program_id)
@@ -551,7 +578,6 @@ async fn test_full_lending_cycle() {
 }
 
 #[tokio::test]
-#[ignore] // Requires actual VFT contract deployment
 async fn test_interest_accrual() {
     let (remoting, program_id) = setup_system().await;
     let mut service_client = vstreet_client::LiquidityInjectionService::new(remoting.clone());
